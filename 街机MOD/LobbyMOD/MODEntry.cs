@@ -7,24 +7,20 @@ using System.Text;
 //dll文件输出路径更改: 本项目名LobbyMOD右键属性-生成-输出路径 改为你的游戏所在路径 Overcooked! 2/BepInEx/plugins/ 下
 //生成dll后自动打开游戏测试: 本项目名LobbyMOD右键属性-生成事件-生成前/后  将gamePath替换成自己游戏的路径
 
-/*
- 
-修改完毕之后进入仓库文件夹(文件夹里有README.md)下运行:
-git rm --cached  街机MOD/LobbyMOD/LobbyMOD.csproj
-git commit -m "Remove and ignore LobbyMOD.csproj"
-
-*/
 namespace LobbyMODS
 {
     [BepInPlugin("com.ch3ngyz.plugin.LobbyMods", "[街机MOD] By.酷茶 Q群860480677", "1.0.8")]
     [BepInProcess("Overcooked2.exe")]
     public class MODEntry : BaseUnityPlugin
     {
-        public static string modName = "街机工具集合";
+        public static string modName;
         public static MODEntry Instance;
+        public static bool IsInLobby;
         public void Awake()
         {
+            modName = "街机工具集合";
             Instance = this;
+            IsInLobby = false;
             DisplayModsOnResultsScreen.Awake();
             SkipLevel.Awake();
             LobbyKickUser.Awake();
@@ -35,6 +31,8 @@ namespace LobbyMODS
             UnlockDlcs.Awake();
             ReplaceOneShotAudio.Awake();
             ForceHost.Awake();
+            m_state_server = AccessTools.FieldRefAccess<ServerLobbyFlowController, LobbyFlowController.LobbyState>("m_state");
+            m_state_client = AccessTools.FieldRefAccess<ClientLobbyFlowController, LobbyFlowController.LobbyState>("m_state");
         }
 
         public void Update()
@@ -81,9 +79,9 @@ namespace LobbyMODS
             }
             return false;
         }
-        public static bool IsInLobby = false;
-        public static readonly AccessTools.FieldRef<ServerLobbyFlowController, LobbyFlowController.LobbyState> m_state_server = AccessTools.FieldRefAccess<ServerLobbyFlowController, LobbyFlowController.LobbyState>("m_state");
-        public static readonly AccessTools.FieldRef<ClientLobbyFlowController, LobbyFlowController.LobbyState> m_state_client = AccessTools.FieldRefAccess<ClientLobbyFlowController, LobbyFlowController.LobbyState>("m_state");
+
+        public static AccessTools.FieldRef<ServerLobbyFlowController, LobbyFlowController.LobbyState> m_state_server;
+        public static AccessTools.FieldRef<ClientLobbyFlowController, LobbyFlowController.LobbyState> m_state_client;
         public static void LogWarning(string message) => BepInEx.Logging.Logger.CreateLogSource(modName).LogWarning(message);
         public static void LogInfo(string message) => BepInEx.Logging.Logger.CreateLogSource(modName).LogInfo(message);
         public static void LogError(string message) => BepInEx.Logging.Logger.CreateLogSource(modName).LogError(message);

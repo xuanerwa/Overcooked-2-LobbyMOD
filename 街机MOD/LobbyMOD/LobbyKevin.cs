@@ -18,6 +18,7 @@ namespace LobbyMODS
         public static ConfigEntry<bool> kevinEnabled;
         public static bool onlyKevin;
         public static bool notKevin;
+        public static bool only3_4;
 
 
         public static void Awake()
@@ -82,13 +83,31 @@ namespace LobbyMODS
 
 
             //凯文选项2选1
-            if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value && MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value)
+            if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value && MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value || MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value && MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻海3-4"].Value || MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻海3-4"].Value && MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value)
             {
-                MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value = !onlyKevin;
-                MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value = !notKevin;
+                if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻海3-4"].Value != only3_4)
+                {
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻海3-4"].Value = true;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value = false;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value = false;
+                }
+                else if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value != onlyKevin)
+                {
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value = true;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value = false;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻海3-4"].Value = false;
+                }
+                else if (MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value != notKevin)
+                {
+                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value = true;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value = false;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻海3-4"].Value = false;
+                }
+
             }
             onlyKevin = MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value;
             notKevin = MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value;
+            only3_4 = MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻海3-4"].Value;
 
         }
 
@@ -119,6 +138,7 @@ namespace LobbyMODS
         public static Dictionary<string, bool> alreadyPlayedSet = new Dictionary<string, bool>();
         public static void CreateConfigEntries()
         {
+            CreateConfigEntry("02-修改关卡", "只玩麻海3-4");
             CreateConfigEntry("02-修改关卡", "不玩凯文");
             CreateConfigEntry("02-修改关卡", "只玩凯文");
             CreateConfigEntry("02-禁用主题(凯文)", "01-关闭小节关");
@@ -189,6 +209,10 @@ namespace LobbyMODS
         public static void MPickLevel(ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
         {
             MODEntry.LogInfo($"街机凯文已启用, 选择的世界是{_theme}");
+            Predicate<SceneDirectoryData.SceneDirectoryEntry> matchOnly3_4 = (SceneDirectoryData.SceneDirectoryEntry entry) =>
+            {
+                return (entry.Label.Contains("DLC08Level12") || entry.Label.Contains("DLC02Level12"));
+            };
             Predicate<SceneDirectoryData.SceneDirectoryEntry> matchScene = (SceneDirectoryData.SceneDirectoryEntry entry) =>
             {
                 if (entry.Label.Contains("ThroneRoom") || entry.Label.Contains("TutorialLevel"))
@@ -332,11 +356,21 @@ namespace LobbyMODS
                 for (int i = 0; i < sceneDirectories.Length; i++)
                 {
                     //Predicate<SceneDirectoryData.SceneDirectoryEntry> Random = (SceneDirectoryData.SceneDirectoryEntry entry) => !entry.Label.Contains("TutorialLevel") && !entry.Label.Contains("ThroneRoom");
-                    fastList.AddRange(sceneDirectories[i].Scenes.FindAll(match));
-                    fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(fastList.FindAll(matchAvailableInLobby).ToArray());
+                    fastList.AddRange(sceneDirectories[i].Scenes.FindAll(matchAvailableInLobby));
+                    //fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(fastList.FindAll(matchAvailableInLobby).ToArray());
                     array[i] = fastList.Count;
                 }
 
+            }
+            if (sceneDisableConfigEntries["只玩麻海3-4"].Value)
+            {
+                fastList.Clear();
+                MODEntry.LogInfo("只玩麻海3-4");
+                for (int i = 0; i < sceneDirectories.Length; i++)
+                {
+                    fastList.AddRange(sceneDirectories[i].Scenes.FindAll(matchOnly3_4));
+                    array[i] = fastList.Count;
+                }
             }
             int num = UnityEngine.Random.Range(0, fastList.Count);
             for (int kkk = 0; kkk < fastList.Count; kkk++)
@@ -351,7 +385,7 @@ namespace LobbyMODS
                     MODEntry.LogInfo(Message);
                 }
             }
-            if (sceneDisableConfigEntries["街机关卡不重复"].Value)
+            if (sceneDisableConfigEntries["街机关卡不重复"].Value && !sceneDisableConfigEntries["只玩麻海3-4"].Value)
             {
                 int count = 0;
                 for (int k = 0; k < fastList.Count; k++)

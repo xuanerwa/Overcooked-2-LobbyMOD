@@ -126,16 +126,18 @@ namespace LobbyMODS
                     modsDisplay.m_Text = $"自定义关卡:";
                     if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value)
                     {
+                        modsDisplay.m_Text += "\n------以下为自定义特殊关卡:";
                         modsDisplay.m_Text += "\n只玩凯文";
                     }
                     if (MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value)
                     {
+                        modsDisplay.m_Text += "\n------以下为自定义特殊关卡:";
                         modsDisplay.m_Text += "\n不玩凯文";
                         shouldNtDisplayKevinState = false; //不玩凯文, 则不输出凯文状态
                     }
                     if (shouldNtDisplayKevinState)
                     {
-                        modsDisplay.m_Text += "\n------以下为自定义特殊关卡:";
+                        
                         List<string> conditions1 = new List<string>{
                                                                     "01-关闭小节关",
                                                                     "02-关闭主线凯文",
