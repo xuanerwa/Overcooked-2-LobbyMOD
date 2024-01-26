@@ -1,0 +1,6 @@
+bin/
+.vs/
+obj/
+oc2-modding/
+.vscode/
+街机MOD/LobbyMOD/LobbyMOD.csproj
