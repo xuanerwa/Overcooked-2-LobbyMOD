@@ -7,13 +7,6 @@ using System.Text;
 //dll文件输出路径更改: 本项目名LobbyMOD右键属性-生成-输出路径 改为你的游戏所在路径 Overcooked! 2/BepInEx/plugins/ 下
 //生成dll后自动打开游戏测试: 本项目名LobbyMOD右键属性-生成事件-生成前/后  将gamePath替换成自己游戏的路径
 
-/*
- 
-修改完毕之后进入仓库文件夹(文件夹里有README.md)下运行:
-git rm --cached  街机MOD/LobbyMOD/LobbyMOD.csproj
-git commit -m "Remove and ignore LobbyMOD.csproj"
-
-*/
 namespace LobbyMODS
 {
     [BepInPlugin("com.ch3ngyz.plugin.LobbyMods", "[街机MOD] By.酷茶 Q群860480677", "1.0.8")]
