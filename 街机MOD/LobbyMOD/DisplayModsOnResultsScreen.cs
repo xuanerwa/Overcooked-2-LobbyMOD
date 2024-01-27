@@ -21,7 +21,7 @@ namespace LobbyMODS
             onScreenDebugDisplay.Awake();
             modsDisplay = new ModsDisplay();
             onScreenDebugDisplay.AddDisplay(modsDisplay);
-            isshow = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "结束时显示自定义关卡状态", true);
+            isshow = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "结束时显示自定义关卡状态", false);
             /* Inject Mod */
             Harmony.CreateAndPatchAll(typeof(DisplayModsOnResultsScreen));
         }

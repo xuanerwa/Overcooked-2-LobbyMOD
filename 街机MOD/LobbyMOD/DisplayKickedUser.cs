@@ -10,21 +10,23 @@ namespace LobbyMODS
         private static MyKickedUserCounter kickedUserCounter = null;
         public static ConfigEntry<bool> ShowKickedUserEnabled;
 
+
         public static void add_m_Text(string str) => kickedUserCounter?.add_m_Text(str);
 
         public static void Awake()
         {
             onScreenDebugDisplayKickedUser = new MyOnScreenDebugDisplayKickedUser();
             onScreenDebugDisplayKickedUser.Awake();
+            ShowKickedUserEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "街机大厅里显示自动踢的黑名单玩家", false);
         }
 
         public static void Update()
         {
             onScreenDebugDisplayKickedUser.Update();
 
-            if ((!MODEntry.IsInLobby || Input.GetKeyDown(KeyCode.End)) && kickedUserCounter != null)
+            if (((!MODEntry.IsInLobby) || Input.GetKeyDown(KeyCode.End)) && kickedUserCounter != null)
                 RemoveKickedUserCounter();
-            else if ((MODEntry.IsInLobby || Input.GetKeyDown(KeyCode.Home)) && kickedUserCounter == null)
+            else if (((MODEntry.IsInLobby && ShowKickedUserEnabled.Value) || Input.GetKeyDown(KeyCode.Home)) && kickedUserCounter == null)
                 AddKickedUserCounter();
         }
 
