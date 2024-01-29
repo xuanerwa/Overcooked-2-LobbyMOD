@@ -106,9 +106,21 @@ namespace LobbyMODS
                 {
                     loadTagFile(ref __result, "选中厨师");
                 }
+                else if (_tag == GameOneShotAudioTag.ImCooked)
+                {
+                    loadTagFile(ref __result, "锅熟");
+                }
                 else if (_tag == GameOneShotAudioTag.CookingWarning)
                 {
                     loadTagFile(ref __result, "锅叫");
+                }
+                else if (_tag == GameOneShotAudioTag.FireIgnition)
+                {
+                    loadTagFile(ref __result, "着火");
+                }
+                else if (_tag == GameOneShotAudioTag.Impact)
+                {
+                    loadTagFile(ref __result, "碰撞");
                 }
                 else if (_tag == GameOneShotAudioTag.DLC_07_Failed)
                 {
@@ -121,6 +133,18 @@ namespace LobbyMODS
                 else if (_tag == GameOneShotAudioTag.DLC_08_Cannon_Fire)
                 {
                     loadTagFile(ref __result, "大炮发射");
+                }
+                else if (_tag == GameOneShotAudioTag.ResultsStar01)
+                {
+                    loadTagFile(ref __result, "一星");
+                }
+                else if (_tag == GameOneShotAudioTag.ResultsStar02)
+                {
+                    loadTagFile(ref __result, "两星");
+                }
+                else if (_tag == GameOneShotAudioTag.ResultsStar03)
+                {
+                    loadTagFile(ref __result, "三星");
                 }
             }
         }
