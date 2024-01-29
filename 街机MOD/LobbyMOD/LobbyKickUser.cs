@@ -114,6 +114,7 @@ namespace LobbyMODS
                 {
                     MODEntry.LogInfo($"自动移除  主页: {steamCommunityUrl}  昵称: {user.DisplayName}");
                     DisplayKickedUser.add_m_Text($"自动移除  {user.DisplayName}");
+                    SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
                     ServerUserSystem.RemoveUser(user, true);
                     break;  // 如果找到一个，移除后退出循环 
                 }
@@ -129,8 +130,10 @@ namespace LobbyMODS
                 MODEntry.LogInfo($"尝试移除{index + 1}号:{user.DisplayName}");
                 if (!m_bIsLocal)
                 {
+                    OnlineUserPlatformId platformID = user.PlatformID;
+                    SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
                     ServerUserSystem.RemoveUser(user, true);
-                    MODEntry.LogInfo($"{index + 1}号移除成功:{user.DisplayName}");
+                    MODEntry.LogInfo($"{index + 1}号移除成功:{user.DisplayName}, Steamid:{platformID.m_steamId}");
                 }
                 else
                 {
