@@ -66,8 +66,63 @@ namespace LobbyMODS
                 {
                     loadTagFile(ref __result, "我们成功啦");
                 }
+                else if (_tag == GameOneShotAudioTag.Chop)
+                {
+                    loadTagFile(ref __result, "切");
+                }
+                else if (_tag == GameOneShotAudioTag.Throw)
+                {
+                    loadTagFile(ref __result, "丢");
+                }
+                else if (_tag == GameOneShotAudioTag.Pickup)
+                {
+                    loadTagFile(ref __result, "拿");
+                }
+                else if (_tag == GameOneShotAudioTag.PutDown)
+                {
+                    loadTagFile(ref __result, "放");
+                }
+                else if (_tag == GameOneShotAudioTag.Catch)
+                {
+                    loadTagFile(ref __result, "接");
+                }
+                else if (_tag == GameOneShotAudioTag.Dash)
+                {
+                    loadTagFile(ref __result, "冲刺");
+                }
+                else if (_tag == GameOneShotAudioTag.TimesUp)
+                {
+                    loadTagFile(ref __result, "时间到");
+                }
+                else if(_tag == GameOneShotAudioTag.TrashCan)
+                {
+                    loadTagFile(ref __result, "垃圾桶");
+                }
+                else if (_tag == GameOneShotAudioTag.RecipeTimeOut)
+                {
+                    loadTagFile(ref __result, "菜单过期");
+                }
+                else if (_tag == GameOneShotAudioTag.UIChefSelected)
+                {
+                    loadTagFile(ref __result, "选中厨师");
+                }
+                else if (_tag == GameOneShotAudioTag.CookingWarning)
+                {
+                    loadTagFile(ref __result, "锅叫");
+                }
+                else if (_tag == GameOneShotAudioTag.DLC_07_Failed)
+                {
+                    loadTagFile(ref __result, "厨房被毁");
+                }
+                else if (_tag == GameOneShotAudioTag.DLC_07_Hammer)
+                {
+                    loadTagFile(ref __result, "修门");
+                }
+                else if (_tag == GameOneShotAudioTag.DLC_08_Cannon_Fire)
+                {
+                    loadTagFile(ref __result, "大炮发射");
+                }
             }
-
         }
 
         private static void loadTagFile(ref AudioDirectoryEntry __result, string _tag)
