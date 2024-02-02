@@ -9,18 +9,20 @@ using System.Text;
 
 namespace LobbyMODS
 {
-    [BepInPlugin("com.ch3ngyz.plugin.LobbyMods", "[街机MOD] By.酷茶 Q群860480677", "1.0.8")]
+    [BepInPlugin("com.ch3ngyz.plugin.LobbyMods", "[街机主机专用MOD] By.酷茶 Q群860480677", "1.0.9")]
     [BepInProcess("Overcooked2.exe")]
     public class MODEntry : BaseUnityPlugin
     {
         public static string modName;
         public static MODEntry Instance;
         public static bool IsInLobby;
+        public static bool IsHost;
         public void Awake()
         {
             modName = "街机工具集合";
             Instance = this;
             IsInLobby = false;
+            IsHost  = false;
             DisplayModsOnResultsScreen.Awake();
             SkipLevel.Awake();
             LobbyKickUser.Awake();

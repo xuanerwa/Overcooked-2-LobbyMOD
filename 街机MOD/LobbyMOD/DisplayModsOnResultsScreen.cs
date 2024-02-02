@@ -21,7 +21,7 @@ namespace LobbyMODS
             onScreenDebugDisplay.Awake();
             modsDisplay = new ModsDisplay();
             onScreenDebugDisplay.AddDisplay(modsDisplay);
-            isshow = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "结束时显示自定义关卡状态", false);
+            isshow = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "关卡结束时显示自定义关卡状态", false);
             /* Inject Mod */
             Harmony.CreateAndPatchAll(typeof(DisplayModsOnResultsScreen));
         }
@@ -195,7 +195,7 @@ namespace LobbyMODS
                 }
                 else
                 {
-                    modsDisplay.m_Text = "没有开启自定义关卡,请打开'02区域总开关'";
+                    modsDisplay.m_Text = "没有开启自定义关卡(凯文),请打开'02区域总开关'";
                 }
                 shouldDisplay = true;
             }

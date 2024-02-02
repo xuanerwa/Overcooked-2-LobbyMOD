@@ -26,10 +26,10 @@ namespace LobbyMODS
             MServerLobbyFlowController.CreateConfigEntries();
 
 
-            PlayRandom = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "08-直接开始随机关卡", KeyCode.Alpha6, "4秒后直接开始随机关卡");
-            resetTimer = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "09-重置大厅时间为45秒", KeyCode.Alpha7, "重置街机大厅时间为45秒");
+            PlayRandom = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "08-大厅计时器归零", KeyCode.Alpha6, "4秒后直接开始随机关卡");
+            resetTimer = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "09-大厅计时器45秒", KeyCode.Alpha7, "重置街机大厅时间为45秒");
 
-            kevinEnabled = MODEntry.Instance.Config.Bind<bool>("02-修改关卡", "02区域总开关", false);
+            kevinEnabled = MODEntry.Instance.Config.Bind<bool>("02-修改关卡", "02区域总开关(开启凯文)", false);
 
             Harmony.CreateAndPatchAll(typeof(LobbyKevin));
         }
@@ -40,34 +40,36 @@ namespace LobbyMODS
             //开始随机关卡
             if (Input.GetKeyDown(PlayRandom.Value))
             {
-                LobbyManager lobbyManager = new LobbyManager();
-                ServerLobbyFlowController instance = ServerLobbyFlowController.Instance;
+                //LobbyManager lobbyManager = new LobbyManager();
+                //ServerLobbyFlowController instance = ServerLobbyFlowController.Instance;
 
-                if (instance != null)
-                {
-                    int num = 0;
-                    while ((long)num < (long)(ulong)OnlineMultiplayerConfig.MaxPlayers)
-                    {
-                        instance.SelectTheme(SceneDirectoryData.LevelTheme.Random, num);
-                        LobbyFlowController.LobbyState? serverLobbyState = lobbyManager.ServerLobbyState;
-                        LobbyFlowController.LobbyState lobbyState = LobbyFlowController.LobbyState.LocalThemeSelection;
-                        if (serverLobbyState.GetValueOrDefault() == lobbyState & serverLobbyState != null)
-                        {
-                            lobbyManager.SetServerLobbyState(LobbyFlowController.LobbyState.LocalThemeSelected);
-                        }
-                        else
-                        {
-                            serverLobbyState = lobbyManager.ServerLobbyState;
-                            lobbyState = LobbyFlowController.LobbyState.OnlineThemeSelection;
-                            if (serverLobbyState.GetValueOrDefault() == lobbyState & serverLobbyState != null)
-                            {
-                                lobbyManager.SetServerLobbyState(LobbyFlowController.LobbyState.OnlineThemeSelected);
-                            }
-                        }
-                        num++;
-                    }
+                //if (instance != null)
+                //{
+                //    int num = 0;
+                //    while ((long)num < (long)(ulong)OnlineMultiplayerConfig.MaxPlayers)
+                //    {
+                //        instance.SelectTheme(SceneDirectoryData.LevelTheme.Random, num);
+                //        LobbyFlowController.LobbyState? serverLobbyState = lobbyManager.ServerLobbyState;
+                //        LobbyFlowController.LobbyState lobbyState = LobbyFlowController.LobbyState.LocalThemeSelection;
+                //        if (serverLobbyState.GetValueOrDefault() == lobbyState & serverLobbyState != null)
+                //        {
+                //            lobbyManager.SetServerLobbyState(LobbyFlowController.LobbyState.LocalThemeSelected);
+                //        }
+                //        else
+                //        {
+                //            serverLobbyState = lobbyManager.ServerLobbyState;
+                //            lobbyState = LobbyFlowController.LobbyState.OnlineThemeSelection;
+                //            if (serverLobbyState.GetValueOrDefault() == lobbyState & serverLobbyState != null)
+                //            {
+                //                lobbyManager.SetServerLobbyState(LobbyFlowController.LobbyState.OnlineThemeSelected);
+                //            }
+                //        }
+                //        num++;
+                //    }
 
-                }
+                //}
+                MServerLobbyFlowController.ResetServerLobbyTimer(0f);
+
             }
             //重置街机大厅时间
             else if (Input.GetKeyDown(resetTimer.Value))
@@ -209,6 +211,7 @@ namespace LobbyMODS
         public static void MPickLevel(ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
         {
             MODEntry.LogInfo($"街机凯文已启用, 选择的世界是{_theme}");
+            Traverse Tvinstance = Traverse.Create(__instance);
             Predicate<SceneDirectoryData.SceneDirectoryEntry> matchOnly3_4 = (SceneDirectoryData.SceneDirectoryEntry entry) =>
             {
                 return (entry.Label.Contains("DLC08Level12") || entry.Label.Contains("DLC02Level12"));
@@ -278,12 +281,12 @@ namespace LobbyMODS
                 return shouldIncludeEntry;
             };
             FastList<SceneDirectoryData.SceneDirectoryEntry> fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(60);
-            LobbyFlowController m_lobbyFlow = Traverse.Create(__instance).Field("m_lobbyFlow").GetValue<LobbyFlowController>();
+            LobbyFlowController m_lobbyFlow = Tvinstance.Field("m_lobbyFlow").GetValue<LobbyFlowController>();
             SceneDirectoryData[] sceneDirectories = m_lobbyFlow.GetSceneDirectories();
 
             DLCManager dlcmanager = GameUtils.RequireManager<DLCManager>();
             List<DLCFrontendData> allDlc = dlcmanager.AllDlc;
-            bool m_bIsCoop = Traverse.Create(__instance).Field("m_bIsCoop").GetValue<bool>();
+            bool m_bIsCoop = Tvinstance.Field("m_bIsCoop").GetValue<bool>();
             //GameSession.GameType gameType = (!m_bIsCoop) ? GameSession.GameType.Competitive : GameSession.GameType.Cooperative;
             GameSession.GameType gameType = (!m_bIsCoop) ? GameSession.GameType.Competitive : GameSession.GameType.Cooperative;
             int[] array = new int[sceneDirectories.Length];
@@ -434,36 +437,36 @@ namespace LobbyMODS
             SceneDirectoryData.SceneDirectoryEntry sceneDirectoryEntry = fastList._items[num];
             int dlcidfromSceneDirIndex2 = m_lobbyFlow.GetDLCIDFromSceneDirIndex(gameType, idx);
             SceneDirectoryData.PerPlayerCountDirectoryEntry sceneVarient = sceneDirectoryEntry.GetSceneVarient(ServerUserSystem.m_Users.Count);
-            if (sceneVarient == null)
-            {
-                if (!m_bIsCoop)
-                {
-                    T17DialogBox dialog = T17DialogBoxManager.GetDialog(false);
-                    dialog.Initialize("Text.Versus.NotEnoughPlayers.Title", "Text.Versus.NotEnoughPlayers.Message", "Text.Button.Confirm", null, null, T17DialogBox.Symbols.Warning, true, true, false);
-                    T17DialogBox t17DialogBox = dialog;
-                    t17DialogBox.OnConfirm = (T17DialogBox.DialogEvent)Delegate.Combine(t17DialogBox.OnConfirm, new T17DialogBox.DialogEvent(delegate ()
-                    {
-                        ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Offline, null, delegate (IConnectionModeSwitchStatus _status)
-                        {
-                            if (_status.GetProgress() == eConnectionModeSwitchProgress.Complete)
-                            {
-                                ServerGameSetup.Mode = GameMode.OnlineKitchen;
-                                //Type serverMessengerType = typeof(ServerMessenger);
-                                //MethodInfo loadLevelMethod = serverMessengerType.GetMethod("LoadLevel", BindingFlags.NonPublic | BindingFlags.Instance);
-                                //if (loadLevelMethod != null)
-                                //{
-                                //    loadLevelMethod.Invoke(serverMessengerInstance, new object[] { "StartScreen", GameState.MainMenu, true, GameState.NotSet });
-                                //}
-                            }
-                        });
-                    }));
-                    dialog.Show();
-                }
-                //return ;
-            }
-            Coroutine m_delayedLevelLoad = Traverse.Create(__instance).Field("m_delayedLevelLoad").GetValue<Coroutine>();
-            IEnumerator DelayedLevelLoad = Traverse.Create(__instance).Method("DelayedLevelLoad", sceneVarient.SceneName, dlcidfromSceneDirIndex2).GetValue<IEnumerator>();
-            m_delayedLevelLoad = __instance.StartCoroutine(DelayedLevelLoad);
+            //if (sceneVarient == null)
+            //{
+            //    if (!m_bIsCoop)
+            //    {
+            //        T17DialogBox dialog = T17DialogBoxManager.GetDialog(false);
+            //        dialog.Initialize("Text.Versus.NotEnoughPlayers.Title", "Text.Versus.NotEnoughPlayers.Message", "Text.Button.Confirm", null, null, T17DialogBox.Symbols.Warning, true, true, false);
+            //        T17DialogBox t17DialogBox = dialog;
+            //        t17DialogBox.OnConfirm = (T17DialogBox.DialogEvent)Delegate.Combine(t17DialogBox.OnConfirm, new T17DialogBox.DialogEvent(delegate ()
+            //        {
+            //            ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Offline, null, delegate (IConnectionModeSwitchStatus _status)
+            //            {
+            //                if (_status.GetProgress() == eConnectionModeSwitchProgress.Complete)
+            //                {
+            //                    ServerGameSetup.Mode = GameMode.OnlineKitchen;
+            //                    Type serverMessengerType = typeof(ServerMessenger);
+            //                    MethodInfo loadLevelMethod = serverMessengerType.GetMethod("LoadLevel", BindingFlags.NonPublic | BindingFlags.Instance);
+            //                    if (loadLevelMethod != null)
+            //                    {
+            //                        loadLevelMethod.Invoke(serverMessengerInstance, new object[] { "StartScreen", GameState.MainMenu, true, GameState.NotSet });
+            //                    }
+            //                }
+            //            });
+            //        }));
+            //        dialog.Show();
+            //    }
+            //    //return ;
+            //}
+            Coroutine m_delayedLevelLoad = Tvinstance.Field("m_delayedLevelLoad").GetValue<Coroutine>();
+            IEnumerator DelayedLevelLoad = Tvinstance.Method("DelayedLevelLoad", sceneVarient.SceneName, dlcidfromSceneDirIndex2).GetValue<IEnumerator>();
+            m_delayedLevelLoad = ServerLobbyFlowController.Instance.StartCoroutine(DelayedLevelLoad);
         }
     }
 

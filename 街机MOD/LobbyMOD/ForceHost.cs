@@ -1,5 +1,6 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
+using System.Reflection;
 using UnityEngine;
 
 namespace LobbyMODS
@@ -11,7 +12,7 @@ namespace LobbyMODS
         private static string[] strList = {
             "游戏默认逻辑",
             "强制主机",
-            "强制客机"
+            //"强制客机"
         };
         public static void Awake()
         {
@@ -56,30 +57,35 @@ namespace LobbyMODS
         [HarmonyPostfix]
         private static void ClientLobbyFlowController_HostGame_Prefix(ClientLobbyFlowController __instance)
         {
-            bool flag = ForceHost.ValueList.Value.Equals("强制客机");
-            if (flag)
-            {
-                MODEntry.LogWarning("强制客机已生效, TryJoinGame");
-                Traverse.Create(__instance).Method("TryJoinGame", new object[0]).GetValue();
-            }
+            MODEntry.IsHost = true;
+            //bool flag = ForceHost.ValueList.Value.Equals("强制客机");
+            //if (flag)
+            //{
+            //    log("强制客机已生效, TryJoinGame");
+            //    Traverse.Create(__instance).Method("TryJoinGame", new object[0]).GetValue();
+            //    MODEntry.IsHost = false;
+            //}
         }
+
         [HarmonyPatch(typeof(ClientLobbyFlowController), "TryJoinGame")]
         [HarmonyPrefix]
         private static bool ClientLobbyFlowController_TryJoinGame_Prefix(ClientLobbyFlowController __instance)
         {
+            MODEntry.IsHost = false;
             bool flag = ForceHost.ValueList.Value.Equals("强制主机");
-            bool result;
+            bool result = true;
             if (flag)
             {
-                MODEntry.LogWarning("强制主机已生效");
-                Traverse.Create(__instance).Method("HostGame", new object[0]).GetValue();
+                log("强制主机已生效");
+                HostGame.Invoke(__instance, null);
                 result = false;
-            }
-            else
-            {
-                result = true;
             }
             return result;
         }
+
+        private static readonly MethodInfo HostGame = AccessTools.Method(typeof(ClientLobbyFlowController), "HostGame", null, null);
+
+        // Token: 0x040000D6 RID: 214
+        private static readonly MethodInfo SetState = AccessTools.Method(typeof(ClientLobbyFlowController), "SetState", null, null);
     }
 }

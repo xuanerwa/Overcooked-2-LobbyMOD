@@ -26,7 +26,7 @@ namespace LobbyMODS
                 if (LoadingScreenFlow != null)
                 {
                     log("退出战局");
-                    Traverse.Create(LoadingScreenFlow).Method("OnKickedFromSession").GetValue();
+                    Traverse.Create(LoadingScreenFlow).Method("RequestReturnToStartScreen").GetValue();
                 }
             }
         }
