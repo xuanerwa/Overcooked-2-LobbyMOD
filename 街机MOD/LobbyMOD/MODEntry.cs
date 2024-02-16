@@ -33,6 +33,7 @@ namespace LobbyMODS
             UnlockDlcs.Awake();
             ReplaceOneShotAudio.Awake();
             ForceHost.Awake();
+            HostPing.Awake();
             m_state_server = AccessTools.FieldRefAccess<ServerLobbyFlowController, LobbyFlowController.LobbyState>("m_state");
             m_state_client = AccessTools.FieldRefAccess<ClientLobbyFlowController, LobbyFlowController.LobbyState>("m_state");
         }
@@ -46,6 +47,7 @@ namespace LobbyMODS
             QuitWhenLoadScene.Update();
             DisplayKickedUser.Update();
             ForceHost.Update();
+            HostPing.Update();
             isInLobby();
         }
 

@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0"
-  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -105,6 +104,7 @@
   <ItemGroup>
     <Compile Include="DisplayKickedUser.cs" />
     <Compile Include="ForceHost.cs" />
+    <Compile Include="HostPing.cs" />
     <Compile Include="LobbyKickUser.cs" />
     <Compile Include="LobbyKevin.cs" />
     <Compile Include="MODEntry.cs" />
@@ -118,23 +118,11 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>@echo off
-set gamePath="E:\SteamLibrary\steamapps\common\Overcooked! 2\Overcooked2.exe"
-start "" %25gamePath%25</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>@echo off
-setlocal
-
-set processName=Overcooked2.exe
-set gamePath="E:\SteamLibrary\steamapps\common\Overcooked! 2\Overcooked2.exe"
-
-tasklist /FI "IMAGENAME eq %25processName%25" 2&gt;NUL | find /I /N "%25processName%25"&gt;NUL
-if "%25ERRORLEVEL%25"=="0" (
-    taskkill /IM %25processName%25 /F
-    timeout /t 2 /nobreak &gt; NUL
-) 
-ping 127.0.0.1 -n 2 &gt; NUL
-endlocal</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
 </Project>
