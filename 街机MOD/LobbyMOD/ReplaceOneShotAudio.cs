@@ -106,6 +106,18 @@ namespace LobbyMODS
                 {
                     loadTagFile(ref __result, "选中厨师");
                 }
+                else if (_tag == GameOneShotAudioTag.WashedPlate)
+                {
+                    loadTagFile(ref __result, "出盘");
+                }
+                else if (_tag == GameOneShotAudioTag.WashingSplash)
+                {
+                    loadTagFile(ref __result, "洗盘");
+                }
+                else if(_tag== GameOneShotAudioTag.SuccessfulDelivery)
+                {
+                    loadTagFile(ref __result, "上菜成功");
+                }
                 else if (_tag == GameOneShotAudioTag.ImCooked)
                 {
                     loadTagFile(ref __result, "锅熟");
