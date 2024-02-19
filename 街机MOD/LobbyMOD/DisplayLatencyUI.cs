@@ -66,7 +66,7 @@ namespace LobbyMODS
             }
             public void change_m_Text(string str)
             {
-                m_Text = "\n\n" + str;
+                m_Text = str;
             }
 
             public override void OnSetUp() { }
@@ -99,7 +99,7 @@ namespace LobbyMODS
             {
                 m_GUIStyle.alignment = TextAnchor.UpperLeft;
                 m_GUIStyle.fontSize = (int)(Screen.height * 0.015f);
-                m_GUIStyle.normal.textColor = new Color(222 / 255.0f, 0f, 222 / 255.0f, 1f);
+                m_GUIStyle.normal.textColor = new Color(222 / 255.0f, 0f, 222 / 255.0f, 0.8f);
             }
 
             public void Update()
@@ -110,7 +110,7 @@ namespace LobbyMODS
 
             public void OnGUI()
             {
-                Rect rect = new Rect(0f, 0f, Screen.width, m_GUIStyle.fontSize);
+                Rect rect = new Rect(0f, Screen.height * 0.035f, Screen.width, m_GUIStyle.fontSize);
                 for (int i = 0; i < m_Displays.Count; i++)
                     m_Displays[i].OnDraw(ref rect, m_GUIStyle);
             }

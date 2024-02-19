@@ -9,7 +9,7 @@ using System.Text;
 
 namespace LobbyMODS
 {
-    [BepInPlugin("com.ch3ngyz.plugin.LobbyMods", "[街机主机专用MOD] By.酷茶 Q群860480677", "1.0.13")]
+    [BepInPlugin("com.ch3ngyz.plugin.LobbyMods", "[街机主机MOD] By.酷茶 Q群860480677", "1.0.14")]
     [BepInProcess("Overcooked2.exe")]
     public class MODEntry : BaseUnityPlugin
     {
@@ -19,7 +19,7 @@ namespace LobbyMODS
         public static bool IsHost;
         public void Awake()
         {
-            modName = "街机工具集合";
+            modName = "街机主机工具";
             Instance = this;
             IsInLobby = false;
             IsHost  = false;
@@ -36,8 +36,6 @@ namespace LobbyMODS
             Recipe.Awake();
             DisplayLatencyUI.Awake();
             HostPing.Awake();
-            m_state_server = AccessTools.FieldRefAccess<ServerLobbyFlowController, LobbyFlowController.LobbyState>("m_state");
-            m_state_client = AccessTools.FieldRefAccess<ClientLobbyFlowController, LobbyFlowController.LobbyState>("m_state");
         }
 
         public void Update()
@@ -51,6 +49,7 @@ namespace LobbyMODS
             DisplayLatencyUI.Update();
             ForceHost.Update();
             Recipe.Update();
+            HostPing.Update();
             IsHost = ConnectionStatus.IsHost();
             //LogError($"是否主机{IsHost}");
             isInLobby();
@@ -70,8 +69,8 @@ namespace LobbyMODS
             ServerLobbyFlowController instance = ServerLobbyFlowController.Instance;
             ClientLobbyFlowController instance2 = ClientLobbyFlowController.Instance;
             bool flag = false;
-            flag |= (instance2 != null && (LobbyFlowController.LobbyState.OnlineThemeSelection.Equals(m_state_client.Invoke(instance2)) || LobbyFlowController.LobbyState.LocalThemeSelection.Equals(m_state_client.Invoke(instance2))));
-            flag |= (instance != null && (LobbyFlowController.LobbyState.OnlineThemeSelection.Equals(m_state_server.Invoke(instance)) || LobbyFlowController.LobbyState.LocalThemeSelection.Equals(m_state_server.Invoke(instance))));
+            flag |= (instance2 != null && (LobbyFlowController.LobbyState.OnlineThemeSelection.Equals(instance2.m_state) || LobbyFlowController.LobbyState.LocalThemeSelection.Equals(instance2.m_state)));
+            flag |= (instance != null && (LobbyFlowController.LobbyState.OnlineThemeSelection.Equals(instance.m_state) || LobbyFlowController.LobbyState.LocalThemeSelection.Equals(instance.m_state)));
             bool flag2 = flag && instance != null;
             if (flag != IsInLobby)
             {
@@ -91,8 +90,6 @@ namespace LobbyMODS
             return false;
         }
 
-        public static AccessTools.FieldRef<ServerLobbyFlowController, LobbyFlowController.LobbyState> m_state_server;
-        public static AccessTools.FieldRef<ClientLobbyFlowController, LobbyFlowController.LobbyState> m_state_client;
         public static void LogWarning(string message) => BepInEx.Logging.Logger.CreateLogSource(modName).LogWarning(message);
         public static void LogInfo(string message) => BepInEx.Logging.Logger.CreateLogSource(modName).LogInfo(message);
         public static void LogError(string message) => BepInEx.Logging.Logger.CreateLogSource(modName).LogError(message);

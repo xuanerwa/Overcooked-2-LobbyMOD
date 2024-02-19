@@ -22,12 +22,12 @@ namespace LobbyMODS
         public static ConfigEntry<bool> displayhistory;
         public static int startTime;
         public static bool resets = false;
-        public static Dictionary<string, string> map=new Dictionary<string, string>();
-        public static Dictionary<string,string> symplifyed = new Dictionary<string, string>();
+        public static Dictionary<string, string> map = new Dictionary<string, string>();
+        public static Dictionary<string, string> symplifyed = new Dictionary<string, string>();
         public static string s;
         public static int allorders = 0;
         public static int noworders = 0;
-        public static int deliveredorders = 0;  
+        public static int deliveredorders = 0;
         public static int historyrecipecount = 0;
         public static bool changephrase = false;
 
@@ -367,8 +367,8 @@ namespace LobbyMODS
         [HarmonyPrefix]
         public static bool Prefix(ref ClientOrderControllerBase __instance, bool _success, OrderID _orderID)
         {
-            if (!enabled.Value||!displayhistory.Value) return true;
-            if (__instance != null) MClientOrderControllerBase.OnFoodDelivered(__instance,_success,_orderID);
+            if (!enabled.Value || !displayhistory.Value) return true;
+            if (__instance != null) MClientOrderControllerBase.OnFoodDelivered(__instance, _success, _orderID);
             return false;
         }
 
@@ -398,7 +398,8 @@ namespace LobbyMODS
         public static bool Prefix()
         {
             if (!enabled.Value) return true;
-            if (recipedisplay != null) { 
+            if (recipedisplay != null)
+            {
                 RemoveRecipeDisplay();
                 allorders = 0;
                 noworders = 0;
@@ -413,8 +414,8 @@ namespace LobbyMODS
         [HarmonyPrefix]
         public static bool Prefix(ref ClientDynamicFlowController __instance, IOnlineMultiplayerSessionUserId _sessionId, Serialisable _serialisable)
         {
-            if(!enabled.Value||!displayhistory.Value) return true;
-            if(__instance!=null) MClientDynamicFlowController.OnDynamicLevelMessage(__instance, _sessionId, _serialisable);
+            if (!enabled.Value || !displayhistory.Value) return true;
+            if (__instance != null) MClientDynamicFlowController.OnDynamicLevelMessage(__instance, _sessionId, _serialisable);
             return false;
         }
 
@@ -437,7 +438,7 @@ namespace LobbyMODS
         //        {
         //            reset();
         //        }
-                
+
         //        if (cnt == 0)
         //        {
         //            for (int i = 0; i < 255; i++)
@@ -460,18 +461,18 @@ namespace LobbyMODS
 
         public class MClientOrderControllerBase
         {
-            public static string[] recipes=new string[32];
+            public static string[] recipes = new string[32];
 
             public static void OnFoodDelivered(ClientOrderControllerBase __instance, bool _success, OrderID _orderID)
             {
                 if (_success)
                 {
                     ClientOrderControllerBase.ActiveOrder activeOrder = __instance.m_activeOrders.Find((ClientOrderControllerBase.ActiveOrder x) => x.ID == _orderID);
-                    if (noworders!=0&&deliveredorders==noworders)
+                    if (noworders != 0 && deliveredorders == noworders)
                     {
                         historyrecipecount = 0;
                         deliveredorders = 0;
-                        allorders -=noworders;
+                        allorders -= noworders;
                         noworders = 0;
                     }
                     if (activeOrder != null)
@@ -519,7 +520,7 @@ namespace LobbyMODS
                 allorders++;
             }
         }
-        
+
         public class MClientDynamicFlowController
         {
             public static void OnDynamicLevelMessage(ClientDynamicFlowController __instance, IOnlineMultiplayerSessionUserId _sessionId, Serialisable _serialisable)
@@ -584,10 +585,10 @@ namespace LobbyMODS
             public void Awake()
             {
                 m_GUIStyle.alignment = TextAnchor.UpperLeft;
-                m_GUIStyle.fontSize = (int)(Screen.height * 0.030f);
+                m_GUIStyle.fontSize = (int)(Screen.height * 0.015);
                 m_GUIStyle.normal.textColor = new Color(0.92f, 0f, 0f, 1f);
-                m_GUIStyle.fontStyle = FontStyle.Bold;
- 
+                //m_GUIStyle.fontStyle = FontStyle.Bold;
+
             }
 
             public void Update()
@@ -598,8 +599,8 @@ namespace LobbyMODS
 
             public void OnGUI()
             {
-                
-                Rect rect = new Rect(20f, 350f, Screen.width, m_GUIStyle.fontSize);
+
+                Rect rect = new Rect(0f, Screen.height * 0.3f, Screen.width, m_GUIStyle.fontSize);
                 for (int i = 0; i < m_Displays.Count; i++)
                     m_Displays[i].OnDraw(ref rect, m_GUIStyle);
             }
