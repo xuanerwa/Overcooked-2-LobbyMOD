@@ -22,7 +22,7 @@ namespace LobbyMODS
             modName = "街机主机工具";
             Instance = this;
             IsInLobby = false;
-            IsHost  = false;
+            IsHost = false;
             DisplayModsOnResultsScreenUI.Awake();
             SkipLevel.Awake();
             LobbyKickUser.Awake();
@@ -35,7 +35,6 @@ namespace LobbyMODS
             ForceHost.Awake();
             Recipe.Awake();
             DisplayLatencyUI.Awake();
-            HostPing.Awake();
         }
 
         public void Update()
@@ -49,7 +48,6 @@ namespace LobbyMODS
             DisplayLatencyUI.Update();
             ForceHost.Update();
             Recipe.Update();
-            HostPing.Update();
             IsHost = ConnectionStatus.IsHost();
             //LogError($"是否主机{IsHost}");
             isInLobby();

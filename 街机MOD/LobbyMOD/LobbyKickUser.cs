@@ -25,9 +25,9 @@ namespace LobbyMODS
         public static string savedSteamIdListFilePath = "0-保存的steam主页链接.txt";
         public static ConfigEntry<bool> isAutoKickUser;
         public static ConfigEntry<KeyCode> saveAll;
-        //public static ConfigEntry<KeyCode> kick2;
-        //public static ConfigEntry<KeyCode> kick3;
-        //public static ConfigEntry<KeyCode> kick4;
+        public static ConfigEntry<KeyCode> kick2;
+        public static ConfigEntry<KeyCode> kick3;
+        public static ConfigEntry<KeyCode> kick4;
         public static ConfigEntry<KeyCode> kickAndBan2;
         public static ConfigEntry<KeyCode> kickAndBan3;
         public static ConfigEntry<KeyCode> kickAndBan4;
@@ -37,9 +37,9 @@ namespace LobbyMODS
         {
             isAutoKickUser = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "自动踢黑名单里的用户", true, "自动踢出在ban列表中的用户");
 
-            //kick2 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "04-踢2号位", KeyCode.Alpha2, "按键踢出2号玩家");
-            //kick3 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "05-踢3号位", KeyCode.Alpha3, "按键踢出3号玩家");
-            //kick4 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "06-踢4号位", KeyCode.Alpha4, "按键踢出4号玩家");
+            kick2 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "04-踢2号位", KeyCode.Alpha2, "按键踢出2号玩家");
+            kick3 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "05-踢3号位", KeyCode.Alpha3, "按键踢出3号玩家");
+            kick4 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "06-踢4号位", KeyCode.Alpha4, "按键踢出4号玩家");
             kickAndBan2 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "01-踢2号位并拉黑", KeyCode.F2, "按键踢出2号玩家");
             kickAndBan3 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "02-踢3号位并拉黑", KeyCode.F3, "按键踢出3号玩家");
             kickAndBan4 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "03-踢4号位并拉黑", KeyCode.F4, "按键踢出4号玩家");
@@ -51,40 +51,21 @@ namespace LobbyMODS
 
         public static void Update()
         {
-            //踢人
-            //if (Input.GetKeyDown(kick2.Value))
-            //{
-            //    TryKickUser(1, kick2);
+            if (Input.GetKeyDown(kick2.Value))
+            {
+                TryKickUser(1, kick2);
+            }
+            else if (Input.GetKeyDown(kick3.Value))
+            {
+                TryKickUser(2, kick3);
 
-            //    //MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
-            //    //if (multiplayerController == null)
-            //    //{
-            //    //    MODEntry.LogInfo("实例不存在");
-            //    //}
-            //    //else
-            //    //{
-            //    //    Server LocalServer = m_LocalServer.GetValue(multiplayerController) as Server;
-            //    //    Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection> RemoteClientConnectionsDict = m_RemoteClientConnections.GetValue(LocalServer) as Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection>;
-            //    //    foreach (var kvp in RemoteClientConnectionsDict)
-            //    //    {
-            //    //        MODEntry.LogInfo($"DisplayName {kvp.Key.DisplayName} UniqueId {kvp.Key.UniqueId} IsHost {kvp.Key.IsHost}  GetRemoteSessionUserId: {kvp.Value.GetRemoteSessionUserId()}");
-            //    //        //kvp.Value.Disconnect();
-            //    //    }
-            //    //}
-            //}
-            //else if (Input.GetKeyDown(kick3.Value))
-            //{
-            //    TryKickUser(2, kick3);
+            }
+            else if (Input.GetKeyDown(kick4.Value))
+            {
+                TryKickUser(3, kick4);
 
-            //}
-            //else if (Input.GetKeyDown(kick4.Value))
-            //{
-            //    TryKickUser(3, kick4);
-
-            //}
-            //else
-
-            if (Input.GetKeyDown(kickAndBan2.Value))
+            }
+            else if (Input.GetKeyDown(kickAndBan2.Value))
             {
                 TryKickUserAndBan(1, kickAndBan2);
 
@@ -102,7 +83,6 @@ namespace LobbyMODS
             {
                 TrySaveUsersProfile();
             }
-
         }
 
 
@@ -157,7 +137,7 @@ namespace LobbyMODS
                 {
                     OnlineUserPlatformId platformID = user.PlatformID;
                     SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
-                    //ServerUserSystem.RemoveUser(user, true);
+                    ServerUserSystem.RemoveUser(user, true);
                     MODEntry.LogInfo($"{index + 1}号移除成功:{user.DisplayName}, Steamid:{platformID.m_steamId}");
                 }
                 else
@@ -181,8 +161,7 @@ namespace LobbyMODS
                     SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
                     ServerUserSystem.RemoveUser(user, true);
 
-
-                    String steamIdString = platformID.m_steamId.ToString();
+                    string steamIdString = platformID.m_steamId.ToString();
                     string steamCommunityUrl = $"https://steamcommunity.com/profiles/{steamIdString},{user.DisplayName}";
                     banSteamIdList.Add(steamCommunityUrl);
                     SaveSteamIdList();
@@ -208,7 +187,7 @@ namespace LobbyMODS
                     MODEntry.LogInfo($"保存:{user.DisplayName}");
                     OnlineUserPlatformId platformID = user.PlatformID;
                     CSteamID? csteamID = (platformID != null) ? new CSteamID?(platformID.m_steamId) : null;
-                    String steamIdString = csteamID.ToString();
+                    string steamIdString = csteamID.ToString();
                     string steamCommunityUrl = $"steam主页链接: https://steamcommunity.com/profiles/{steamIdString} ,昵称: {user.DisplayName}  ";
                     savedSteamIdList.Add(steamCommunityUrl);
                 }
