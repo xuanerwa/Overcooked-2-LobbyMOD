@@ -18,7 +18,8 @@ namespace LobbyMODS
         public static ConfigEntry<bool> kevinEnabled;
         public static bool onlyKevin;
         public static bool notKevin;
-        public static bool only3_4;
+        public static bool onlyCarnival3_4;
+        public static bool onlyBeach3_4;
 
 
         public static void Awake()
@@ -28,7 +29,6 @@ namespace LobbyMODS
 
             PlayRandom = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "08-大厅计时器归零", KeyCode.Alpha6, "4秒后直接开始随机关卡");
             resetTimer = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "09-大厅计时器45秒", KeyCode.Alpha7, "重置街机大厅时间为45秒");
-
             kevinEnabled = MODEntry.Instance.Config.Bind<bool>("02-修改关卡", "02区域总开关(开启凯文)", false);
 
             Harmony.CreateAndPatchAll(typeof(LobbyKevin));
@@ -77,40 +77,51 @@ namespace LobbyMODS
                 log("重置街机大厅时间");
                 MServerLobbyFlowController.ResetServerLobbyTimer(45f);
             }
-            else if (Input.GetKeyDown(LobbyKickUser.saveAll.Value))
-            {
-                //ShowAllPlayersInfo();
-                LobbyKickUser.TrySaveUsersProfile();
-            }
 
 
-            //凯文选项2选1
-            if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value && MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value || MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value && MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻海3-4"].Value || MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻海3-4"].Value && MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value)
+            bool onlyKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value;
+            bool notKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value;
+            bool onlyCarnival3_4_ = MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value;
+            bool onlyBeach3_4_ = MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value;
+
+            //凯文,麻,海 选项4选1
+            if ((onlyKevin_ && notKevin_) || (onlyKevin_ && onlyCarnival3_4_) || (onlyKevin_ && onlyBeach3_4_) || (notKevin_ && onlyCarnival3_4_) || (notKevin_ && onlyBeach3_4_) || (onlyCarnival3_4_ && onlyBeach3_4_))
             {
-                if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻海3-4"].Value != only3_4)
+                if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value != onlyCarnival3_4)
                 {
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻海3-4"].Value = true;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value = true;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value = false;
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value = false;
                     MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value = false;
+                }
+                else if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value != notKevin)
+                {
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value = true;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value = false;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value = false;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value = false;
+
                 }
                 else if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value != onlyKevin)
                 {
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value = true;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value = false;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value = false;
                     MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value = false;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻海3-4"].Value = false;
                 }
                 else if (MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value != notKevin)
                 {
                     MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value = true;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value = false;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value = false;
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value = false;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻海3-4"].Value = false;
                 }
 
             }
             onlyKevin = MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value;
             notKevin = MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value;
-            only3_4 = MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻海3-4"].Value;
-
+            onlyCarnival3_4 = MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value;
+            onlyBeach3_4 = MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value;
         }
 
         //选关patch
@@ -140,7 +151,8 @@ namespace LobbyMODS
         public static Dictionary<string, bool> alreadyPlayedSet = new Dictionary<string, bool>();
         public static void CreateConfigEntries()
         {
-            CreateConfigEntry("02-修改关卡", "只玩麻海3-4");
+            CreateConfigEntry("02-修改关卡", "只玩麻3-4");
+            CreateConfigEntry("02-修改关卡", "只玩海3-4");
             CreateConfigEntry("02-修改关卡", "不玩凯文");
             CreateConfigEntry("02-修改关卡", "只玩凯文");
             CreateConfigEntry("02-禁用主题(凯文)", "01-关闭小节关");
@@ -187,34 +199,25 @@ namespace LobbyMODS
 
         public static void ResetServerLobbyTimer(float time = 45f)
         {
-            ServerLobbyFlowController instance = ServerLobbyFlowController.Instance;
-            if (instance == null)
-            {
-                return;
-            }
-            ResetTimerServer.Invoke(instance, new object[]
-            {
-                time
-            });
+            ServerLobbyFlowController.Instance.ResetTimer(time);
         }
-        public void PickLevelRandom()
+
+        public void PickRandom()
         {
-            ServerLobbyFlowController instance = ServerLobbyFlowController.Instance;
-            if (instance == null)
-            {
-                return;
-            }
-            PickLevelServer.Invoke(instance, SceneDirectoryData.LevelTheme.Random);
+            ServerLobbyFlowController.Instance.PickLevel(SceneDirectoryData.LevelTheme.Random);
         }
-        private static readonly FastInvokeHandler ResetTimerServer = MethodInvoker.GetHandler(AccessTools.Method(typeof(ServerLobbyFlowController), "ResetTimer"));
-        private static readonly FastInvokeHandler PickLevelServer = MethodInvoker.GetHandler(AccessTools.Method(typeof(ServerLobbyFlowController), "PickLevel"));
+
         public static void MPickLevel(ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
         {
             MODEntry.LogInfo($"街机凯文已启用, 选择的世界是{_theme}");
-            Traverse Tvinstance = Traverse.Create(__instance);
-            Predicate<SceneDirectoryData.SceneDirectoryEntry> matchOnly3_4 = (SceneDirectoryData.SceneDirectoryEntry entry) =>
+            //Traverse Tvinstance = Traverse.Create(__instance);
+            Predicate<SceneDirectoryData.SceneDirectoryEntry> matchOnlyCarnival3_4 = (SceneDirectoryData.SceneDirectoryEntry entry) =>
             {
-                return (entry.Label.Contains("DLC08Level12") || entry.Label.Contains("DLC02Level12"));
+                return (entry.Label.Contains("DLC08Level12"));
+            };
+            Predicate<SceneDirectoryData.SceneDirectoryEntry> matchOnlyBeach3_4 = (SceneDirectoryData.SceneDirectoryEntry entry) =>
+            {
+                return (entry.Label.Contains("DLC02Level12"));
             };
             Predicate<SceneDirectoryData.SceneDirectoryEntry> matchScene = (SceneDirectoryData.SceneDirectoryEntry entry) =>
             {
@@ -281,12 +284,13 @@ namespace LobbyMODS
                 return shouldIncludeEntry;
             };
             FastList<SceneDirectoryData.SceneDirectoryEntry> fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(60);
-            LobbyFlowController m_lobbyFlow = Tvinstance.Field("m_lobbyFlow").GetValue<LobbyFlowController>();
+            //LobbyFlowController m_lobbyFlow = Tvinstance.Field("m_lobbyFlow").GetValue<LobbyFlowController>();
+            LobbyFlowController m_lobbyFlow = ServerLobbyFlowController.Instance.m_lobbyFlow;
             SceneDirectoryData[] sceneDirectories = m_lobbyFlow.GetSceneDirectories();
 
             DLCManager dlcmanager = GameUtils.RequireManager<DLCManager>();
             List<DLCFrontendData> allDlc = dlcmanager.AllDlc;
-            bool m_bIsCoop = Tvinstance.Field("m_bIsCoop").GetValue<bool>();
+            bool m_bIsCoop = ServerLobbyFlowController.Instance.m_bIsCoop;
             //GameSession.GameType gameType = (!m_bIsCoop) ? GameSession.GameType.Competitive : GameSession.GameType.Cooperative;
             GameSession.GameType gameType = (!m_bIsCoop) ? GameSession.GameType.Competitive : GameSession.GameType.Cooperative;
             int[] array = new int[sceneDirectories.Length];
@@ -365,16 +369,27 @@ namespace LobbyMODS
                 }
 
             }
-            if (sceneDisableConfigEntries["只玩麻海3-4"].Value)
+            if (sceneDisableConfigEntries["只玩麻3-4"].Value)
             {
                 fastList.Clear();
-                MODEntry.LogInfo("只玩麻海3-4");
+                MODEntry.LogInfo("只玩麻3-4");
                 for (int i = 0; i < sceneDirectories.Length; i++)
                 {
-                    fastList.AddRange(sceneDirectories[i].Scenes.FindAll(matchOnly3_4));
+                    fastList.AddRange(sceneDirectories[i].Scenes.FindAll(matchOnlyCarnival3_4));
                     array[i] = fastList.Count;
                 }
             }
+            else if (sceneDisableConfigEntries["只玩海3-4"].Value)
+            {
+                fastList.Clear();
+                MODEntry.LogInfo("只玩海3-4");
+                for (int i = 0; i < sceneDirectories.Length; i++)
+                {
+                    fastList.AddRange(sceneDirectories[i].Scenes.FindAll(matchOnlyBeach3_4));
+                    array[i] = fastList.Count;
+                }
+            }
+
             int num = UnityEngine.Random.Range(0, fastList.Count);
             for (int kkk = 0; kkk < fastList.Count; kkk++)
             {
@@ -388,7 +403,7 @@ namespace LobbyMODS
                     MODEntry.LogInfo(Message);
                 }
             }
-            if (sceneDisableConfigEntries["街机关卡不重复"].Value && !sceneDisableConfigEntries["只玩麻海3-4"].Value)
+            if (sceneDisableConfigEntries["街机关卡不重复"].Value && !(sceneDisableConfigEntries["只玩麻3-4"].Value || sceneDisableConfigEntries["只玩海3-4"].Value))
             {
                 int count = 0;
                 for (int k = 0; k < fastList.Count; k++)
@@ -437,36 +452,29 @@ namespace LobbyMODS
             SceneDirectoryData.SceneDirectoryEntry sceneDirectoryEntry = fastList._items[num];
             int dlcidfromSceneDirIndex2 = m_lobbyFlow.GetDLCIDFromSceneDirIndex(gameType, idx);
             SceneDirectoryData.PerPlayerCountDirectoryEntry sceneVarient = sceneDirectoryEntry.GetSceneVarient(ServerUserSystem.m_Users.Count);
-            //if (sceneVarient == null)
-            //{
-            //    if (!m_bIsCoop)
-            //    {
-            //        T17DialogBox dialog = T17DialogBoxManager.GetDialog(false);
-            //        dialog.Initialize("Text.Versus.NotEnoughPlayers.Title", "Text.Versus.NotEnoughPlayers.Message", "Text.Button.Confirm", null, null, T17DialogBox.Symbols.Warning, true, true, false);
-            //        T17DialogBox t17DialogBox = dialog;
-            //        t17DialogBox.OnConfirm = (T17DialogBox.DialogEvent)Delegate.Combine(t17DialogBox.OnConfirm, new T17DialogBox.DialogEvent(delegate ()
-            //        {
-            //            ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Offline, null, delegate (IConnectionModeSwitchStatus _status)
-            //            {
-            //                if (_status.GetProgress() == eConnectionModeSwitchProgress.Complete)
-            //                {
-            //                    ServerGameSetup.Mode = GameMode.OnlineKitchen;
-            //                    Type serverMessengerType = typeof(ServerMessenger);
-            //                    MethodInfo loadLevelMethod = serverMessengerType.GetMethod("LoadLevel", BindingFlags.NonPublic | BindingFlags.Instance);
-            //                    if (loadLevelMethod != null)
-            //                    {
-            //                        loadLevelMethod.Invoke(serverMessengerInstance, new object[] { "StartScreen", GameState.MainMenu, true, GameState.NotSet });
-            //                    }
-            //                }
-            //            });
-            //        }));
-            //        dialog.Show();
-            //    }
-            //    //return ;
-            //}
-            Coroutine m_delayedLevelLoad = Tvinstance.Field("m_delayedLevelLoad").GetValue<Coroutine>();
-            IEnumerator DelayedLevelLoad = Tvinstance.Method("DelayedLevelLoad", sceneVarient.SceneName, dlcidfromSceneDirIndex2).GetValue<IEnumerator>();
-            m_delayedLevelLoad = ServerLobbyFlowController.Instance.StartCoroutine(DelayedLevelLoad);
+            if (sceneVarient == null)
+            {
+                if (!m_bIsCoop)
+                {
+                    T17DialogBox dialog = T17DialogBoxManager.GetDialog(false);
+                    dialog.Initialize("Text.Versus.NotEnoughPlayers.Title", "Text.Versus.NotEnoughPlayers.Message", "Text.Button.Confirm", null, null, T17DialogBox.Symbols.Warning, true, true, false);
+                    T17DialogBox t17DialogBox = dialog;
+                    t17DialogBox.OnConfirm = (T17DialogBox.DialogEvent)Delegate.Combine(t17DialogBox.OnConfirm, new T17DialogBox.DialogEvent(delegate ()
+                    {
+                        ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Offline, null, delegate (IConnectionModeSwitchStatus _status)
+                        {
+                            if (_status.GetProgress() == eConnectionModeSwitchProgress.Complete)
+                            {
+                                ServerGameSetup.Mode = GameMode.OnlineKitchen;
+                                ServerMessenger.LoadLevel("StartScreen", GameState.MainMenu, true, GameState.NotSet);
+                            }
+                        });
+                    }));
+                    dialog.Show();
+                }
+                return;
+            }
+            ServerLobbyFlowController.Instance.m_delayedLevelLoad = ServerLobbyFlowController.Instance.StartCoroutine(ServerLobbyFlowController.Instance.DelayedLevelLoad(sceneVarient.SceneName, dlcidfromSceneDirIndex2));
         }
     }
 

@@ -7,7 +7,7 @@ using BepInEx.Configuration;
 
 namespace LobbyMODS
 {
-    public static class DisplayModsOnResultsScreen
+    public static class DisplayModsOnResultsScreenUI
     {
         private static MyOnScreenDebugDisplay onScreenDebugDisplay;
         private static ModsDisplay modsDisplay = null;
@@ -23,7 +23,7 @@ namespace LobbyMODS
             onScreenDebugDisplay.AddDisplay(modsDisplay);
             isshow = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "关卡结束时显示自定义关卡状态", false);
             /* Inject Mod */
-            Harmony.CreateAndPatchAll(typeof(DisplayModsOnResultsScreen));
+            Harmony.CreateAndPatchAll(typeof(DisplayModsOnResultsScreenUI));
         }
 
         public static void Update()

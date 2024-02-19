@@ -23,17 +23,18 @@ namespace LobbyMODS
             Instance = this;
             IsInLobby = false;
             IsHost  = false;
-            DisplayModsOnResultsScreen.Awake();
+            DisplayModsOnResultsScreenUI.Awake();
             SkipLevel.Awake();
             LobbyKickUser.Awake();
             LobbyKevin.Awake();
             QuitWhenLoadScene.Awake();
-            DisplayKickedUser.Awake();
+            DisplayKickedUserUI.Awake();
             UnlockChefs.Awake();
             UnlockDlcs.Awake();
             ReplaceOneShotAudio.Awake();
             ForceHost.Awake();
             Recipe.Awake();
+            DisplayLatencyUI.Awake();
             HostPing.Awake();
             m_state_server = AccessTools.FieldRefAccess<ServerLobbyFlowController, LobbyFlowController.LobbyState>("m_state");
             m_state_client = AccessTools.FieldRefAccess<ClientLobbyFlowController, LobbyFlowController.LobbyState>("m_state");
@@ -41,22 +42,25 @@ namespace LobbyMODS
 
         public void Update()
         {
-            DisplayModsOnResultsScreen.Update();
+            DisplayModsOnResultsScreenUI.Update();
             SkipLevel.Update();
             LobbyKickUser.Update();
             LobbyKevin.Update();
             QuitWhenLoadScene.Update();
-            DisplayKickedUser.Update();
+            DisplayKickedUserUI.Update();
+            DisplayLatencyUI.Update();
             ForceHost.Update();
             Recipe.Update();
-            HostPing.Update();
+            IsHost = ConnectionStatus.IsHost();
+            //LogError($"是否主机{IsHost}");
             isInLobby();
         }
 
         public void OnGUI()
         {
-            DisplayModsOnResultsScreen.OnGUI();
-            DisplayKickedUser.OnGUI();
+            DisplayModsOnResultsScreenUI.OnGUI();
+            DisplayKickedUserUI.OnGUI();
+            DisplayLatencyUI.OnGUI();
             Recipe.OnGUI();
         }
 

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace LobbyMODS
 {
-    public static class DisplayKickedUser
+    public static class DisplayKickedUserUI
     {
         private static MyOnScreenDebugDisplayKickedUser onScreenDebugDisplayKickedUser;
         private static MyKickedUserCounter kickedUserCounter = null;
@@ -17,7 +17,7 @@ namespace LobbyMODS
         {
             onScreenDebugDisplayKickedUser = new MyOnScreenDebugDisplayKickedUser();
             onScreenDebugDisplayKickedUser.Awake();
-            ShowKickedUserEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "街机大厅里显示自动踢的黑名单玩家", false);
+            ShowKickedUserEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "显示自动踢的黑名单玩家", false);
         }
 
         public static void Update()

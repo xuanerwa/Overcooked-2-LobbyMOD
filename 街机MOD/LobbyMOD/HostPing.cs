@@ -1,6 +1,8 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
+using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Reflection;
 using Team17.Online;
 using Team17.Online.Multiplayer;
@@ -18,34 +20,34 @@ namespace LobbyMODS
     public static class HostPing
     {
         public static void log(string mes) => MODEntry.LogInfo(mes);
-        public static ConfigEntry<KeyCode> pingkey;
-        public static MultiplayerController MultiplayerController
-        {
-            get
-            {
-                return GameUtils.RequireManager<MultiplayerController>();
-            }
-        }
+        //public static ConfigEntry<KeyCode> pingkey;
+        //public static MultiplayerController MultiplayerController
+        //{
+        //    get
+        //    {
+        //        return GameUtils.RequireManager<MultiplayerController>();
+        //    }
+        //}
 
         public static void Awake()
         {
-            pingkey = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "12-查看玩家延迟", KeyCode.F5, "按键显示");
+            //pingkey = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "12-查看玩家延迟", KeyCode.F5, "按键显示");
             Harmony.CreateAndPatchAll(typeof(HostPing));
         }
 
 
         // 获取自己的延迟
-        public static float GetClientLatency()
+        public static int GetClientLatency()
         {
             MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
-            Client client = m_LocalClient.GetValue(multiplayerController) as Client;
+            Client client = multiplayerController.m_LocalClient;
             if (client != null)
             {
                 ConnectionStats connectionStats = client.GetConnectionStats(bReliable: false);
-                return connectionStats.m_fLatency;
+                return (int)Math.Round(connectionStats.m_fLatency * 1000, 2);
             }
-            log("无法获取客户端延迟");
-            return 0f; // 如果无法获取延迟，则返回默认延迟值
+            //log("无法获取客户端延迟");
+            return 0; // 如果无法获取延迟，则返回默认延迟值
         }
 
 
@@ -55,8 +57,8 @@ namespace LobbyMODS
             List<PlayerInfo> latencyList = new List<PlayerInfo>();
 
             MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
-            Server server = m_LocalServer.GetValue(multiplayerController) as Server;
-            Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection> remoteClientConnectionsDict = m_RemoteClientConnections.GetValue(server) as Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection>;
+            Server server = multiplayerController.m_LocalServer;
+            Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection> remoteClientConnectionsDict = server.m_RemoteClientConnections;
 
             if (server != null)
             {
@@ -79,35 +81,42 @@ namespace LobbyMODS
 
             return latencyList;
         }
-        public static void Update()
+
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ClientTime), "OnTimeSyncReceived")]
+        public static void ClientTime_OnTimeSyncReceived_Patch()
         {
-            if (Input.GetKeyDown(pingkey.Value))
+            if (DisplayLatencyUI.ShowEnabled.Value)
             {
-                // 获取自己的延迟
-                float clientLatency = GetClientLatency();
-                log("自己的延迟：" + clientLatency);
-                // 获取服务器到所有客户端的延迟
-                List<PlayerInfo> allClientsLatency = GetServerToAllClientsLatency();
-                if (allClientsLatency.Count > 0)
+                string latencyText = string.Empty;
+                if (!MODEntry.IsHost)
                 {
-                    log("服务器到所有客户端的延迟：");
-                    foreach (var playerInfo in allClientsLatency)
-                    {
-                        log($"玩家昵称：{playerInfo.Nickname}, 延迟：{playerInfo.Latency}");
-                    }
+                    // 获取自己的延迟
+                    float clientLatency = GetClientLatency();
+                    latencyText += $"自己的延迟：{clientLatency} ms";
                 }
                 else
                 {
-                    log("无法获取服务器到所有客户端的延迟");
+                    // 获取服务器到所有客户端的延迟
+                    List<PlayerInfo> allClientsLatency = GetServerToAllClientsLatency();
+                    if (allClientsLatency.Count > 0)
+                    {
+                        latencyText += "客机的延迟：\n";
+                        foreach (var playerInfo in allClientsLatency)
+                        {
+                            latencyText += $"  {playerInfo.Nickname}    延迟：{(int)Math.Round(playerInfo.Latency * 1000, 2)} ms\n";
+                        }
+                    }
                 }
+                //log(latencyText);
+                DisplayLatencyUI.change_m_Text(latencyText);
             }
         }
 
-
         // 静态字段引用
-        private static readonly FieldInfo m_LocalClient = AccessTools.Field(typeof(MultiplayerController), "m_LocalClient");
-        private static readonly FieldInfo m_RemoteClientConnections = AccessTools.Field(typeof(Server), "m_RemoteClientConnections");
-        private static readonly FieldInfo m_LocalServer = AccessTools.Field(typeof(MultiplayerController), "m_LocalServer");
-        
+        //private static readonly FieldInfo m_LocalClient = AccessTools.Field(typeof(MultiplayerController), "m_LocalClient");
+        //private static readonly FieldInfo m_RemoteClientConnections = AccessTools.Field(typeof(Server), "m_RemoteClientConnections");
+        //private static readonly FieldInfo m_LocalServer = AccessTools.Field(typeof(MultiplayerController), "m_LocalServer");
     }
 }
