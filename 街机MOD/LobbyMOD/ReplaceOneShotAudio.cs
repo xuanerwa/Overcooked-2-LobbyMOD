@@ -15,7 +15,7 @@ namespace LobbyMODS
         private static ConfigEntry<bool> isEnabled;
         public static void Awake()
         {
-            isEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "替换表情语音", false);
+            isEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "替换表情语音", true);
             Harmony.CreateAndPatchAll(typeof(ReplaceOneShotAudio));
         }
 

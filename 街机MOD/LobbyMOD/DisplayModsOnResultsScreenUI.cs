@@ -13,15 +13,19 @@ namespace LobbyMODS
         private static ModsDisplay modsDisplay = null;
         private static bool shouldDisplay = false;
         private static ConfigEntry<bool> isshow = null;
+        public static ConfigEntry<int> defaultFontSize;
+        public static ConfigEntry<string> defaultFontColor;
 
         public static void Awake()
         {
+            isshow = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "关卡结束时显示自定义关卡状态", true);
+            defaultFontSize = MODEntry.Instance.Config.Bind<int>("00-UI字体", "关卡状态字体大小", 20);
+            defaultFontColor = MODEntry.Instance.Config.Bind<string>("00-UI字体", "关卡状态字体颜色(#+6位字母数字组合)", "#000000");
             /* Setup */
             onScreenDebugDisplay = new MyOnScreenDebugDisplay();
             onScreenDebugDisplay.Awake();
             modsDisplay = new ModsDisplay();
             onScreenDebugDisplay.AddDisplay(modsDisplay);
-            isshow = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "关卡结束时显示自定义关卡状态", false);
             /* Inject Mod */
             Harmony.CreateAndPatchAll(typeof(DisplayModsOnResultsScreenUI));
         }
@@ -61,8 +65,15 @@ namespace LobbyMODS
                 this.m_Displays = new List<DebugDisplay>();
                 this.m_GUIStyle = new GUIStyle();
                 this.m_GUIStyle.alignment = TextAnchor.UpperRight;
-                this.m_GUIStyle.fontSize = (int)((float)Screen.height * 0.02f);
-                this.m_GUIStyle.normal.textColor = new Color(0.5255f, 0.2980f, 0.1373f, 1f);
+                this.m_GUIStyle.fontSize = defaultFontSize.Value;
+                try
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor(defaultFontColor.Value);
+                }
+                catch
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor("#000000");
+                }
             }
 
             public void Update()
@@ -137,7 +148,7 @@ namespace LobbyMODS
                     }
                     if (shouldNtDisplayKevinState)
                     {
-                        
+
                         List<string> conditions1 = new List<string>{
                                                                     "01-关闭小节关",
                                                                     "02-关闭主线凯文",
@@ -204,7 +215,12 @@ namespace LobbyMODS
                 shouldDisplay = false;
             }
         }
-
+        private static Color HexToColor(string hex)
+        {
+            Color color = new Color();
+            ColorUtility.TryParseHtmlString(hex, out color);
+            return color;
+        }
         [HarmonyPatch(typeof(LoadingScreenFlow), nameof(LoadingScreenFlow.LoadScene))]
         [HarmonyPrefix]
         private static void LoadScene()

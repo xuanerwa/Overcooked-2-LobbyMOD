@@ -9,15 +9,19 @@ namespace LobbyMODS
         private static MyOnScreenDebugDisplayKickedUser onScreenDebugDisplayKickedUser;
         private static MyKickedUserCounter kickedUserCounter = null;
         public static ConfigEntry<bool> ShowKickedUserEnabled;
+        public static ConfigEntry<int> defaultFontSize;
+        public static ConfigEntry<string> defaultFontColor;
 
 
         public static void add_m_Text(string str) => kickedUserCounter?.add_m_Text(str);
 
         public static void Awake()
         {
+            ShowKickedUserEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "显示自动踢的黑名单玩家", true);
+            defaultFontSize = MODEntry.Instance.Config.Bind<int>("00-UI字体", "踢黑名单字体", 20);
+            defaultFontColor = MODEntry.Instance.Config.Bind<string>("00-UI字体", "踢黑名单字体颜色(#+6位字母数字组合)", "#000000");
             onScreenDebugDisplayKickedUser = new MyOnScreenDebugDisplayKickedUser();
             onScreenDebugDisplayKickedUser.Awake();
-            ShowKickedUserEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "显示自动踢的黑名单玩家", false);
         }
 
         public static void Update()
@@ -85,9 +89,16 @@ namespace LobbyMODS
 
             public void Awake()
             {
-                m_GUIStyle.alignment = TextAnchor.UpperRight;
-                m_GUIStyle.fontSize = (int)(Screen.height * 0.02f);
-                m_GUIStyle.normal.textColor = new Color(0f, 0f, 0f, 1f);
+                m_GUIStyle.alignment = TextAnchor.UpperLeft;
+                m_GUIStyle.fontSize = defaultFontSize.Value;
+                try
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor(defaultFontColor.Value);
+                }
+                catch
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor("#000000");
+                }
             }
 
             public void Update()
@@ -102,6 +113,12 @@ namespace LobbyMODS
                 for (int i = 0; i < m_Displays.Count; i++)
                     m_Displays[i].OnDraw(ref rect, m_GUIStyle);
             }
+        }
+        private static Color HexToColor(string hex)
+        {
+            Color color = new Color();
+            ColorUtility.TryParseHtmlString(hex, out color);
+            return color;
         }
     }
 }

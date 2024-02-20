@@ -29,7 +29,7 @@ namespace LobbyMODS
 
             PlayRandom = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "08-大厅计时器归零", KeyCode.Alpha6, "4秒后直接开始随机关卡");
             resetTimer = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "09-大厅计时器45秒", KeyCode.Alpha7, "重置街机大厅时间为45秒");
-            kevinEnabled = MODEntry.Instance.Config.Bind<bool>("02-修改关卡", "02区域总开关(开启凯文)", false);
+            kevinEnabled = MODEntry.Instance.Config.Bind<bool>("02-修改关卡", "02区域总开关(开启关卡修改)", true);
 
             Harmony.CreateAndPatchAll(typeof(LobbyKevin));
         }
@@ -79,8 +79,8 @@ namespace LobbyMODS
             }
 
 
-            bool onlyKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value;
-            bool notKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value;
+            bool onlyKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value;
+            bool notKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value;
             bool onlyCarnival3_4_ = MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value;
             bool onlyBeach3_4_ = MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value;
 
@@ -91,35 +91,35 @@ namespace LobbyMODS
                 {
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value = true;
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value = false;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value = false;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value = false;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value = false;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value = false;
                 }
-                else if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value != notKevin)
+                else if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value != onlyBeach3_4)
                 {
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value = true;
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value = false;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value = false;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value = false;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value = false;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value = false;
 
                 }
-                else if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value != onlyKevin)
+                else if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value != onlyKevin)
                 {
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value = true;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value = true;
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value = false;
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value = false;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value = false;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value = false;
                 }
-                else if (MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value != notKevin)
+                else if (MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value != notKevin)
                 {
-                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value = true;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value = true;
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value = false;
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value = false;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value = false;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value = false;
                 }
 
             }
-            onlyKevin = MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value;
-            notKevin = MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value;
+            onlyKevin = MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value;
+            notKevin = MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value;
             onlyCarnival3_4 = MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value;
             onlyBeach3_4 = MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value;
         }
@@ -151,10 +151,10 @@ namespace LobbyMODS
         public static Dictionary<string, bool> alreadyPlayedSet = new Dictionary<string, bool>();
         public static void CreateConfigEntries()
         {
-            CreateConfigEntry("02-修改关卡", "只玩麻3-4");
-            CreateConfigEntry("02-修改关卡", "只玩海3-4");
-            CreateConfigEntry("02-修改关卡", "不玩凯文");
-            CreateConfigEntry("02-修改关卡", "只玩凯文");
+            CreateConfigEntry("02-修改关卡", "只玩麻3-4", false);
+            CreateConfigEntry("02-修改关卡", "只玩海3-4", false);
+            CreateConfigEntry("02-修改关卡", "不玩凯文和小节关", true);
+            CreateConfigEntry("02-修改关卡", "只玩凯文和小节关", false);
             CreateConfigEntry("02-禁用主题(凯文)", "01-关闭小节关");
             CreateConfigEntry("02-禁用主题(凯文)", "02-关闭主线凯文");
             CreateConfigEntry("02-禁用主题(凯文)", "03-关闭海滩凯文");
@@ -314,11 +314,11 @@ namespace LobbyMODS
                 {
                     fastList.AddRange(sceneDirectories[i].Scenes.FindAll(match));
                     fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(fastList.FindAll(matchScene).ToArray());
-                    if (sceneDisableConfigEntries["不玩凯文"].Value)
+                    if (sceneDisableConfigEntries["不玩凯文和小节关"].Value)
                     {
                         fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(fastList.FindAll(matchAvailableInLobby).ToArray());
                     }
-                    else if (sceneDisableConfigEntries["只玩凯文"].Value)
+                    else if (sceneDisableConfigEntries["只玩凯文和小节关"].Value)
                     {
                         fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(fastList.FindAll(matchOnlyKevin).ToArray());
                     }

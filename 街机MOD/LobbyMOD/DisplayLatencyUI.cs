@@ -12,13 +12,15 @@ namespace LobbyMODS
     public static class DisplayLatencyUI
 
     {
-        
+
 
 
         private static MyOnScreenDebugDisplay onScreenDebugDisplay;
         private static NetworkStateDebugDisplay NetworkDebugUI = null;
         public static ConfigEntry<bool> ShowEnabled;
         public static bool canAdd;
+        public static ConfigEntry<int> defaultFontSize;
+        public static ConfigEntry<string> defaultFontColor;
 
 
         //public static void add_m_Text(string str) => NetworkDebugUI?.add_m_Text(str);
@@ -26,7 +28,9 @@ namespace LobbyMODS
 
         public static void Awake()
         {
-            ShowEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "显示延迟", false);
+            ShowEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "显示延迟", true);
+            defaultFontSize = MODEntry.Instance.Config.Bind<int>("00-UI字体", "延迟字体大小", 20);
+            defaultFontColor = MODEntry.Instance.Config.Bind<string>("00-UI字体", "延迟字体颜色(#+6位字母数字组合)", "#000000");
             canAdd = false;
             onScreenDebugDisplay = new MyOnScreenDebugDisplay();
             onScreenDebugDisplay.Awake();
@@ -89,9 +93,17 @@ namespace LobbyMODS
 
             public void Awake()
             {
-                m_GUIStyle.alignment = TextAnchor.UpperLeft;
-                m_GUIStyle.fontSize = (int)(Screen.height * 0.015f);
-                m_GUIStyle.normal.textColor = new Color(222 / 255.0f, 0f, 222 / 255.0f, 0.6f);
+                m_GUIStyle.alignment = TextAnchor.UpperRight;
+                m_GUIStyle.fontSize = defaultFontSize.Value;
+                try
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor(defaultFontColor.Value);
+                }
+                catch
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor("#000000");
+                }
+                m_GUIStyle.richText = false;
             }
 
             public void Update()
@@ -102,7 +114,7 @@ namespace LobbyMODS
 
             public void OnGUI()
             {
-                Rect rect = new Rect(0f, Screen.height * 0.036f, Screen.width, m_GUIStyle.fontSize);
+                Rect rect = new Rect(0f, 0f, Screen.width, m_GUIStyle.fontSize);
                 for (int i = 0; i < m_Displays.Count; i++)
                     m_Displays[i].OnDraw(ref rect, m_GUIStyle);
             }
@@ -154,7 +166,7 @@ namespace LobbyMODS
             " ",
             ConnectionModeSwitcher.GetStatus().GetResult().ToString()
                 }));
-                DrawText(ref rect, style, ClientGameSetup.Mode + ", time: " + ClientTime.Time().ToString("0000.000"));
+                DrawText(ref rect, style, ClientGameSetup.Mode + ", time: " + ClientTime.Time().ToString("00000.000"));
                 if (ConnectionStatus.IsHost())
                 {
                     MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
@@ -170,13 +182,10 @@ namespace LobbyMODS
                         {
                             DrawText(ref rect, style, string.Concat(new object[]
                             {
+                                ServerUserSystem.m_Users._items[i+1].DisplayName,
                                 $" {i+2}号位延迟: ",
                                 (serverConnectionStats._items[i].m_fLatency * 1000f).ToString("000"),
-                                "ms  MaxWait: ",
-                                serverConnectionStats._items[i].m_fMaxTimeBetweenReceives.ToString("00.00"),
-                                "  昵称: ",
-                                ServerUserSystem.m_Users._items[i+1].DisplayName
-
+                                " ms"
                                 //" Sequence: I",
                                 //serverConnectionStats._items[i].m_fIncomingSequenceNumber,
                                 //" / O",
@@ -213,25 +222,25 @@ namespace LobbyMODS
                         {
                             "本机延迟: ",
                             (clientConnectionStats.m_fLatency * 1000f).ToString("000"),
-                            "ms MaxWait: ",
-                            clientConnectionStats.m_fMaxTimeBetweenReceives.ToString("00.00"),
+                            " ms",
+                            //clientConnectionStats.m_fMaxTimeBetweenReceives.ToString("00.00"),
                             //" Sequence: I",
                             //clientConnectionStats.m_fIncomingSequenceNumber,
                             //" / O",
                             //clientConnectionStats.m_fOutgoingSequenceNumber
                         }
                     ));
-                //    DrawText(ref rect, style, string.Concat(new object[]
-                //    {
-                //"ULag: ",
-                //(clientConnectionStats2.m_fLatency * 1000f).ToString("000"),
-                //"ms MaxWait: ",
-                //clientConnectionStats2.m_fMaxTimeBetweenReceives.ToString("00.00"),
-                ////" Sequence: I",
-                ////clientConnectionStats2.m_fIncomingSequenceNumber,
-                ////" / O",
-                ////clientConnectionStats2.m_fOutgoingSequenceNumber
-                //    }));
+                    //    DrawText(ref rect, style, string.Concat(new object[]
+                    //    {
+                    //"ULag: ",
+                    //(clientConnectionStats2.m_fLatency * 1000f).ToString("000"),
+                    //"ms MaxWait: ",
+                    //clientConnectionStats2.m_fMaxTimeBetweenReceives.ToString("00.00"),
+                    ////" Sequence: I",
+                    ////clientConnectionStats2.m_fIncomingSequenceNumber,
+                    ////" / O",
+                    ////clientConnectionStats2.m_fOutgoingSequenceNumber
+                    //    }));
                 }
                 if (m_ConnectionModeCoordinator != null)
                 {
@@ -248,7 +257,12 @@ namespace LobbyMODS
 
 
 
-
+        private static Color HexToColor(string hex)
+        {
+            Color color = new Color();
+            ColorUtility.TryParseHtmlString(hex, out color);
+            return color;
+        }
 
 
     }
