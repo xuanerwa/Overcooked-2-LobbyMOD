@@ -9,7 +9,7 @@ using System.Text;
 
 namespace LobbyMODS
 {
-    [BepInPlugin("com.ch3ngyz.plugin.LobbyMods", "[街机主机MOD] By.酷茶 Q群860480677", "1.0.16")]
+    [BepInPlugin("com.ch3ngyz.plugin.LobbyMods", "[街机主机MOD] By.酷茶 Q群860480677", "1.0.18")]
     [BepInProcess("Overcooked2.exe")]
     public class MODEntry : BaseUnityPlugin
     {
