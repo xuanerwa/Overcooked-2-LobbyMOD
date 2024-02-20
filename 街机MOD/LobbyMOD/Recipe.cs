@@ -30,6 +30,7 @@ namespace LobbyMODS
         public static Dictionary<string, string> symplifyed = new Dictionary<string, string>();
         public static Dictionary<string, int> apperancecount = new Dictionary<string, int>();
         public static Dictionary<string, double> possibility = new Dictionary<string, double>();
+        public static string[] recipes = new string[256];
         public static string s;
         public static int levelorders = 0;
         public static int allorders = 0;
@@ -490,8 +491,6 @@ namespace LobbyMODS
 
         public class MClientOrderControllerBase
         {
-            public static string[] recipes = new string[32];
-
             public static void OnFoodDelivered(ClientOrderControllerBase __instance, bool _success, OrderID _orderID)
             {
                 if (_success)
