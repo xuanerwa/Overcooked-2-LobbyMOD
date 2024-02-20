@@ -1,4 +1,6 @@
-[![Download](https://img.shields.io/github/downloads/CH3NGYZ/Overcooked-2-LobbyMOD/total)](https://github.com/CH3NGYZ/Overcooked-2-LobbyMOD/releases)
+总：[![Download](https://img.shields.io/github/downloads/CH3NGYZ/Overcooked-2-LobbyMOD/total)](https://github.com/CH3NGYZ/Overcooked-2-LobbyMOD/releases)
+
+latest：[![Download](https://img.shields.io/github/downloads/CH3NGYZ/Overcooked-2-LobbyMOD/latest/total)](https://github.com/CH3NGYZ/Overcooked-2-LobbyMOD/releases)
 
 将 LobbyMOD.csproj 复制到 "街机MOD/LobbyMOD/" 里, 再通过 vs 打开 "街机MOD/LobbyMOD.sln" 项目文件
 
