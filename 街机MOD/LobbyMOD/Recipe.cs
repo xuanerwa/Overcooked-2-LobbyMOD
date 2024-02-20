@@ -358,8 +358,8 @@ namespace LobbyMODS
             //displaymore = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "显示未来菜单", false);
             predict = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "预测未来菜单", false);
             namesymplify = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "简化显示菜单名称", false);
-            FontSize = MODEntry.Instance.Config.Bind<int>("03-UI字体", "显示菜单字体大小", 20);
-            FontColor = MODEntry.Instance.Config.Bind<string>("03-UI字体", "显示菜单字体颜色(#+6位字母数字组合)", "#FFFFFF");
+            FontSize = MODEntry.Instance.Config.Bind<int>("00-UI字体", "显示菜单字体大小", 20);
+            FontColor = MODEntry.Instance.Config.Bind<string>("00-UI字体", "显示菜单字体颜色(#+6位字母数字组合)", "#FFFFFF");
             initial();
             symplify();
             OnScreenDisplayRecipe = new MyOnScreenDebugDisplayRecipe();
@@ -557,6 +557,8 @@ namespace LobbyMODS
                     {
                         allorders = 0;
                         changephrase= false;
+                        apperancecount.Clear();
+                        possibility.Clear();
                     }
                 }
                 allorders++;
@@ -588,18 +590,21 @@ namespace LobbyMODS
                         num += possibility[key];
                     }
                     var sortResult = from pair in possibility orderby pair.Value descending select pair;
-                    int cnt = 0;
-                    if (recipedisplay == null) AddRecipeDisplay();
-                    s = "";
-                    foreach (KeyValuePair<string, double> res in sortResult)
+                    if (num != 0)
                     {
-                        if (cnt++ == 7) break;
-                        if (namesymplify.Value)
-                            s += (symplifyed.ContainsKey(res.Key) ? $"{cnt}" + '.' + symplifyed[res.Key] + " " + (int)(res.Value * 100 / num + 0.5) + "%" : "") + '\n';
-                        else s += (map.ContainsKey(res.Key) ? $"{cnt}" + '.' + map[res.Key] + " " + (int)(res.Value * 100 / num + 0.5) + "%" : "") + '\n';
+                        int cnt = 0;
+                        if (recipedisplay == null) AddRecipeDisplay();
+                        s = "";
+                        foreach (KeyValuePair<string, double> res in sortResult)
+                        {
+                            if (cnt++ == 7) break;
+                            if (namesymplify.Value)
+                                s += (symplifyed.ContainsKey(res.Key) ? $"{cnt}" + '.' + symplifyed[res.Key] + " " + (int)(res.Value * 100 / num + 0.5) + "%" : "") + '\n';
+                            else s += (map.ContainsKey(res.Key) ? $"{cnt}" + '.' + map[res.Key] + " " + (int)(res.Value * 100 / num + 0.5) + "%" : "") + '\n';
 
+                        }
+                        recipedisplay.add_m_Text(s);
                     }
-                    recipedisplay.add_m_Text(s);
                 }
                 
             }
@@ -612,14 +617,6 @@ namespace LobbyMODS
                 DynamicLevelMessage dynamicLevelMessage = (DynamicLevelMessage)_serialisable;
                 IEnumerator item = __instance.BuildTransitionToPhaseRoutine(dynamicLevelMessage.m_phase);
                 __instance.m_phaseQueue.Enqueue(item);
-                if (predict.Value)
-                {
-                    foreach (string key in apperancecount.Keys)
-                    {
-                        apperancecount[key] = 0;
-                        possibility[key] = 0;
-                    }
-                }
                 changephrase = true;
             }
         }
@@ -636,7 +633,6 @@ namespace LobbyMODS
             OnScreenDisplayRecipe.RemoveDisplay(recipedisplay);
             recipedisplay.OnDestroy();
             recipedisplay = null;
-            historyrecipecount = 0;
         }
 
         public class RecipeDisplay : DebugDisplay
