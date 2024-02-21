@@ -418,6 +418,7 @@ namespace LobbyMODS
         //    ServerCampaignFlowController flowController = GameObject.FindObjectOfType<ServerCampaignFlowController>();
         //    LevelConfigBase levelConfig = flowController.GetLevelConfig();
         //    if (levelConfig.name == "s_dynamic_stage_04_1P" || levelConfig.name == "s_dynamic_stage_04_2P" || levelConfig.name == "s_dynamic_stage_04_3P" || levelConfig.name == "s_dynamic_stage_04_4P") return true;
+        //    if (flag1 == true && flag2 == false) flag3 = true;
         //    if (!enabled.Value || !displaymore.Value) return true;
         //    if (__instance != null) MServerOrderControllerBase.AddNewOrderPatch(__instance);
         //    return false;
