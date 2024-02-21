@@ -134,17 +134,34 @@ namespace LobbyMODS
                 if (LobbyKevin.kevinEnabled.Value)
                 {
                     bool shouldNtDisplayKevinState = true;
+                    bool shouldNtDisplayNormalState = true;
                     modsDisplay.m_Text = $"自定义关卡:";
-                    if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文"].Value)
+                    if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value)
                     {
                         modsDisplay.m_Text += "\n------以下为自定义特殊关卡:";
-                        modsDisplay.m_Text += "\n只玩凯文";
+                        modsDisplay.m_Text += "\n只玩凯文和小节关";
+                        shouldNtDisplayNormalState = false; //也不输出普通状态
                     }
-                    if (MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文"].Value)
+                    if (MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value)
                     {
                         modsDisplay.m_Text += "\n------以下为自定义特殊关卡:";
-                        modsDisplay.m_Text += "\n不玩凯文";
+                        modsDisplay.m_Text += "\n不玩凯文和小节关";
                         shouldNtDisplayKevinState = false; //不玩凯文, 则不输出凯文状态
+                        shouldNtDisplayNormalState = false; //也不输出普通状态
+                    }
+                    if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value)
+                    {
+                        modsDisplay.m_Text += "\n------以下为自定义特殊关卡:";
+                        modsDisplay.m_Text += "\n只玩麻3-4";
+                        shouldNtDisplayKevinState = false; //只玩麻, 则不输出凯文状态
+                        shouldNtDisplayNormalState = false; //也不输出普通状态
+                    }
+                    if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value)
+                    {
+                        modsDisplay.m_Text += "\n------以下为自定义特殊关卡:";
+                        modsDisplay.m_Text += "\n只玩海3-4";
+                        shouldNtDisplayKevinState = false; //只玩海, 则不输出凯文状态
+                        shouldNtDisplayNormalState = false; //也不输出普通状态
                     }
                     if (shouldNtDisplayKevinState)
                     {
@@ -166,6 +183,8 @@ namespace LobbyMODS
                             }
                         }
                     }
+                    if (shouldNtDisplayNormalState)
+                    { 
                     modsDisplay.m_Text += "\n------以下为自定义普通关卡:"; //凯文状态后
 
                     List<string> conditions = new List<string>{
@@ -202,6 +221,7 @@ namespace LobbyMODS
                     {
                         modsDisplay.m_Text += $"\n没有自定义普通关卡"; //没启用时的消息
                     }
+                }
 
                 }
                 else
