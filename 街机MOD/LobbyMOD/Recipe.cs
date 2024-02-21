@@ -20,11 +20,19 @@ namespace LobbyMODS
         public static ConfigEntry<bool> enabled;
         public static ConfigEntry<bool> namesymplify;
         public static ConfigEntry<bool> displayhistory;
+        //public static ConfigEntry<bool> displaymore;
+        public static ConfigEntry<bool> predict;
+        public static ConfigEntry<int> FontSize;
+        public static ConfigEntry<string> FontColor;
         public static int startTime;
         public static bool resets = false;
         public static Dictionary<string, string> map = new Dictionary<string, string>();
         public static Dictionary<string, string> symplifyed = new Dictionary<string, string>();
+        public static Dictionary<string, int> apperancecount = new Dictionary<string, int>();
+        public static Dictionary<string, double> possibility = new Dictionary<string, double>();
+        public static string[] recipes = new string[256];
         public static string s;
+        public static int levelorders = 0;
         public static int allorders = 0;
         public static int noworders = 0;
         public static int deliveredorders = 0;
@@ -348,7 +356,11 @@ namespace LobbyMODS
         {
             enabled = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "(03区域总开关)菜单显示功能", false);
             displayhistory = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "显示历史菜单", false);
+            //displaymore = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "显示未来菜单", false);
+            predict = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "预测未来菜单", false);
             namesymplify = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "简化显示菜单名称", false);
+            FontSize = MODEntry.Instance.Config.Bind<int>("00-UI字体", "显示菜单字体大小", 20);
+            FontColor = MODEntry.Instance.Config.Bind<string>("00-UI字体", "显示菜单字体颜色(#+6位字母数字组合)", "#FFFFFF");
             initial();
             symplify();
             OnScreenDisplayRecipe = new MyOnScreenDebugDisplayRecipe();
@@ -359,6 +371,21 @@ namespace LobbyMODS
         public static void Update()
         {
             OnScreenDisplayRecipe.Update();
+            if (displayhistory.Value)
+            {
+                //displaymore.Value = false;
+                predict.Value= false;
+            }
+            else if (predict.Value)
+            {
+                displayhistory.Value = false;
+                //displaymore.Value = false;
+            }
+            //else if (displaymore.Value)
+            //{
+            //    displayhistory.Value = false;
+            //    predict.Value = false;
+            //}
         }
 
         public static void OnGUI() => OnScreenDisplayRecipe.OnGUI();
@@ -367,20 +394,20 @@ namespace LobbyMODS
         [HarmonyPrefix]
         public static bool Prefix(ref ClientOrderControllerBase __instance, bool _success, OrderID _orderID)
         {
-            if (!enabled.Value || !displayhistory.Value) return true;
+            if (!enabled.Value || (!displayhistory.Value && !predict.Value)) return true;
             if (__instance != null) MClientOrderControllerBase.OnFoodDelivered(__instance, _success, _orderID);
             return false;
         }
 
-        //[HarmonyPatch(typeof(ServerOrderControllerBase), "AddNewOrder",new Type[] {})]
+        //[HarmonyPatch(typeof(ServerOrderControllerBase), "AddNewOrder", new Type[] { })]
         //[HarmonyPrefix]
         //public static bool Prefix(ref ServerOrderControllerBase __instance)
         //{
         //    ServerCampaignFlowController flowController = GameObject.FindObjectOfType<ServerCampaignFlowController>();
         //    LevelConfigBase levelConfig = flowController.GetLevelConfig();
         //    if (levelConfig.name == "s_dynamic_stage_04_1P" || levelConfig.name == "s_dynamic_stage_04_2P" || levelConfig.name == "s_dynamic_stage_04_3P" || levelConfig.name == "s_dynamic_stage_04_4P") return true;
-        //    if (!enabled.Value||displayhistory.Value) return true;
-        //    if(__instance!=null)MServerOrderControllerBase.AddNewOrderPatch(__instance);
+        //    if (!enabled.Value || !displaymore.Value) return true;
+        //    if (__instance != null) MServerOrderControllerBase.AddNewOrderPatch(__instance);
         //    return false;
         //}
 
@@ -388,7 +415,7 @@ namespace LobbyMODS
         [HarmonyPrefix]
         public static bool Prefix(ref ClientOrderControllerBase __instance, Serialisable _data)
         {
-            if (!enabled.Value || !displayhistory.Value) return true;
+            if (!enabled.Value || (!displayhistory.Value && !predict.Value)) return true;
             if (__instance != null) MClientOrderControllerBase.AddNewOrder(__instance, _data);
             return false;
         }
@@ -403,9 +430,12 @@ namespace LobbyMODS
                 RemoveRecipeDisplay();
                 allorders = 0;
                 noworders = 0;
+                levelorders = 0;
                 deliveredorders = 0;
                 historyrecipecount = 0;
                 changephrase = false;
+                apperancecount.Clear();
+                possibility.Clear();
             }
             return true;
         }
@@ -414,7 +444,7 @@ namespace LobbyMODS
         [HarmonyPrefix]
         public static bool Prefix(ref ClientDynamicFlowController __instance, IOnlineMultiplayerSessionUserId _sessionId, Serialisable _serialisable)
         {
-            if (!enabled.Value || !displayhistory.Value) return true;
+            if (!enabled.Value || (!displayhistory.Value && !predict.Value)) return true;
             if (__instance != null) MClientDynamicFlowController.OnDynamicLevelMessage(__instance, _sessionId, _serialisable);
             return false;
         }
@@ -433,7 +463,7 @@ namespace LobbyMODS
         //    public static void AddNewOrderPatch(ServerOrderControllerBase __instance)
         //    {
         //        RoundData.RoundInstanceData data = __instance.m_roundInstanceData as RoundData.RoundInstanceData;
-        //        if(recipedisplay == null) AddRecipeDisplay();
+        //        if (recipedisplay == null) AddRecipeDisplay();
         //        if (data.RecipeCount == 0)
         //        {
         //            reset();
@@ -461,39 +491,40 @@ namespace LobbyMODS
 
         public class MClientOrderControllerBase
         {
-            public static string[] recipes = new string[32];
-
             public static void OnFoodDelivered(ClientOrderControllerBase __instance, bool _success, OrderID _orderID)
             {
                 if (_success)
                 {
                     ClientOrderControllerBase.ActiveOrder activeOrder = __instance.m_activeOrders.Find((ClientOrderControllerBase.ActiveOrder x) => x.ID == _orderID);
-                    if (noworders != 0 && deliveredorders == noworders)
-                    {
-                        historyrecipecount = 0;
-                        deliveredorders = 0;
-                        allorders -= noworders;
-                        noworders = 0;
-                    }
                     if (activeOrder != null)
                     {
                         __instance.m_gui.RemoveElement(activeOrder.UIToken, new RecipeSuccessAnimation());
                     }
                     __instance.m_activeOrders.RemoveAll((ClientOrderControllerBase.ActiveOrder x) => x.ID == _orderID);
-                    for (int i = Math.Max(0, 7 - historyrecipecount); i < 7; i++)
-                        recipes[i] = recipes[i + 1];
-                    recipes[7] = activeOrder.RecipeListEntry.m_order.name;
-                    if (recipedisplay == null) AddRecipeDisplay();
-                    s = "";
-                    for (int i = 7; i >= Math.Max(7 - historyrecipecount, 0); i--)
+                    if (displayhistory.Value)
                     {
-                        if (namesymplify.Value)
-                            s += (symplifyed.ContainsKey(recipes[i]) ? $"{8 - i}" + '.' + symplifyed[recipes[i]] : "") + '\n';
-                        else s += (map.ContainsKey(recipes[i]) ? $"{8 - i}" + '.' + map[recipes[i]] : "") + '\n';
+                        if (noworders != 0 && deliveredorders == noworders)
+                        {
+                            historyrecipecount = 0;
+                            deliveredorders = 0;
+                            allorders -= noworders;
+                            noworders = 0;
+                        }
+                        for (int i = Math.Max(0, 7 - historyrecipecount); i < 7; i++)
+                            recipes[i] = recipes[i + 1];
+                        recipes[7] = activeOrder.RecipeListEntry.m_order.name;
+                        if (recipedisplay == null) AddRecipeDisplay();
+                        s = "";
+                        for (int i = 7; i >= Math.Max(7 - historyrecipecount, 0); i--)
+                        {
+                            if (namesymplify.Value)
+                                s += (symplifyed.ContainsKey(recipes[i]) ? $"{8 - i}" + '.' + symplifyed[recipes[i]] : "") + '\n';
+                            else s += (map.ContainsKey(recipes[i]) ? $"{8 - i}" + '.' + map[recipes[i]] : "") + '\n';
+                        }
+                        recipedisplay.add_m_Text(s);
+                        historyrecipecount++;
+                        deliveredorders++;
                     }
-                    recipedisplay.add_m_Text(s);
-                    historyrecipecount++;
-                    deliveredorders++;
                 }
                 else
                 {
@@ -512,12 +543,69 @@ namespace LobbyMODS
                 RecipeFlowGUI.ElementToken token = __instance.m_gui.AddElement(entry.m_order, data.Lifetime, __instance.m_expiredDoNothingCallback);
                 ClientOrderControllerBase.ActiveOrder item = new ClientOrderControllerBase.ActiveOrder(data.ID, entry, token);
                 __instance.m_activeOrders.Add(item);
-                if (changephrase)
+                if (displayhistory.Value)
                 {
-                    noworders = allorders;
-                    changephrase = false;
+                    if (changephrase)
+                    {
+                        noworders = allorders;
+                        changephrase = false;
+                    }                   
+                }else if (predict.Value)
+                {
+                    if (changephrase)
+                    {
+                        allorders = 0;
+                        changephrase= false;
+                        apperancecount.Clear();
+                        possibility.Clear();
+                    }
                 }
                 allorders++;
+                if (predict.Value)
+                {
+                    if (apperancecount.Count == 0)
+                    {
+                        ClientCampaignFlowController flowController = GameObject.FindObjectOfType<ClientCampaignFlowController>();
+                        LevelConfigBase levelConfig = flowController.GetLevelConfig();
+                        for (int i = 0; i < levelConfig.GetAllRecipes().Count; i++)
+                        {
+                            if (!apperancecount.ContainsKey(levelConfig.GetAllRecipes()[i].name))
+                            {
+                                apperancecount.Add(levelConfig.GetAllRecipes()[i].name, 0);
+                            }
+                            if (!possibility.ContainsKey(levelConfig.GetAllRecipes()[i].name))
+                            {
+                                possibility.Add(levelConfig.GetAllRecipes()[i].name, 0);
+                            }
+                        }
+                        levelorders = apperancecount.Count;
+                    }
+                    apperancecount[data.RecipeListEntry.m_order.name]++;
+                    double num = 0;
+                    foreach (string key in apperancecount.Keys)
+                    {
+                        double cal = ((double)(allorders + 2) / (double)levelorders) - apperancecount[key];
+                        possibility[key] = cal>=0?cal:0;
+                        num += possibility[key];
+                    }
+                    var sortResult = from pair in possibility orderby pair.Value descending select pair;
+                    if (num != 0)
+                    {
+                        int cnt = 0;
+                        if (recipedisplay == null) AddRecipeDisplay();
+                        s = "";
+                        foreach (KeyValuePair<string, double> res in sortResult)
+                        {
+                            if (cnt++ == 7) break;
+                            if (namesymplify.Value)
+                                s += (symplifyed.ContainsKey(res.Key) ? $"{cnt}" + '.' + symplifyed[res.Key] + " " + (int)(res.Value * 100 / num + 0.5) + "%" : "") + '\n';
+                            else s += (map.ContainsKey(res.Key) ? $"{cnt}" + '.' + map[res.Key] + " " + (int)(res.Value * 100 / num + 0.5) + "%" : "") + '\n';
+
+                        }
+                        recipedisplay.add_m_Text(s);
+                    }
+                }
+                
             }
         }
 
@@ -544,7 +632,6 @@ namespace LobbyMODS
             OnScreenDisplayRecipe.RemoveDisplay(recipedisplay);
             recipedisplay.OnDestroy();
             recipedisplay = null;
-            historyrecipecount = 0;
         }
 
         public class RecipeDisplay : DebugDisplay
@@ -573,7 +660,16 @@ namespace LobbyMODS
 
             public void AddDisplay(DebugDisplay display)
             {
-                if (display != null)
+                m_GUIStyle.fontSize = FontSize.Value;
+                try
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor(FontColor.Value);
+                }
+                catch
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor("#FFFFFF");
+                }
+                    if (display != null)
                 {
                     display.OnSetUp();
                     m_Displays.Add(display);
@@ -585,8 +681,6 @@ namespace LobbyMODS
             public void Awake()
             {
                 m_GUIStyle.alignment = TextAnchor.UpperLeft;
-                m_GUIStyle.fontSize = (int)(Screen.height * 0.015);
-                m_GUIStyle.normal.textColor = new Color(0.92f, 0f, 0f, 1f);
                 //m_GUIStyle.fontStyle = FontStyle.Bold;
 
             }
@@ -599,10 +693,16 @@ namespace LobbyMODS
 
             public void OnGUI()
             {
-
-                Rect rect = new Rect(0f, Screen.height * 0.3f, Screen.width, m_GUIStyle.fontSize);
+                Rect rect = new Rect(20f, 350f, Screen.width, m_GUIStyle.fontSize);
                 for (int i = 0; i < m_Displays.Count; i++)
                     m_Displays[i].OnDraw(ref rect, m_GUIStyle);
+            }
+
+            private static Color HexToColor(string hex)
+            {
+                Color color = new Color();
+                ColorUtility.TryParseHtmlString(hex, out color);
+                return color;
             }
         }
     }
