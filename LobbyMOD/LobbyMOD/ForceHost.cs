@@ -1,6 +1,7 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
 using System.Reflection;
+using Team17.Online;
 using UnityEngine;
 
 namespace LobbyMODS
@@ -24,11 +25,11 @@ namespace LobbyMODS
         {
             if (Input.GetKeyDown(KeyCode.J))
             {
-                ClientLobbyFlowController lobbyFlowController = MODEntry.FindObjectOfType<ClientLobbyFlowController>();
+                ClientLobbyFlowController lobbyFlowController = ClientLobbyFlowController.Instance;
 
                 if (lobbyFlowController != null)
                 {
-                    Traverse.Create(lobbyFlowController).Method("TryJoinGame").GetValue();
+                    lobbyFlowController.TryJoinGame();
                     log("尝试以客机身份加入游戏");
                 }
                 else
@@ -38,11 +39,11 @@ namespace LobbyMODS
             }
             else if (Input.GetKeyDown(KeyCode.H))
             {
-                ClientLobbyFlowController lobbyFlowController = MODEntry.FindObjectOfType<ClientLobbyFlowController>();
+                ClientLobbyFlowController lobbyFlowController = ClientLobbyFlowController.Instance;
 
                 if (lobbyFlowController != null)
                 {
-                    Traverse.Create(lobbyFlowController).Method("HostGame").GetValue();
+                    lobbyFlowController.HostGame();
                     log("强制以主机身份主持游戏");
                 }
                 else
@@ -54,10 +55,16 @@ namespace LobbyMODS
         }
 
         [HarmonyPatch(typeof(ClientLobbyFlowController), "HostGame")]
-        [HarmonyPostfix]
-        private static void ClientLobbyFlowController_HostGame_Prefix(ClientLobbyFlowController __instance)
+        [HarmonyPrefix]
+        private static bool ClientLobbyFlowController_HostGame_Prefix(ClientLobbyFlowController __instance)
         {
-            MODEntry.IsHost = true;
+            //if (ClientUserSystem.m_Users.Count > 1)
+            //{
+            //    return false;
+            //};
+            //return true;
+
+            //MODEntry.IsHost = true;
             //bool flag = ForceHost.ValueList.Value.Equals("强制客机");
             //if (flag)
             //{
@@ -71,21 +78,20 @@ namespace LobbyMODS
         [HarmonyPrefix]
         private static bool ClientLobbyFlowController_TryJoinGame_Prefix(ClientLobbyFlowController __instance)
         {
-            MODEntry.IsHost = false;
+            //MODEntry.IsHost = false;
             bool flag = ForceHost.ValueList.Value.Equals("强制主机");
             bool result = true;
             if (flag)
             {
                 log("强制主机已生效");
-                HostGame.Invoke(__instance, null);
+                __instance.HostGame();
                 result = false;
             }
             return result;
         }
 
-        private static readonly MethodInfo HostGame = AccessTools.Method(typeof(ClientLobbyFlowController), "HostGame", null, null);
-
-        // Token: 0x040000D6 RID: 214
-        private static readonly MethodInfo SetState = AccessTools.Method(typeof(ClientLobbyFlowController), "SetState", null, null);
+        //private static readonly MethodInfo HostGame = AccessTools.Method(typeof(ClientLobbyFlowController), "HostGame", null, null);
+        //// Token: 0x040000D6 RID: 214
+        //private static readonly MethodInfo SetState = AccessTools.Method(typeof(ClientLobbyFlowController), "SetState", null, null);
     }
 }
