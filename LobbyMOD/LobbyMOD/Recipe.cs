@@ -370,7 +370,7 @@ namespace LobbyMODS
         public static void Update()
         {
             OnScreenDisplayRecipe.Update();
-            if (MODEntry.playinlobby)
+            if (MODEntry.IsInParty)
             {
                 if (displayhistory.Value)
                 {
