@@ -26,14 +26,15 @@ namespace LobbyMODS
             Instance = this;
             IsInLobby = false;
             IsHost = false;
+            ModifyConfig.Awake();
             DisplayModsOnResultsScreenUI.Awake();
             SkipLevel.Awake();
             LobbyKickUser.Awake();
             LobbyKevin.Awake();
             QuitWhenLoadScene.Awake();
             DisplayKickedUserUI.Awake();
-            UnlockChefs.Awake();
-            UnlockDlcs.Awake();
+            //UnlockChefs.Awake();
+            //UnlockDlcs.Awake();
             ReplaceOneShotAudio.Awake();
             ForceHost.Awake();
             Recipe.Awake();
@@ -53,9 +54,7 @@ namespace LobbyMODS
             DisplayLatencyUI.Update();
             ForceHost.Update();
             Recipe.Update();
-            IsHost = ConnectionStatus.IsHost();
-            //LogError($"是否主机{IsHost}");
-            isInLobby();
+
         }
 
         public void OnGUI()
@@ -175,6 +174,15 @@ namespace LobbyMODS
         {
             playinlobby = false;
             return true;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ClientTime), "OnTimeSyncReceived")]
+        public static void ClientTime_OnTimeSyncReceived_Patch()
+        {
+            IsHost = ConnectionStatus.IsHost();
+            isInLobby();
+            log($"IsHost  {IsHost}  playinlobby  {playinlobby}");
         }
     }
 }
