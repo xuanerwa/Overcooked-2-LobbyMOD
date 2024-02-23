@@ -7,14 +7,14 @@ using System.Text;
 
 namespace LobbyMODS
 {
-    public static class fixDoubleServing
+    public static class FixDoubleServing
     {
         public static void log(string mes) => MODEntry.LogInfo(mes);
         public static ConfigEntry<bool> isDoubleServingBanned;
         public static void Awake()
         {
             isDoubleServingBanned = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "禁止卡盘", false, "禁止客机卡盘子");
-            Harmony.CreateAndPatchAll(typeof(fixDoubleServing));
+            Harmony.CreateAndPatchAll(typeof(FixDoubleServing));
         }
 
         private static bool skipNext = false;
