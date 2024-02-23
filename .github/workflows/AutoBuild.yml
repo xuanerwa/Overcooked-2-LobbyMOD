@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'LobbyMOD/**'
+  # workflow_dispatch:
+
 
 jobs:
   build:
@@ -11,7 +15,7 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v1
-
+          
       - name: Copy Project File
         run: |
           copy LobbyMOD.csproj LobbyMOD/LobbyMOD/
@@ -33,7 +37,7 @@ jobs:
 
           copy  $Env:GITHUB_WORKSPACE\LobbyMOD\LobbyMOD\bin\Release\LobbyMOD.dll Overcooked-2-LobbyMOD-ResourceFiles
           copy  $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\LobbyMOD.dll CHA
-          copy $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\ConfigurationManager.xml CHA
+          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\ConfigurationManager.xml CHA
           copy  $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\ConfigurationManager.dll CHA
           copy  $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\ConfigurationManagerAttributes.cs CHA
           copy  $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\Audio\* CHA\Audio
@@ -50,19 +54,48 @@ jobs:
       - name: Get latest tag
         id: get_tag
         run: |
-          echo "::set-output name=tag::$(git describe --tags --abbrev=0)"
+          $latestTag = Invoke-RestMethod -Uri "https://api.github.com/repos/${env:GITHUB_REPOSITORY}/releases/latest" -Headers @{"Authorization"="Bearer ${{ secrets.GH_TOKEN }}"}
+          $latestTag = $latestTag.tag_name
+          echo "::set-output name=tag::$latestTag"
+          echo "$latestTag"
 
       - name: Extract version number
         id: extract_version
         run: |
           $version = "${{ steps.get_tag.outputs.tag }}" -replace 'v1.0.', ''
           echo "::set-output name=version::$version"
+          echo "$version"
 
       - name: Calculate new version
         id: calculate_version
         run: |
           echo "::set-output name=new_version::1.0.$((${{ steps.extract_version.outputs.version }} + 1))"
+          echo "1.0.$((${{ steps.extract_version.outputs.version }} + 1))"
+      
+      - name: read releaseNote
+        id: read_release_note
+        run: |
+          echo "::set-output name=release_note::$((Get-Content releaseNote.txt | Select-Object -First 20) -join "`r`n")"
+          echo "$((Get-Content releaseNote.txt | Select-Object -First 20) -join "`r`n")"
 
+      - name: Get UTC+8 Date
+        id: get_utc8_date
+        run: |
+          $dateUtc8 = (Get-Date).AddHours(8).ToString("yyyy-MM-dd HH:mm:ss")
+          echo "::set-output name=date_utc8::$dateUtc8"
+      
+      - name: show params
+        id: show_param
+        run: |
+          echo "tag_name: v${{ steps.calculate_version.outputs.new_version }}"
+          echo "name: v${{ steps.calculate_version.outputs.new_version }}"
+          echo "body: |"
+            "v${{ steps.calculate_version.outputs.new_version }} ${{ steps.get_utc8_date.outputs.date_utc8 }}"
+            "${{ github.event.head_commit.message }}"
+            "."
+            "其他日志请查看:"
+            "https://github.com/CH3NGYZ/Overcooked-2-LobbyMOD/commits/main"
+            
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -71,6 +104,10 @@ jobs:
           tag_name: v${{ steps.calculate_version.outputs.new_version }}
           name: v${{ steps.calculate_version.outputs.new_version }}
           body: |
+            v${{ steps.calculate_version.outputs.new_version }} ${{ steps.get_utc8_date.outputs.date_utc8 }}
             ${{ github.event.head_commit.message }}
+            .
+            其他日志请查看:
+            https://github.com/CH3NGYZ/Overcooked-2-LobbyMOD/commits/main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
