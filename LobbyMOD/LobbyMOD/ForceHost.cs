@@ -54,25 +54,25 @@ namespace LobbyMODS
 
         }
 
-        [HarmonyPatch(typeof(ClientLobbyFlowController), "HostGame")]
-        [HarmonyPrefix]
-        private static bool ClientLobbyFlowController_HostGame_Prefix(ClientLobbyFlowController __instance)
-        {
-            //if (ClientUserSystem.m_Users.Count > 1)
-            //{
-            //    return false;
-            //};
-            //return true;
+        //[HarmonyPatch(typeof(ClientLobbyFlowController), "HostGame")]
+        //[HarmonyPrefix]
+        //private static bool ClientLobbyFlowController_HostGame_Prefix(ClientLobbyFlowController __instance)
+        //{
+        //    //if (ClientUserSystem.m_Users.Count > 1)
+        //    //{
+        //    //    return false;
+        //    //};
+        //    //return true;
 
-            //MODEntry.IsHost = true;
-            //bool flag = ForceHost.ValueList.Value.Equals("强制客机");
-            //if (flag)
-            //{
-            //    log("强制客机已生效, TryJoinGame");
-            //    Traverse.Create(__instance).Method("TryJoinGame", new object[0]).GetValue();
-            //    MODEntry.IsHost = false;
-            //}
-        }
+        //    //MODEntry.IsHost = true;
+        //    //bool flag = ForceHost.ValueList.Value.Equals("强制客机");
+        //    //if (flag)
+        //    //{
+        //    //    log("强制客机已生效, TryJoinGame");
+        //    //    Traverse.Create(__instance).Method("TryJoinGame", new object[0]).GetValue();
+        //    //    MODEntry.IsHost = false;
+        //    //}
+        //}
 
         [HarmonyPatch(typeof(ClientLobbyFlowController), "TryJoinGame")]
         [HarmonyPrefix]

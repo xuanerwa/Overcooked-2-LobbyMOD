@@ -1,0 +1,76 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-2019
+    steps:
+      - name: checkout
+        uses: actions/checkout@v1
+
+      - name: Copy Project File
+        run: |
+          copy LobbyMOD.csproj LobbyMOD/LobbyMOD/
+
+      - name: Build DotNET35
+        run: |
+          cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
+          .\MSBuild.exe $Env:GITHUB_WORKSPACE\LobbyMOD\LobbyMOD\LobbyMOD.csproj
+
+      - name: Install 7-Zip
+        run: |
+          choco install 7zip.commandline
+
+      - name: Compress Files
+        run: |
+          cd $Env:GITHUB_WORKSPACE
+          git clone https://github.com/CH3NGYZ/Overcooked-2-LobbyMOD-ResourceFiles.git
+          mkdir -p CHA\Audio
+
+          copy  $Env:GITHUB_WORKSPACE\LobbyMOD\LobbyMOD\bin\Release\LobbyMOD.dll Overcooked-2-LobbyMOD-ResourceFiles
+          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\LobbyMOD.dll CHA
+          copy $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\ConfigurationManager.xml CHA
+          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\ConfigurationManager.dll CHA
+          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\ConfigurationManagerAttributes.cs CHA
+          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\Audio\* CHA\Audio
+
+          & "C:\Program Files\7-Zip\7z.exe" a $Env:GITHUB_WORKSPACE\CHA.zip $Env:GITHUB_WORKSPACE\CHA
+      - name: Show CHA Folder
+        run: |
+          ls $Env:GITHUB_WORKSPACE\CHA
+
+      - name: Show CHA Audio Folder
+        run: |
+          ls $Env:GITHUB_WORKSPACE\CHA\Audio
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          echo "::set-output name=tag::$(git describe --tags --abbrev=0)"
+
+      - name: Extract version number
+        id: extract_version
+        run: |
+          $version = "${{ steps.get_tag.outputs.tag }}" -replace 'v1.0.', ''
+          echo "::set-output name=version::$version"
+
+      - name: Calculate new version
+        id: calculate_version
+        run: |
+          echo "::set-output name=new_version::1.0.$((${{ steps.extract_version.outputs.version }} + 1))"
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: CHA.zip
+          tag_name: v${{ steps.calculate_version.outputs.new_version }}
+          name: v${{ steps.calculate_version.outputs.new_version }}
+          body: |
+            ${{ github.event.head_commit.message }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
