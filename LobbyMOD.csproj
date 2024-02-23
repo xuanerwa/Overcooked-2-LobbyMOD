@@ -103,21 +103,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DisplayLatencyUI.cs" />
-    <Compile Include="DisplayKickedUserUI.cs" />
-    <Compile Include="ForceHost.cs" />
-    <Compile Include="LobbyKickUser.cs" />
-    <Compile Include="LobbyKevin.cs" />
-    <Compile Include="MODEntry.cs" />
+    <Compile Include="*.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Recipe.cs" />
-    <Compile Include="ReplaceOneShotAudio.cs" />
-    <Compile Include="UnlockChefs.cs" />
-    <Compile Include="QuitWhenLoadScene.cs" />
-    <Compile Include="DisplayModsOnResultsScreenUI.cs" />
-    <Compile Include="SkipLevel.cs" />
-    <Compile Include="UnlockDlcs.cs" />
-    <Compile Include="FixDoubleServing.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
