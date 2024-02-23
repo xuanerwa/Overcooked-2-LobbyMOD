@@ -22,7 +22,7 @@ namespace LobbyMODS
         [HarmonyPostfix]
         private static void GameUtils_GetGameConfig_Postfix(ref GameConfig __result)
         {
-            if (__result != null && modify_SingleplayerChopTimeMultiplier.Value && MODEntry.playinlobby)
+            if (__result != null && modify_SingleplayerChopTimeMultiplier.Value && MODEntry.IsInParty)
             {
                 __result.SingleplayerChopTimeMultiplier = 1;
             }
