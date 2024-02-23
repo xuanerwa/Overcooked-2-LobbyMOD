@@ -72,12 +72,6 @@ jobs:
           echo "::set-output name=new_version::1.0.$((${{ steps.extract_version.outputs.version }} + 1))"
           echo "1.0.$((${{ steps.extract_version.outputs.version }} + 1))"
       
-      - name: read releaseNote
-        id: read_release_note
-        run: |
-          echo "::set-output name=release_note::$((Get-Content releaseNote.txt | Select-Object -First 20) -join "`r`n")"
-          echo "$((Get-Content releaseNote.txt | Select-Object -First 20) -join "`r`n")"
-
       - name: Get UTC+8 Date
         id: get_utc8_date
         run: |

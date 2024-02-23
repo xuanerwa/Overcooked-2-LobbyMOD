@@ -35,6 +35,7 @@ namespace LobbyMODS
             ForceHost.Awake();
             Recipe.Awake();
             DisplayLatencyUI.Awake();
+            FixDoubleServing.Awake();
         }
 
         public void Update()
