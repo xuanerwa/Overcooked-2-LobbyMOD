@@ -38,10 +38,6 @@ namespace LobbyMODS
         public static int deliveredorders = 0;
         public static int historyrecipecount = 0;
         public static bool changephrase = false;
-        public static bool flag1 = false;
-        public static bool flag2 = false;
-        public static bool flag3 = false;
-
         private static MyOnScreenDebugDisplayRecipe OnScreenDisplayRecipe;
         private static RecipeDisplay recipedisplay = null;
 
@@ -374,8 +370,7 @@ namespace LobbyMODS
         public static void Update()
         {
             OnScreenDisplayRecipe.Update();
-            isInLobby();
-            if (flag1)
+            if (MODEntry.playinlobby)
             {
                 if (displayhistory.Value)
                 {
@@ -406,7 +401,6 @@ namespace LobbyMODS
         public static bool Prefix(ref ClientOrderControllerBase __instance, bool _success, OrderID _orderID)
         {
             if (!enabled.Value || (!displayhistory.Value && !predict.Value)) return true;
-            if (flag1 == true && flag2 == false) flag3 = true;
             if (__instance != null) MClientOrderControllerBase.OnFoodDelivered(__instance, _success, _orderID);
             return false;
         }
@@ -418,7 +412,6 @@ namespace LobbyMODS
         //    ServerCampaignFlowController flowController = GameObject.FindObjectOfType<ServerCampaignFlowController>();
         //    LevelConfigBase levelConfig = flowController.GetLevelConfig();
         //    if (levelConfig.name == "s_dynamic_stage_04_1P" || levelConfig.name == "s_dynamic_stage_04_2P" || levelConfig.name == "s_dynamic_stage_04_3P" || levelConfig.name == "s_dynamic_stage_04_4P") return true;
-        //    if (flag1 == true && flag2 == false) flag3 = true;
         //    if (!enabled.Value || !displaymore.Value) return true;
         //    if (__instance != null) MServerOrderControllerBase.AddNewOrderPatch(__instance);
         //    return false;
@@ -429,7 +422,6 @@ namespace LobbyMODS
         public static bool Prefix(ref ClientOrderControllerBase __instance, Serialisable _data)
         {
             if (!enabled.Value || (!displayhistory.Value && !predict.Value)) return true;
-            if (flag1 == true && flag2 == false) flag3 = true;
             if (__instance != null) MClientOrderControllerBase.AddNewOrder(__instance, _data);
             return false;
         }
@@ -438,12 +430,6 @@ namespace LobbyMODS
         [HarmonyPrefix]
         public static bool Prefix()
         {
-            if (flag1&&flag2) flag2 = false;
-            if (flag3) 
-            { 
-                flag1 = false; 
-                flag3 = false; 
-            }
             if (!enabled.Value) return true;
             if (recipedisplay != null)
             {
@@ -460,104 +446,13 @@ namespace LobbyMODS
             return true;
         }
 
-        [HarmonyPatch(typeof(DisconnectionHandler),"HandleKickMessage")]
-        [HarmonyPostfix]
-        public static void postfix1()
-        {
-            flag1 = false;
-            flag2 = false;
-        }
-
-        [HarmonyPatch(typeof(DisconnectionHandler), "HandleSessionConnectionLost")]
-        [HarmonyPostfix]
-        public static void postfix2()
-        {
-            flag1 = false;
-            flag2 = false;
-        }
-
-        [HarmonyPatch(typeof(DisconnectionHandler), "FireSessionConnectionLostEvent")]
-        [HarmonyPostfix]
-        public static void postfix3()
-        {
-            flag1 = false;
-            flag2 = false;
-        }
-
-        [HarmonyPatch(typeof(DisconnectionHandler), "OnlineMultiplayerConnectionModeErrorCallback")]
-        [HarmonyPostfix]
-        public static void postfix4()
-        {
-            flag1 = false;
-            flag2 = false;
-        }
-
-        [HarmonyPatch(typeof(DisconnectionHandler), "FireConnectionModeErrorEvent")]
-        [HarmonyPostfix]
-        public static void postfix5()
-        {
-            flag1 = false;
-            flag2 = false;
-        }
-
-        [HarmonyPatch(typeof(DisconnectionHandler), "HandleLocalDisconnection")]
-        [HarmonyPostfix]
-        public static void postfix6()
-        {
-            flag1 = false;
-            flag2 = false;
-        }
-
-        [HarmonyPatch(typeof(DisconnectionHandler), "FireLocalDisconnectionEvent")]
-        [HarmonyPostfix]
-        public static void postfix7()
-        {
-            flag1 = false;
-            flag2 = false;
-        }
-
-        [HarmonyPatch(typeof(DisconnectionHandler), "HandleKickMessage")]
-        [HarmonyPostfix]
-        public static void postfix8()
-        {
-            flag1 = false;
-            flag2 = false;
-        }
-
-        [HarmonyPatch(typeof(DisconnectionHandler), "FireKickedFromSessionEvent")]
-        [HarmonyPostfix]
-        public static void postfix9()
-        {
-            flag1 = false;
-            flag2 = false;
-        }
-
         [HarmonyPatch(typeof(ClientDynamicFlowController), "OnDynamicLevelMessage")]
         [HarmonyPrefix]
         public static bool Prefix(ref ClientDynamicFlowController __instance, IOnlineMultiplayerSessionUserId _sessionId, Serialisable _serialisable)
         {
             if (!enabled.Value || (!displayhistory.Value && !predict.Value)) return true;
-            if (flag1 == true && flag2 == false) flag3 = true;
             if (__instance != null) MClientDynamicFlowController.OnDynamicLevelMessage(__instance, _sessionId, _serialisable);
             return false;
-        }
-
-        [HarmonyPatch(typeof(ClientLobbyFlowController), "Leave")]
-        [HarmonyPrefix]
-        public static bool prefix5()
-        {
-            flag1 = false;
-            flag2 = false;
-            return true;
-        }
-
-        [HarmonyPatch(typeof(LoadingScreenFlow), "RequestReturnToStartScreen")]
-        [HarmonyPrefix]
-        public static bool prefix6()
-        {
-            flag1= false;
-            flag2= false;
-            return true;
         }
 
         //public class MServerOrderControllerBase
@@ -728,25 +623,6 @@ namespace LobbyMODS
                 IEnumerator item = __instance.BuildTransitionToPhaseRoutine(dynamicLevelMessage.m_phase);
                 __instance.m_phaseQueue.Enqueue(item);
                 changephrase = true;
-            }
-        }
-
-        public static bool isInLobby()
-        {
-            ServerLobbyFlowController instance = ServerLobbyFlowController.Instance;
-            ClientLobbyFlowController instance2 = ClientLobbyFlowController.Instance;
-            bool flag = false;
-            flag |= (instance2 != null && (LobbyFlowController.LobbyState.OnlineThemeSelection.Equals(instance2.m_state) || LobbyFlowController.LobbyState.LocalThemeSelection.Equals(instance2.m_state)));
-            flag |= (instance != null && (LobbyFlowController.LobbyState.OnlineThemeSelection.Equals(instance.m_state) || LobbyFlowController.LobbyState.LocalThemeSelection.Equals(instance.m_state)));
-            if (!flag)
-            {
-                flag2 = true;
-                return false;
-            }
-            else
-            {
-                flag1 = true;
-                return true;
             }
         }
 
