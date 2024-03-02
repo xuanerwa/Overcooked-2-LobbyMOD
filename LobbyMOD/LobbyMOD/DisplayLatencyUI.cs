@@ -94,7 +94,7 @@ namespace LobbyMODS
             public void Awake()
             {
                 m_GUIStyle.alignment = TextAnchor.UpperRight;
-                m_GUIStyle.fontSize = defaultFontSize.Value;
+                m_GUIStyle.fontSize = Mathf.RoundToInt(defaultFontSize.Value * MODEntry.dpiScaleFactor);
                 try
                 {
                     this.m_GUIStyle.normal.textColor = HexToColor(defaultFontColor.Value);
@@ -114,6 +114,7 @@ namespace LobbyMODS
 
             public void OnGUI()
             {
+                m_GUIStyle.fontSize = Mathf.RoundToInt(defaultFontSize.Value * MODEntry.dpiScaleFactor);
                 Rect rect = new Rect(0f, 0f, Screen.width, m_GUIStyle.fontSize);
                 for (int i = 0; i < m_Displays.Count; i++)
                     m_Displays[i].OnDraw(ref rect, m_GUIStyle);
