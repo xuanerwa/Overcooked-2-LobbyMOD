@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
 //dll文件输出路径更改: 本项目名LobbyMOD右键属性-生成-输出路径 改为你的游戏所在路径 Overcooked! 2/BepInEx/plugins/ 下
@@ -6,7 +7,7 @@ using UnityEngine;
 
 namespace LobbyMODS
 {
-    [BepInPlugin("com.ch3ngyz.plugin.LobbyMods", "[街机主机MOD] By.酷茶 Q群860480677 本MOD完全免费", "1.0.25")]
+    [BepInPlugin("com.ch3ngyz.plugin.LobbyMods", "[街机主机MOD] By.酷茶 Q群164509805 本MOD完全免费", "1.0.28")]
     [BepInProcess("Overcooked2.exe")]
     public class MODEntry : BaseUnityPlugin
     {
@@ -18,8 +19,12 @@ namespace LobbyMODS
         public static float dpiScaleFactor = 1f;
         private float baseScreenWidth = 1920f;
         private float baseScreenHeight = 1080f;
+        public static ConfigEntry<int> defaultFontSize;
+        public static ConfigEntry<string> defaultFontColor;
         public void Awake()
         {
+            defaultFontSize = Config.Bind<int>("00-UI字体", "UI字体大小", 20);
+            defaultFontColor = Config.Bind<string>("00-UI字体", "UI字体颜色(#+6位字母数字组合)", "#FFFFFF");
             modName = "街机主机工具";
             Instance = this;
             IsInLobby = false;
@@ -31,8 +36,6 @@ namespace LobbyMODS
             LobbyKevin.Awake();
             QuitWhenLoadScene.Awake();
             DisplayKickedUserUI.Awake();
-            //UnlockChefs.Awake();
-            //UnlockDlcs.Awake();
             ReplaceOneShotAudio.Awake();
             ForceHost.Awake();
             Recipe.Awake();
@@ -41,7 +44,8 @@ namespace LobbyMODS
             RestartLevel.Awake();
             ChangeDisplayName.Awake();
 
-
+            //UnlockChefs.Awake();
+            //UnlockDlcs.Awake();
             Harmony.CreateAndPatchAll(typeof(MODEntry));
         }
 
@@ -59,6 +63,7 @@ namespace LobbyMODS
             ForceHost.Update();
             Recipe.Update();
             RestartLevel.Update();
+            ChangeDisplayName.Update();
 
         }
 

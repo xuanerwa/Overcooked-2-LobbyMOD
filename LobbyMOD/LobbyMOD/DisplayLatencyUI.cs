@@ -6,6 +6,7 @@ using UnityEngine;
 using Team17.Online.Multiplayer;
 using HarmonyLib;
 using System.ComponentModel;
+using System;
 
 namespace LobbyMODS
 {
@@ -19,8 +20,7 @@ namespace LobbyMODS
         private static NetworkStateDebugDisplay NetworkDebugUI = null;
         public static ConfigEntry<bool> ShowEnabled;
         public static bool canAdd;
-        public static ConfigEntry<int> defaultFontSize;
-        public static ConfigEntry<string> defaultFontColor;
+
 
 
         //public static void add_m_Text(string str) => NetworkDebugUI?.add_m_Text(str);
@@ -28,9 +28,7 @@ namespace LobbyMODS
 
         public static void Awake()
         {
-            ShowEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "显示延迟", true);
-            defaultFontSize = MODEntry.Instance.Config.Bind<int>("00-UI字体", "延迟字体大小", 20);
-            defaultFontColor = MODEntry.Instance.Config.Bind<string>("00-UI字体", "延迟字体颜色(#+6位字母数字组合)", "#000000");
+            ShowEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "UI-显示延迟", true);
             canAdd = false;
             onScreenDebugDisplay = new MyOnScreenDebugDisplay();
             onScreenDebugDisplay.Awake();
@@ -94,14 +92,14 @@ namespace LobbyMODS
             public void Awake()
             {
                 m_GUIStyle.alignment = TextAnchor.UpperRight;
-                m_GUIStyle.fontSize = Mathf.RoundToInt(defaultFontSize.Value * MODEntry.dpiScaleFactor);
+                m_GUIStyle.fontSize = Mathf.RoundToInt(MODEntry.defaultFontSize.Value * MODEntry.dpiScaleFactor);
                 try
                 {
-                    this.m_GUIStyle.normal.textColor = HexToColor(defaultFontColor.Value);
+                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
                 }
                 catch
                 {
-                    this.m_GUIStyle.normal.textColor = HexToColor("#000000");
+                    this.m_GUIStyle.normal.textColor = HexToColor("#FFFFFF");
                 }
                 m_GUIStyle.richText = false;
             }
@@ -114,7 +112,15 @@ namespace LobbyMODS
 
             public void OnGUI()
             {
-                m_GUIStyle.fontSize = Mathf.RoundToInt(defaultFontSize.Value * MODEntry.dpiScaleFactor);
+                m_GUIStyle.fontSize = Mathf.RoundToInt(MODEntry.defaultFontSize.Value * MODEntry.dpiScaleFactor);
+                try
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
+                }
+                catch
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor("#FFFFFF");
+                }
                 Rect rect = new Rect(0f, 0f, Screen.width, m_GUIStyle.fontSize);
                 for (int i = 0; i < m_Displays.Count; i++)
                     m_Displays[i].OnDraw(ref rect, m_GUIStyle);
@@ -170,28 +176,37 @@ namespace LobbyMODS
                 DrawText(ref rect, style, ClientGameSetup.Mode + ", time: " + ClientTime.Time().ToString("00000.000"));
                 if (ConnectionStatus.IsHost())
                 {
+
                     MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
                     Server server = multiplayerController.m_LocalServer;
                     Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection> remoteClientConnectionsDict = server.m_RemoteClientConnections;
 
                     FastList<ConnectionStats> serverConnectionStats = m_MultiplayerController.GetServerConnectionStats(true);
                     //FastList<ConnectionStats> serverConnectionStats2 = m_MultiplayerController.GetServerConnectionStats(false);
+
                     if (serverConnectionStats.Count > 0)
                     {
                         string empty = string.Empty;
                         for (int i = 0; i < serverConnectionStats.Count; i++)
                         {
-                            DrawText(ref rect, style, string.Concat(new object[]
+                            try
                             {
+                                DrawText(ref rect, style, string.Concat(new object[]
+                                {
                                 ServerUserSystem.m_Users._items[i+1].DisplayName,
                                 $" {i+2}号位延迟: ",
                                 (serverConnectionStats._items[i].m_fLatency * 1000f).ToString("000"),
                                 " ms"
-                                //" Sequence: I",
-                                //serverConnectionStats._items[i].m_fIncomingSequenceNumber,
-                                //" / O",
-                                //serverConnectionStats._items[i].m_fOutgoingSequenceNumber
-                            }));
+                                    //" Sequence: I",
+                                    //serverConnectionStats._items[i].m_fIncomingSequenceNumber,
+                                    //" / O",
+                                    //serverConnectionStats._items[i].m_fOutgoingSequenceNumber
+                                }));
+                            }
+                            catch (Exception ex)
+                            {
+                                MODEntry.LogError($"{ex}");
+                            }
                         }
                         //DrawText(ref rect, style, empty);
                         //empty = string.Empty;
@@ -213,24 +228,35 @@ namespace LobbyMODS
                         //    }));
                         //}
                     }
+
+
                 }
                 else if (ConnectionStatus.IsInSession())
                 {
-                    ConnectionStats clientConnectionStats = m_MultiplayerController.GetClientConnectionStats(true);
-                    //ConnectionStats clientConnectionStats2 = m_MultiplayerController.GetClientConnectionStats(false);
-                    DrawText(ref rect, style, string.Concat(
-                        new object[]
-                        {
+                    try
+                    {
+                        ConnectionStats clientConnectionStats = m_MultiplayerController.GetClientConnectionStats(true);
+
+                        //ConnectionStats clientConnectionStats2 = m_MultiplayerController.GetClientConnectionStats(false);
+                        DrawText(ref rect, style, string.Concat(
+                            new object[]
+                            {
                             "本机延迟: ",
                             (clientConnectionStats.m_fLatency * 1000f).ToString("000"),
                             " ms",
-                            //clientConnectionStats.m_fMaxTimeBetweenReceives.ToString("00.00"),
-                            //" Sequence: I",
-                            //clientConnectionStats.m_fIncomingSequenceNumber,
-                            //" / O",
-                            //clientConnectionStats.m_fOutgoingSequenceNumber
-                        }
-                    ));
+                                //clientConnectionStats.m_fMaxTimeBetweenReceives.ToString("00.00"),
+                                //" Sequence: I",
+                                //clientConnectionStats.m_fIncomingSequenceNumber,
+                                //" / O",
+                                //clientConnectionStats.m_fOutgoingSequenceNumber
+                            }
+                        ));
+
+                    }
+                    catch (Exception ex)
+                    {
+                        MODEntry.LogError($"{ex}");
+                    }
                     //    DrawText(ref rect, style, string.Concat(new object[]
                     //    {
                     //"ULag: ",

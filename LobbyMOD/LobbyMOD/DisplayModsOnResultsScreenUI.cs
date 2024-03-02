@@ -13,14 +13,10 @@ namespace LobbyMODS
         private static ModsDisplay modsDisplay = null;
         private static bool shouldDisplay = false;
         private static ConfigEntry<bool> isshow = null;
-        public static ConfigEntry<int> defaultFontSize;
-        public static ConfigEntry<string> defaultFontColor;
 
         public static void Awake()
         {
-            isshow = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "关卡结束时显示自定义关卡状态", true);
-            defaultFontSize = MODEntry.Instance.Config.Bind<int>("00-UI字体", "关卡状态字体大小", 20);
-            defaultFontColor = MODEntry.Instance.Config.Bind<string>("00-UI字体", "关卡状态字体颜色(#+6位字母数字组合)", "#000000");
+            isshow = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "UI-关卡结束时显示自定义关卡状态UI", true);
             /* Setup */
             onScreenDebugDisplay = new MyOnScreenDebugDisplay();
             onScreenDebugDisplay.Awake();
@@ -65,14 +61,14 @@ namespace LobbyMODS
                 this.m_Displays = new List<DebugDisplay>();
                 this.m_GUIStyle = new GUIStyle();
                 this.m_GUIStyle.alignment = TextAnchor.UpperRight;
-                this.m_GUIStyle.fontSize = defaultFontSize.Value;
+                this.m_GUIStyle.fontSize = MODEntry.defaultFontSize.Value;
                 try
                 {
-                    this.m_GUIStyle.normal.textColor = HexToColor(defaultFontColor.Value);
+                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
                 }
                 catch
                 {
-                    this.m_GUIStyle.normal.textColor = HexToColor("#000000");
+                    this.m_GUIStyle.normal.textColor = HexToColor("#FFFFFF");
                 }
             }
 
@@ -86,6 +82,15 @@ namespace LobbyMODS
 
             public void OnGUI()
             {
+                m_GUIStyle.fontSize = Mathf.RoundToInt(MODEntry.defaultFontSize.Value * MODEntry.dpiScaleFactor);
+                try
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
+                }
+                catch
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor("#FFFFFF");
+                }
                 Rect rect = new Rect(0f, (float)Screen.height * 0.14f, (float)Screen.width * 0.99f, (float)this.m_GUIStyle.fontSize);
                 for (int i = 0; i < this.m_Displays.Count; i++)
                 {
@@ -184,10 +189,10 @@ namespace LobbyMODS
                         }
                     }
                     if (shouldNtDisplayNormalState)
-                    { 
-                    modsDisplay.m_Text += "\n------以下为自定义普通关卡:"; //凯文状态后
+                    {
+                        modsDisplay.m_Text += "\n------以下为自定义普通关卡:"; //凯文状态后
 
-                    List<string> conditions = new List<string>{
+                        List<string> conditions = new List<string>{
                                                                 "01-关闭世界1",
                                                                 "02-关闭世界2",
                                                                 "03-关闭世界3",
@@ -208,20 +213,20 @@ namespace LobbyMODS
                                                                 "18-关闭翻滚帐篷",
                                                                 "19-关闭咸咸马戏团"
                                                                 };
-                    bool addedNormaltext = false;
-                    foreach (string condition in conditions)
-                    {
-                        if (MServerLobbyFlowController.sceneDisableConfigEntries[condition].Value)
+                        bool addedNormaltext = false;
+                        foreach (string condition in conditions)
                         {
-                            modsDisplay.m_Text += $"\n{condition}";
-                            addedNormaltext = true; //启用了自定义普通关卡功能
+                            if (MServerLobbyFlowController.sceneDisableConfigEntries[condition].Value)
+                            {
+                                modsDisplay.m_Text += $"\n{condition}";
+                                addedNormaltext = true; //启用了自定义普通关卡功能
+                            }
+                        }
+                        if (!addedNormaltext)
+                        {
+                            modsDisplay.m_Text += $"\n没有自定义普通关卡"; //没启用时的消息
                         }
                     }
-                    if (!addedNormaltext)
-                    {
-                        modsDisplay.m_Text += $"\n没有自定义普通关卡"; //没启用时的消息
-                    }
-                }
 
                 }
                 else

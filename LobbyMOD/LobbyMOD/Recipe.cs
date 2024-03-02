@@ -22,8 +22,6 @@ namespace LobbyMODS
         public static ConfigEntry<bool> displayhistory;
         //public static ConfigEntry<bool> displaymore;
         public static ConfigEntry<bool> predict;
-        public static ConfigEntry<int> FontSize;
-        public static ConfigEntry<string> FontColor;
         public static int startTime;
         public static bool resets = false;
         public static Dictionary<string, string> map = new Dictionary<string, string>();
@@ -358,8 +356,6 @@ namespace LobbyMODS
             //displaymore = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "显示未来菜单", false);
             predict = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "预测未来菜单", false);
             namesymplify = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "简化显示菜单名称", false);
-            FontSize = MODEntry.Instance.Config.Bind<int>("00-UI字体", "显示菜单字体大小", 20);
-            FontColor = MODEntry.Instance.Config.Bind<string>("00-UI字体", "显示菜单字体颜色(#+6位字母数字组合)", "#FFFFFF");
             initial();
             symplify();
             OnScreenDisplayRecipe = new MyOnScreenDebugDisplayRecipe();
@@ -387,10 +383,11 @@ namespace LobbyMODS
                 //    displayhistory.Value = false;
                 //    predict.Value = false;
                 //}
-            }else
+            }
+            else
             {
-                predict.Value= false;
-                displayhistory.Value= false;
+                predict.Value = false;
+                displayhistory.Value = false;
             }
         }
 
@@ -555,13 +552,14 @@ namespace LobbyMODS
                     {
                         noworders = allorders;
                         changephrase = false;
-                    }                   
-                }else if (predict.Value)
+                    }
+                }
+                else if (predict.Value)
                 {
                     if (changephrase)
                     {
                         allorders = 0;
-                        changephrase= false;
+                        changephrase = false;
                         apperancecount.Clear();
                         possibility.Clear();
                     }
@@ -591,7 +589,7 @@ namespace LobbyMODS
                     foreach (string key in apperancecount.Keys)
                     {
                         double cal = ((double)(allorders + 2) / (double)levelorders) - apperancecount[key];
-                        possibility[key] = cal>=0?cal:0;
+                        possibility[key] = cal >= 0 ? cal : 0;
                         num += possibility[key];
                     }
                     var sortResult = from pair in possibility orderby pair.Value descending select pair;
@@ -611,7 +609,7 @@ namespace LobbyMODS
                         recipedisplay.add_m_Text(s);
                     }
                 }
-                
+
             }
         }
 
@@ -666,16 +664,16 @@ namespace LobbyMODS
 
             public void AddDisplay(DebugDisplay display)
             {
-                m_GUIStyle.fontSize = FontSize.Value;
+                m_GUIStyle.fontSize = MODEntry.defaultFontSize.Value;
                 try
                 {
-                    this.m_GUIStyle.normal.textColor = HexToColor(FontColor.Value);
+                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
                 }
                 catch
                 {
                     this.m_GUIStyle.normal.textColor = HexToColor("#FFFFFF");
                 }
-                    if (display != null)
+                if (display != null)
                 {
                     display.OnSetUp();
                     m_Displays.Add(display);
@@ -699,6 +697,15 @@ namespace LobbyMODS
 
             public void OnGUI()
             {
+                m_GUIStyle.fontSize = MODEntry.defaultFontSize.Value;
+                try
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
+                }
+                catch
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor("#FFFFFF");
+                }
                 Rect rect = new Rect(20f, 350f, Screen.width, m_GUIStyle.fontSize);
                 for (int i = 0; i < m_Displays.Count; i++)
                     m_Displays[i].OnDraw(ref rect, m_GUIStyle);

@@ -9,17 +9,13 @@ namespace LobbyMODS
         private static MyOnScreenDebugDisplayKickedUser onScreenDebugDisplayKickedUser;
         private static MyKickedUserCounter kickedUserCounter = null;
         public static ConfigEntry<bool> ShowKickedUserEnabled;
-        public static ConfigEntry<int> defaultFontSize;
-        public static ConfigEntry<string> defaultFontColor;
 
 
         public static void add_m_Text(string str) => kickedUserCounter?.add_m_Text(str);
 
         public static void Awake()
         {
-            ShowKickedUserEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "显示自动踢的黑名单玩家", true);
-            defaultFontSize = MODEntry.Instance.Config.Bind<int>("00-UI字体", "踢黑名单字体", 20);
-            defaultFontColor = MODEntry.Instance.Config.Bind<string>("00-UI字体", "踢黑名单字体颜色(#+6位字母数字组合)", "#000000");
+            ShowKickedUserEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "UI-显示自动踢的黑名单玩家", true);
             onScreenDebugDisplayKickedUser = new MyOnScreenDebugDisplayKickedUser();
             onScreenDebugDisplayKickedUser.Awake();
         }
@@ -90,14 +86,14 @@ namespace LobbyMODS
             public void Awake()
             {
                 m_GUIStyle.alignment = TextAnchor.UpperLeft;
-                m_GUIStyle.fontSize = defaultFontSize.Value;
+                m_GUIStyle.fontSize = MODEntry.defaultFontSize.Value;
                 try
                 {
-                    this.m_GUIStyle.normal.textColor = HexToColor(defaultFontColor.Value);
+                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
                 }
                 catch
                 {
-                    this.m_GUIStyle.normal.textColor = HexToColor("#000000");
+                    this.m_GUIStyle.normal.textColor = HexToColor("#FFFFFF");
                 }
             }
 
@@ -109,6 +105,15 @@ namespace LobbyMODS
 
             public void OnGUI()
             {
+                m_GUIStyle.fontSize = Mathf.RoundToInt(MODEntry.defaultFontSize.Value * MODEntry.dpiScaleFactor);
+                try
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
+                }
+                catch
+                {
+                    this.m_GUIStyle.normal.textColor = HexToColor("#FFFFFF");
+                }
                 Rect rect = new Rect(0f, 0f, Screen.width, m_GUIStyle.fontSize);
                 for (int i = 0; i < m_Displays.Count; i++)
                     m_Displays[i].OnDraw(ref rect, m_GUIStyle);
