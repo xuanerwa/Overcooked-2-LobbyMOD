@@ -39,7 +39,7 @@ namespace LobbyMODS
             DisplayLatencyUI.Awake();
             FixDoubleServing.Awake();
             RestartLevel.Awake();
-
+            ChangeDisplayName.Awake();
 
 
             Harmony.CreateAndPatchAll(typeof(MODEntry));
