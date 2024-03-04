@@ -151,28 +151,43 @@ namespace LobbyMODS
                 if (ConnectionModeSwitcher.GetRequestedConnectionState() == NetConnectionState.Server)
                 {
                     ServerOptions serverOptions = (ServerOptions)ConnectionModeSwitcher.GetAgentData();
-                    text = ", " + serverOptions.visibility.ToString();
-                    text2 = ", " + serverOptions.gameMode.ToString();
+                    text = ", visibility: " + serverOptions.visibility.ToString();
+                    text2 = ", gameMode: " + serverOptions.gameMode.ToString();
                 }
                 else if (ConnectionModeSwitcher.GetRequestedConnectionState() == NetConnectionState.Matchmake)
                 {
                     MatchmakeData matchmakeData = (MatchmakeData)ConnectionModeSwitcher.GetAgentData();
                     if (ConnectionStatus.IsHost())
                     {
-                        text = ", " + OnlineMultiplayerSessionVisibility.eMatchmaking;
+                        text = ",HostgameMode: " + OnlineMultiplayerSessionVisibility.eMatchmaking;
                     }
-                    text2 = ",  " + matchmakeData.gameMode.ToString();
+                    text2 = ",ClientgameMode: " + matchmakeData.gameMode.ToString();
                 }
                 DrawText(ref rect, style, string.Concat(new string[]
                 {
-            ConnectionModeSwitcher.GetRequestedConnectionState().ToString(),
-            text,
-            text2,
-            ", ",
-            ConnectionModeSwitcher.GetStatus().GetProgress().ToString(),
-            " ",
-            ConnectionModeSwitcher.GetStatus().GetResult().ToString()
+                    "RequestedConnectionState: ",
+                    ConnectionModeSwitcher.GetRequestedConnectionState().ToString(),
+                    text,
+                    text2,
+                    ",Progress: ",
+                    ConnectionModeSwitcher.GetStatus().GetProgress().ToString(),
+                    " Result: ",
+                    ConnectionModeSwitcher.GetStatus().GetResult().ToString()
                 }));
+
+                //LobbyInfo
+                string Lobbymessage = "NotInLobby";
+                if (ClientLobbyFlowController.Instance != null)
+                {
+                    Lobbymessage = ClientLobbyFlowController.Instance.m_state.ToString();
+                }
+                DrawText(ref rect, style, string.Concat(new string[]
+                {
+                    "LobbyState: ",
+                    Lobbymessage,
+                    ",joinCode: ",
+                    ForceHost.joinReturnCode
+                })) ;
                 DrawText(ref rect, style, ClientGameSetup.Mode + ", time: " + ClientTime.Time().ToString("00000.000"));
                 if (ConnectionStatus.IsHost())
                 {
@@ -205,7 +220,7 @@ namespace LobbyMODS
                             }
                             catch (Exception ex)
                             {
-                                MODEntry.LogError($"{ex}");
+                                //MODEntry.LogError($"{ex}");
                             }
                         }
                         //DrawText(ref rect, style, empty);

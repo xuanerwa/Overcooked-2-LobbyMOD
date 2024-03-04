@@ -63,8 +63,6 @@ namespace LobbyMODS
             ForceHost.Update();
             Recipe.Update();
             RestartLevel.Update();
-            ChangeDisplayName.Update();
-
         }
 
         public void OnGUI()
@@ -197,7 +195,7 @@ namespace LobbyMODS
         {
             IsHost = ConnectionStatus.IsHost();
             isInLobby();
-            LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
+            //LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
         }
     }
 }
