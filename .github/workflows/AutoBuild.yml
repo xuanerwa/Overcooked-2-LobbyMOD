@@ -86,9 +86,6 @@ jobs:
           echo "body: |"
             "v${{ steps.calculate_version.outputs.new_version }} ${{ steps.get_utc8_date.outputs.date_utc8 }}"
             "${{ github.event.head_commit.message }}"
-            "."
-            "其他日志请查看:"
-            "https://github.com/CH3NGYZ/Overcooked-2-LobbyMOD/commits/main"
             
       - name: Create Release
         id: create_release
@@ -100,8 +97,5 @@ jobs:
           body: |
             v${{ steps.calculate_version.outputs.new_version }} ${{ steps.get_utc8_date.outputs.date_utc8 }}
             ${{ github.event.head_commit.message }}
-            .
-            其他日志请查看:
-            https://github.com/CH3NGYZ/Overcooked-2-LobbyMOD/commits/main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
