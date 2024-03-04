@@ -50,7 +50,7 @@ namespace LobbyMODS
                 }
             }
         }
-            
+
 
         [HarmonyPatch(typeof(User), "DisplayName", MethodType.Getter)]
         [HarmonyPostfix]
@@ -87,9 +87,12 @@ namespace LobbyMODS
         [HarmonyPrefix]
         public static void JoinDataProvider_BuildJoinRequestData_Prefix(ref OnlineMultiplayerLocalUserId requestingLocalUser)
         {
-            requestingLocalUser.m_userName =
+            if (isReplaceName.Value)
+            {
+                requestingLocalUser.m_userName =
                 "<MOD>" +
                 playerName.Value;
+            }
         }
 
     }
