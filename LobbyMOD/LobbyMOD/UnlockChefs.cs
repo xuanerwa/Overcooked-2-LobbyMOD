@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Reflection;
 using HarmonyLib;
-using BepInEx;
 
 namespace LobbyMODS
 {
     public class UnlockChefs
     {
+        public static Harmony HarmonyInstance { get; set; }
         public static void Awake()
         {
-            Harmony.CreateAndPatchAll(typeof(UnlockChefs));
+            HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
+            MODEntry.AllHarmony.Add(HarmonyInstance);
+            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
 
         [HarmonyPatch(typeof(MetaGameProgress), nameof(MetaGameProgress.GetUnlockedAvatars))]

@@ -1,22 +1,24 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
-using Steamworks;
+using System;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Networking;
-using static OptionsData;
 
 namespace LobbyMODS
 {
-    public class ReplaceOneShotAudio : BaseUnityPlugin
+    public class ReplaceOneShotAudio
     {
+        public static Harmony HarmonyInstance { get; set; }
         private static ConfigEntry<bool> isEnabled;
         public static void Awake()
         {
             isEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "替换表情语音", true);
-            Harmony.CreateAndPatchAll(typeof(ReplaceOneShotAudio));
+            HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
+            MODEntry.AllHarmony.Add(HarmonyInstance);
+            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
 
         [HarmonyPatch(typeof(AudioManager), "FindEntry", new System.Type[] { typeof(GameOneShotAudioTag) })]
@@ -25,7 +27,6 @@ namespace LobbyMODS
         {
             if (isEnabled.Value)
             {
-                //MODEntry.LogError("替换骂人语音");
                 if (_tag == GameOneShotAudioTag.Curse || _tag == GameOneShotAudioTag.UIEmoteSwear)
                 {
                     loadTagFile(ref __result, "骂人");

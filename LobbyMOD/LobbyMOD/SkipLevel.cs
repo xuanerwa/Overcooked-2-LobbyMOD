@@ -1,11 +1,8 @@
-﻿using BepInEx;
-using UnityEngine;
+﻿using UnityEngine;
 using BepInEx.Configuration;
-using Team17.Online;
 using GameModes.Horde;
-using UnityEngine.SceneManagement;
-using System;
-using System.Reflection;
+using HarmonyLib;
+
 
 namespace LobbyMODS
 {
@@ -31,7 +28,7 @@ namespace LobbyMODS
                     log("跳过关卡");
                     EndLevel();
                 }
-                if (System.Environment.TickCount - startTime > 10000)
+                if (System.Environment.TickCount - startTime > 5000)
                 {
                     cooling = false;
                     log("跳过关卡");
@@ -43,7 +40,7 @@ namespace LobbyMODS
 
         public static void EndLevel()
         {
-            if (!IsHostPlayer())
+            if (!MODEntry.IsHost)
             {
                 log("不是主机玩家");
                 return;
@@ -75,28 +72,6 @@ namespace LobbyMODS
                 cooling = true;
             }
 
-        }
-
-        public static bool IsHostPlayer()
-        {
-            IOnlinePlatformManager onlinePlatformManager = GameUtils.RequireManagerInterface<IOnlinePlatformManager>();
-            if (onlinePlatformManager == null)
-            {
-                return true;
-            }
-
-            IOnlineMultiplayerSessionCoordinator coordinator = onlinePlatformManager.OnlineMultiplayerSessionCoordinator();
-            if (coordinator == null)
-            {
-                return true;
-            }
-
-            if (coordinator.IsIdle())
-            {
-                return true;
-            }
-
-            return coordinator.IsHost();
         }
     }
 }

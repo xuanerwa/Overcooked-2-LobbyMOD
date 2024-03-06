@@ -1,7 +1,14 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using Team17.Online;
 using UnityEngine;
+using static ClientPortalMapNode;
+using static DebugDrawManager;
 //dll文件输出路径更改: 本项目名LobbyMOD右键属性-生成-输出路径 改为你的游戏所在路径 Overcooked! 2/BepInEx/plugins/ 下
 //生成dll后自动打开游戏测试: 本项目名LobbyMOD右键属性-生成事件-生成前/后  将gamePath替换成自己游戏的路径
 
@@ -11,6 +18,10 @@ namespace LobbyMODS
     [BepInProcess("Overcooked2.exe")]
     public class MODEntry : BaseUnityPlugin
     {
+        public static Harmony HarmonyInstance { get; set; }
+        public static List<string> AllHarmonyName = new List<string>();
+
+        public static List<Harmony> AllHarmony = new List<Harmony>();
         public static string modName;
         public static MODEntry Instance;
         public static bool IsInLobby;
@@ -43,10 +54,27 @@ namespace LobbyMODS
             FixDoubleServing.Awake();
             RestartLevel.Awake();
             ChangeDisplayName.Awake();
-
             //UnlockChefs.Awake();
             //UnlockDlcs.Awake();
-            Harmony.CreateAndPatchAll(typeof(MODEntry));
+            HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
+            MODEntry.AllHarmony.Add(HarmonyInstance);
+            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            foreach (string harmony in AllHarmonyName)
+            {
+                LogWarning($"Patched {harmony}!");
+            }
+        }
+
+        private void OnDestroy()
+        {
+            Instance = null;
+            for (int i = 0; i < AllHarmony.Count; i++)
+            {
+                AllHarmony[i].UnpatchAll();
+                LogWarning($"Unpatched {AllHarmonyName[i]}!");
+            }
+            AllHarmony.Clear();
+            AllHarmonyName.Clear();
         }
 
         public void Update()
@@ -109,6 +137,7 @@ namespace LobbyMODS
         public static void LogWarning(string message) => BepInEx.Logging.Logger.CreateLogSource(modName).LogWarning(message);
         public static void LogInfo(string message) => BepInEx.Logging.Logger.CreateLogSource(modName).LogInfo(message);
         public static void LogError(string message) => BepInEx.Logging.Logger.CreateLogSource(modName).LogError(message);
+        public static void LogHarmony(string classname, MethodBase methodBase) => BepInEx.Logging.Logger.CreateLogSource(modName).LogError($"{classname}: {methodBase.Name}");
 
         [HarmonyPatch(typeof(DisconnectionHandler), "HandleKickMessage")]
         [HarmonyPostfix]
@@ -189,13 +218,38 @@ namespace LobbyMODS
             return true;
         }
 
+        public static bool isHost()
+        {
+            IOnlinePlatformManager onlinePlatformManager = GameUtils.RequireManagerInterface<IOnlinePlatformManager>();
+            if (onlinePlatformManager == null)
+            {
+                return true;
+            }
+
+            IOnlineMultiplayerSessionCoordinator coordinator = onlinePlatformManager.OnlineMultiplayerSessionCoordinator();
+            if (coordinator == null)
+            {
+                return true;
+            }
+
+            if (coordinator.IsIdle())
+            {
+                return true;
+            }
+
+            return coordinator.IsHost();
+        }
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ClientTime), "OnTimeSyncReceived")]
         public static void ClientTime_OnTimeSyncReceived_Patch()
         {
-            IsHost = ConnectionStatus.IsHost();
+            IsHost = isHost();
             isInLobby();
             //LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
         }
+
+
+
     }
 }

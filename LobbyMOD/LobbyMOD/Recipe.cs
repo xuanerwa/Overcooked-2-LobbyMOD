@@ -3,19 +3,18 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
-using GameModes.Horde;
-using System.Xml.Linq;
 using Team17.Online.Multiplayer.Messaging;
 using OrderController;
 using Team17.Online;
 using System.Collections;
+using System.Reflection;
 
 namespace LobbyMODS
 {
     public class Recipe
     {
+        public static Harmony HarmonyInstance { get; set; }
         public static void log(string mes) => MODEntry.LogInfo(mes);
         public static ConfigEntry<bool> enabled;
         public static ConfigEntry<bool> namesymplify;
@@ -360,7 +359,9 @@ namespace LobbyMODS
             symplify();
             OnScreenDisplayRecipe = new MyOnScreenDebugDisplayRecipe();
             OnScreenDisplayRecipe.Awake();
-            Harmony.CreateAndPatchAll(typeof(Recipe));
+            HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
+            MODEntry.AllHarmony.Add(HarmonyInstance);
+            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
 
         public static void Update()

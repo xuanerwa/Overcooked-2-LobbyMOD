@@ -1,17 +1,17 @@
-﻿using BepInEx;
-using HarmonyLib;
+﻿using HarmonyLib;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Reflection;
 
 namespace LobbyMODS
 {
     public class UnlockDlcs
     {
+        public static Harmony HarmonyInstance { get; set; }
         public static void Awake()
         {
-            Harmony.CreateAndPatchAll(typeof(UnlockDlcs));
+            HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
+            MODEntry.AllHarmony.Add(HarmonyInstance);
+            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
 
         [HarmonyPatch(typeof(DLCManagerBase), "IsDLCAvailable")]

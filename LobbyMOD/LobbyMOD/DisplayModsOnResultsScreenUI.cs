@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using BitStream;
-using BepInEx;
 using BepInEx.Configuration;
+using System.Reflection;
+using System;
 
 namespace LobbyMODS
 {
-    public static class DisplayModsOnResultsScreenUI
+    public class DisplayModsOnResultsScreenUI
     {
+        public static Harmony HarmonyInstance { get; set; }
         private static MyOnScreenDebugDisplay onScreenDebugDisplay;
         private static ModsDisplay modsDisplay = null;
         private static bool shouldDisplay = false;
@@ -23,7 +25,9 @@ namespace LobbyMODS
             modsDisplay = new ModsDisplay();
             onScreenDebugDisplay.AddDisplay(modsDisplay);
             /* Inject Mod */
-            Harmony.CreateAndPatchAll(typeof(DisplayModsOnResultsScreenUI));
+            HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
+            MODEntry.AllHarmony.Add(HarmonyInstance);
+            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
 
         public static void Update()

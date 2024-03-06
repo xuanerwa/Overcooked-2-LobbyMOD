@@ -1,14 +1,15 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
+using System;
 using System.Reflection;
 using Team17.Online;
 using UnityEngine;
-using static ClientPortalMapNode;
 
 namespace LobbyMODS
 {
-    internal class ForceHost
+    public class ForceHost
     {
+        public static Harmony HarmonyInstance { get; set; }
         public static void log(string mes) => MODEntry.LogInfo(mes);
         public static ConfigEntry<string> ValueList;
         private static string[] strList = {
@@ -19,8 +20,9 @@ namespace LobbyMODS
         public static void Awake()
         {
             ValueList = MODEntry.Instance.Config.Bind<string>("00-功能开关", "切换默认主机/客机角色:", strList[0], new ConfigDescription("选择状态", new AcceptableValueList<string>(strList)));
-
-            Harmony.CreateAndPatchAll(typeof(ForceHost));
+            HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
+            MODEntry.AllHarmony.Add(HarmonyInstance);
+            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
         public static void Update()
         {

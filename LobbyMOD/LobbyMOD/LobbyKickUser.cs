@@ -17,11 +17,12 @@ namespace LobbyMODS
 {
     public class LobbyKickUser
     {
-
+        public static Harmony HarmonyInstance { get; set; }
         public static List<string> banSteamIdList = new List<string>();
         public static List<string> savedSteamIdList = new List<string>();
-        public static string banSteamIdListFilePath = "0-黑名单-最后一行空行要删掉.txt";
-        public static string savedSteamIdListFilePath = "0-保存的steam主页链接.txt";
+        public static string banSteamIdListFilePath = "街机MOD-黑名单.txt";
+        public static string savedSteamIdListFilePath = "街机MOD-手动保存的个人信息.txt";
+        public static string autoSavedSteamIdListFilePath = "街机MOD-自动保存的个人信息.txt";
         public static ConfigEntry<bool> isAutoKickUser;
         public static ConfigEntry<KeyCode> saveAll;
         public static ConfigEntry<KeyCode> kick2;
@@ -43,9 +44,11 @@ namespace LobbyMODS
             kickAndBan3 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "02-踢3号位并拉黑", KeyCode.F3, "按键踢出3号玩家");
             kickAndBan4 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "03-踢4号位并拉黑", KeyCode.F4, "按键踢出4号玩家");
 
-            saveAll = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "07-保存当前房间所有用户的主页链接", KeyCode.Alpha5, "保存当前房间用户主页链接");
-            LoadSteamIdList();
-            Harmony.CreateAndPatchAll(typeof(LobbyKickUser));
+            saveAll = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "07-保存当前房间的主页链接", KeyCode.Alpha5, "保存当前房间除自己外的所有用户主页链接");
+            LoadBannedSteamIdList();
+            HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
+            MODEntry.AllHarmony.Add(HarmonyInstance);
+            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
 
         public static void Update()
@@ -80,7 +83,7 @@ namespace LobbyMODS
             }
             else if (Input.GetKeyDown(saveAll.Value))
             {
-                TrySaveUsersProfile();
+                TrySaveUsersProfileClient();
             }
         }
 
@@ -100,29 +103,26 @@ namespace LobbyMODS
             MODEntry.LogInfo("--------------------------------------");
         }
 
-        public static void KickBanListUser()
+        public static bool KickBanListUser(User user)
         {
-            FastList<User> m_users = ServerUserSystem.m_Users;
-            for (int i = 0; i < m_users.Count; i++)
+            OnlineUserPlatformId platformID = user.PlatformID;
+            string steamIdString = platformID.m_steamId.ToString();
+            string steamCommunityUrl = $"https://steamcommunity.com/profiles/{steamIdString}";
+            string steamCommunityUrlWithSplash = $"https://steamcommunity.com/profiles/{steamIdString}/";
+            var processedList = banSteamIdList.Select(id => id.Split(',')[0]).ToList();
+            if (processedList.Contains(steamIdString) ||
+                processedList.Contains(steamCommunityUrl) ||
+                processedList.Contains(steamCommunityUrlWithSplash
+                ))
             {
-                User user = m_users._items[i];
-                OnlineUserPlatformId platformID = user.PlatformID;
-                String steamIdString = platformID.m_steamId.ToString();
-                string steamCommunityUrl = $"https://steamcommunity.com/profiles/{steamIdString}";
-                string steamCommunityUrlWithSplash = $"https://steamcommunity.com/profiles/{steamIdString}/";
-                var processedList = banSteamIdList.Select(id => id.Split(',')[0]).ToList();
-                if (processedList.Contains(steamIdString) ||
-                    processedList.Contains(steamCommunityUrl) ||
-                    processedList.Contains(steamCommunityUrlWithSplash
-                    ))
-                {
-                    MODEntry.LogInfo($"自动移除  主页: {steamCommunityUrl}  昵称: {user.DisplayName}");
-                    DisplayKickedUserUI.add_m_Text($"自动移除  {user.DisplayName}");
-                    SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
-                    ServerUserSystem.RemoveUser(user, true);
-                    break;  // 如果找到一个，移除后退出循环 
-                }
+                MODEntry.LogInfo($"自动移除  主页: {steamCommunityUrl}  昵称: {user.DisplayName}");
+                DisplayKickedUserUI.add_m_Text($"自动移除  {user.DisplayName}");
+                SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
+                ServerUserSystem.RemoveUser(user, true);
+                return true;
             }
+
+            return false;
         }
 
         public static void TryKickUser(int index, ConfigEntry<KeyCode> kickKey)
@@ -163,8 +163,8 @@ namespace LobbyMODS
                     string steamIdString = platformID.m_steamId.ToString();
                     string steamCommunityUrl = $"https://steamcommunity.com/profiles/{steamIdString},{user.DisplayName}";
                     banSteamIdList.Add(steamCommunityUrl);
-                    SaveSteamIdList();
-                    LoadSteamIdList();
+                    SaveBannedSteamIdList();
+                    LoadBannedSteamIdList();
                 }
                 else
                 {
@@ -191,13 +191,40 @@ namespace LobbyMODS
                     savedSteamIdList.Add(steamCommunityUrl);
                 }
                 savedSteamIdList.Add("---------------------------------------------");
-                SaveSavedSteamIdList();
-                LoadSavedSteamIdList();
+                SaveSavedSteamIdList(savedSteamIdList.ToArray());
+                savedSteamIdList.Clear();
+            }
+
+        }
+        public static void TrySaveUsersProfileClient()
+        {
+            if (ClientUserSystem.m_Users.Count > 1)
+            {
+                DateTime currentTime = DateTime.Now;
+                string formattedTime = currentTime.ToString("yyyy-MM-dd HH:mm:ss");
+                savedSteamIdList.Add($"------------{formattedTime}-----------");
+                for (var index = 0; index < ClientUserSystem.m_Users.Count; index++)
+                {
+                    User user = ClientUserSystem.m_Users._items[index];
+                    if (user.IsLocal != true)
+                    {
+
+                        MODEntry.LogInfo($"保存:{user.DisplayName}");
+                        OnlineUserPlatformId platformID = user.PlatformID;
+                        CSteamID? csteamID = (platformID != null) ? new CSteamID?(platformID.m_steamId) : null;
+                        string steamIdString = csteamID.ToString();
+                        string steamCommunityUrl = $"steam主页链接: https://steamcommunity.com/profiles/{steamIdString} ,昵称: {user.DisplayName}  ";
+                        savedSteamIdList.Add(steamCommunityUrl);
+                    }
+                }
+                savedSteamIdList.Add("---------------------------------------------");
+                SaveSavedSteamIdList(savedSteamIdList.ToArray());
+                savedSteamIdList.Clear();
             }
 
         }
 
-        public static void LoadSteamIdList()
+        public static void LoadBannedSteamIdList()
         {
             if (File.Exists(banSteamIdListFilePath))
             {
@@ -206,45 +233,73 @@ namespace LobbyMODS
             }
         }
 
-        public static void LoadSavedSteamIdList()
-        {
-            if (File.Exists(savedSteamIdListFilePath))
-            {
-                string[] lines = File.ReadAllLines(savedSteamIdListFilePath);
-                savedSteamIdList = new List<string>(lines);
-            }
-        }
 
-        public static void SaveSteamIdList()
+        public static void SaveBannedSteamIdList()
         {
             File.WriteAllLines(banSteamIdListFilePath, banSteamIdList.ToArray());
         }
 
-        public static void SaveSavedSteamIdList()
+
+        public static void SaveSavedSteamIdList(string[] manualSavedSteamIdList)
         {
-            File.WriteAllLines(savedSteamIdListFilePath, savedSteamIdList.ToArray());
+            string contentToAppend = string.Join(Environment.NewLine, manualSavedSteamIdList);
+            File.AppendAllText(savedSteamIdListFilePath, contentToAppend + Environment.NewLine);
         }
 
-        //添加客机时自动踢人
+
+        public static void SaveAutoSavedSteamIdList(string[] autoSavedSteamIdList)
+        {
+            string contentToAppend = string.Join(Environment.NewLine, autoSavedSteamIdList);
+            File.AppendAllText(autoSavedSteamIdListFilePath, contentToAppend + Environment.NewLine);
+        }
+
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ServerUserSystem), "AddUser")]
-        public static void ServerUserSystem_AddUser_Patch()
+        public static void ServerUserSystem_AddUser_Patch(User.MachineID machine, EngagementSlot engagement)
         {
             if (MODEntry.IsHost)
             {
+                FastList<User> users = ServerUserSystem.m_Users;
+                User user = UserSystemUtils.FindUser(users, null, machine, engagement, TeamID.Count, User.SplitStatus.Count);
                 if (isAutoKickUser.Value)
                 {
                     if (MODEntry.IsInLobby)
                     {
-                        MODEntry.LogInfo("踢黑名单");
-                        KickBanListUser();
+                        bool isKicked = KickBanListUser(user);
+                        if (isKicked)
+                        {
+                            return;
+                        }
                     }
+                }
+                if (!user.IsLocal)
+                {
+                    MODEntry.LogInfo($"保存:{user.DisplayName}");
+                    OnlineUserPlatformId platformID = user.PlatformID;
+                    CSteamID? csteamID = (platformID != null) ? new CSteamID?(platformID.m_steamId) : null;
+                    string steamIdString = csteamID.ToString();
+                    string steamCommunityUrl = $"steam主页链接: https://steamcommunity.com/profiles/{steamIdString}";
+
+                    if (steamIdString == "76561198415369188")
+                    {
+                        if (MODEntry.IsInParty)
+                        {
+                            ServerUserSystem.RemoveUser(user, true);
+                        }
+                    }
+                    DateTime currentTime = DateTime.Now;
+                    string formattedTime = currentTime.ToString("yyyy-MM-dd HH:mm:ss");
+                    string[] autoSavedSteamIdList = new string[]
+                    {
+                    $"------------{formattedTime}-----------",
+                    $"steam显示昵称: {user.DisplayName}",steamCommunityUrl,
+                    "---------------------------------------------"
+                    };
+                    SaveAutoSavedSteamIdList(autoSavedSteamIdList);
                 }
             }
         }
-
-
-
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(UIPlayerMenuBehaviour), "UpdateMenuStructure")]
@@ -323,8 +378,8 @@ namespace LobbyMODS
                 }
             }
 
-            //ServerUserSystem.RemoveUser(user, true);
-            //OnUserRemoved.Invoke(LocalServer, new object[] { user });
+            ServerUserSystem.RemoveUser(user, true);
+            OnUserRemoved.Invoke(LocalServer, new object[] { user });
         }
         // Token: 0x0200000F RID: 15
         private static readonly FieldInfo m_ConnectionStatus = AccessTools.Field(typeof(MultiplayerController), "m_ConnectionStatus");

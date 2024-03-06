@@ -1,15 +1,17 @@
 ﻿using BepInEx.Configuration;
+using HarmonyLib;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
+using static ClientPortalMapNode;
 
 namespace LobbyMODS
 {
-    public static class DisplayKickedUserUI
+    public class DisplayKickedUserUI
     {
         private static MyOnScreenDebugDisplayKickedUser onScreenDebugDisplayKickedUser;
         private static MyKickedUserCounter kickedUserCounter = null;
         public static ConfigEntry<bool> ShowKickedUserEnabled;
-
 
         public static void add_m_Text(string str) => kickedUserCounter?.add_m_Text(str);
 
@@ -19,6 +21,7 @@ namespace LobbyMODS
             onScreenDebugDisplayKickedUser = new MyOnScreenDebugDisplayKickedUser();
             onScreenDebugDisplayKickedUser.Awake();
         }
+        
 
         public static void Update()
         {

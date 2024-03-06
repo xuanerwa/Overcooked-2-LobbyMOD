@@ -2,16 +2,16 @@
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Team17.Online;
 using UnityEngine;
-using System.Collections;
 
 
 namespace LobbyMODS
 {
-
     public class LobbyKevin
     {
+        public static Harmony HarmonyInstance { get; set; }
         public static void log(string mes) => MODEntry.LogInfo(mes);
         public static ConfigEntry<KeyCode> resetTimer;
         public static ConfigEntry<KeyCode> PlayRandom;
@@ -30,10 +30,10 @@ namespace LobbyMODS
             PlayRandom = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "08-大厅计时器归零", KeyCode.Alpha6, "4秒后直接开始随机关卡");
             resetTimer = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "09-大厅计时器45秒", KeyCode.Alpha7, "重置街机大厅时间为45秒");
             kevinEnabled = MODEntry.Instance.Config.Bind<bool>("02-修改关卡", "02区域总开关(开启关卡修改)", true);
-
-            Harmony.CreateAndPatchAll(typeof(LobbyKevin));
+            HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
+            MODEntry.AllHarmony.Add(HarmonyInstance);
+            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
-
         public static void Update()
         {
             //街机凯文

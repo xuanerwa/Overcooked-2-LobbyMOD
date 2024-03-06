@@ -5,17 +5,14 @@ using Team17.Online;
 using UnityEngine;
 using Team17.Online.Multiplayer;
 using HarmonyLib;
-using System.ComponentModel;
 using System;
+using System.Reflection;
 
 namespace LobbyMODS
 {
-    public static class DisplayLatencyUI
-
+    public class DisplayLatencyUI
     {
-
-
-
+        public static Harmony HarmonyInstance { get; set; }
         private static MyOnScreenDebugDisplay onScreenDebugDisplay;
         private static NetworkStateDebugDisplay NetworkDebugUI = null;
         public static ConfigEntry<bool> ShowEnabled;
@@ -32,7 +29,9 @@ namespace LobbyMODS
             canAdd = false;
             onScreenDebugDisplay = new MyOnScreenDebugDisplay();
             onScreenDebugDisplay.Awake();
-            Harmony.CreateAndPatchAll(typeof(DisplayLatencyUI));
+            HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
+            MODEntry.AllHarmony.Add(HarmonyInstance);
+            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
 
         public static void Update()
@@ -187,7 +186,7 @@ namespace LobbyMODS
                     Lobbymessage,
                     ",joinCode: ",
                     ForceHost.joinReturnCode
-                })) ;
+                }));
                 DrawText(ref rect, style, ClientGameSetup.Mode + ", time: " + ClientTime.Time().ToString("00000.000"));
                 if (ConnectionStatus.IsHost())
                 {
@@ -218,7 +217,7 @@ namespace LobbyMODS
                                     //serverConnectionStats._items[i].m_fOutgoingSequenceNumber
                                 }));
                             }
-                            catch (Exception ex)
+                            catch (Exception)
                             {
                                 //MODEntry.LogError($"{ex}");
                             }
