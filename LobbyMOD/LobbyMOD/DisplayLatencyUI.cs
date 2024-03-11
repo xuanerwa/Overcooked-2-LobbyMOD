@@ -16,6 +16,7 @@ namespace LobbyMODS
         private static MyOnScreenDebugDisplay onScreenDebugDisplay;
         private static NetworkStateDebugDisplay NetworkDebugUI = null;
         public static ConfigEntry<bool> ShowEnabled;
+        public static ConfigEntry<bool> isShowDebugInfo;
         public static bool canAdd;
 
 
@@ -25,7 +26,8 @@ namespace LobbyMODS
 
         public static void Awake()
         {
-            ShowEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "UI-显示延迟", true);
+            ShowEnabled = MODEntry.Instance.Config.Bind<bool>("00-UI", "03-屏幕右上角显示延迟", true);
+            isShowDebugInfo = MODEntry.Instance.Config.Bind<bool>("00-UI", "04-屏幕右上角增加显示调试信息", false);
             canAdd = false;
             onScreenDebugDisplay = new MyOnScreenDebugDisplay();
             onScreenDebugDisplay.Awake();
@@ -145,25 +147,26 @@ namespace LobbyMODS
             // Token: 0x06002A65 RID: 10853 RVA: 0x000C642C File Offset: 0x000C482C
             public override void OnDraw(ref Rect rect, GUIStyle style)
             {
-                string text = string.Empty;
-                string text2 = string.Empty;
-                if (ConnectionModeSwitcher.GetRequestedConnectionState() == NetConnectionState.Server)
-                {
-                    ServerOptions serverOptions = (ServerOptions)ConnectionModeSwitcher.GetAgentData();
-                    text = ", visibility: " + serverOptions.visibility.ToString();
-                    text2 = ", gameMode: " + serverOptions.gameMode.ToString();
-                }
-                else if (ConnectionModeSwitcher.GetRequestedConnectionState() == NetConnectionState.Matchmake)
-                {
-                    MatchmakeData matchmakeData = (MatchmakeData)ConnectionModeSwitcher.GetAgentData();
-                    if (ConnectionStatus.IsHost())
+                if (isShowDebugInfo.Value){
+                    string text = string.Empty;
+                    string text2 = string.Empty;
+                    if (ConnectionModeSwitcher.GetRequestedConnectionState() == NetConnectionState.Server)
                     {
-                        text = ",HostgameMode: " + OnlineMultiplayerSessionVisibility.eMatchmaking;
+                        ServerOptions serverOptions = (ServerOptions)ConnectionModeSwitcher.GetAgentData();
+                        text = ", visibility: " + serverOptions.visibility.ToString();
+                        text2 = ", gameMode: " + serverOptions.gameMode.ToString();
                     }
-                    text2 = ",ClientgameMode: " + matchmakeData.gameMode.ToString();
-                }
-                DrawText(ref rect, style, string.Concat(new string[]
-                {
+                    else if (ConnectionModeSwitcher.GetRequestedConnectionState() == NetConnectionState.Matchmake)
+                    {
+                        MatchmakeData matchmakeData = (MatchmakeData)ConnectionModeSwitcher.GetAgentData();
+                        if (ConnectionStatus.IsHost())
+                        {
+                            text = ",HostgameMode: " + OnlineMultiplayerSessionVisibility.eMatchmaking;
+                        }
+                        text2 = ",ClientgameMode: " + matchmakeData.gameMode.ToString();
+                    }
+                    DrawText(ref rect, style, string.Concat(new string[]
+                    {
                     "RequestedConnectionState: ",
                     ConnectionModeSwitcher.GetRequestedConnectionState().ToString(),
                     text,
@@ -172,21 +175,22 @@ namespace LobbyMODS
                     ConnectionModeSwitcher.GetStatus().GetProgress().ToString(),
                     " Result: ",
                     ConnectionModeSwitcher.GetStatus().GetResult().ToString()
-                }));
+                    }));
 
-                //LobbyInfo
-                string Lobbymessage = "NotInLobby";
-                if (ClientLobbyFlowController.Instance != null)
-                {
-                    Lobbymessage = ClientLobbyFlowController.Instance.m_state.ToString();
-                }
-                DrawText(ref rect, style, string.Concat(new string[]
-                {
+                    //LobbyInfo
+                    string Lobbymessage = "NotInLobby";
+                    if (ClientLobbyFlowController.Instance != null)
+                    {
+                        Lobbymessage = ClientLobbyFlowController.Instance.m_state.ToString();
+                    }
+                    DrawText(ref rect, style, string.Concat(new string[]
+                    {
                     "LobbyState: ",
                     Lobbymessage,
                     ",joinCode: ",
                     ForceHost.joinReturnCode
-                }));
+                    }));
+                }
                 DrawText(ref rect, style, ClientGameSetup.Mode + ", time: " + ClientTime.Time().ToString("00000.000"));
                 if (ConnectionStatus.IsHost())
                 {

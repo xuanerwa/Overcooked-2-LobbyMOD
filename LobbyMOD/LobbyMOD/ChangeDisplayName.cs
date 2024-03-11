@@ -13,10 +13,11 @@ namespace LobbyMODS
         public static string lastPlayerName;
         public static ConfigEntry<bool> isReplaceName;
         public static void log(string mes) => MODEntry.LogInfo(mes);
+        private static string PromptWords = "";
         public static void Awake()
         {
-            playerName = MODEntry.Instance.Config.Bind("00-UI字体", "替换名字(说明请鼠标悬浮查看)", "<size=45><color=#00FFFF>惹到我!</color></size><size=30><color=#00CF00>你算是</color></size><size=15><color=#F68FED>踢到棉花了</color></size>", "主机修改延迟1秒立刻生效,客机也能看到生效的新名字,客机修改名字需要重新加入战局,或者重新进入街机.");
-            isReplaceName = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "UI-替换名字(关闭须重启游戏)", false);
+            playerName = MODEntry.Instance.Config.Bind("00-UI", "01-替换名字(第一次使用请鼠标悬浮查看说明)", "<size=45><color=#00FFFF>MOD群 164509805</color></size>", "请提前删除所有的双引号. 主机修改立刻生效,客机也能看到生效的新名字,客机修改名字需要重新加入战局,或者重新进入街机. 请注意!!!客机名字长度有限制,主机没有长度限制,如果客机进入战局名字空白,请尝试改短一点设置的名字!");
+            isReplaceName = MODEntry.Instance.Config.Bind<bool>("00-UI", "00-替换名字开关(关闭须重启游戏)", false);
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             MODEntry.AllHarmony.Add(HarmonyInstance);
             MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
@@ -35,7 +36,7 @@ namespace LobbyMODS
                     {
                         if (serveruser._items[i].IsLocal)
                             serveruser._items[i].DisplayName =
-                                "<MOD>" +
+                                PromptWords +
                                 playerName.Value;
                     }
                     FastList<User> clientuser = ClientUserSystem.m_Users;
@@ -43,7 +44,7 @@ namespace LobbyMODS
                     {
                         if (clientuser._items[i].IsLocal)
                             clientuser._items[i].DisplayName =
-                                "<MOD>" +
+                                PromptWords +
                                 playerName.Value;
                     }
                 }
@@ -60,7 +61,7 @@ namespace LobbyMODS
                 if (__instance.IsLocal)
                 {
                     __result =
-                        "<MOD>" +
+                        PromptWords +
                         playerName.Value;
                 }
             }
@@ -75,9 +76,8 @@ namespace LobbyMODS
                 if (__instance.IsLocal)
                 {
                     value =
-                        "<MOD>" +
+                        PromptWords +
                         playerName.Value;
-
                 }
             }
         }
@@ -89,10 +89,9 @@ namespace LobbyMODS
             if (isReplaceName.Value)
             {
                 requestingLocalUser.m_userName =
-                "<MOD>" +
+                PromptWords +
                 playerName.Value;
             }
         }
-
     }
 }

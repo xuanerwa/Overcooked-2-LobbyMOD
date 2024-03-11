@@ -17,7 +17,7 @@ namespace LobbyMODS
 
         public static void Awake()
         {
-            ShowKickedUserEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "UI-显示自动踢的黑名单玩家", true);
+            ShowKickedUserEnabled = MODEntry.Instance.Config.Bind<bool>("00-UI", "02-街机大厅内显示自动踢的黑名单玩家", true);
             onScreenDebugDisplayKickedUser = new MyOnScreenDebugDisplayKickedUser();
             onScreenDebugDisplayKickedUser.Awake();
         }

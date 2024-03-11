@@ -37,14 +37,14 @@ namespace LobbyMODS
         {
             isAutoKickUser = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "自动踢黑名单里的用户", true, "自动踢出在ban列表中的用户");
 
-            kick2 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "04-踢2号位", KeyCode.Alpha2, "按键踢出2号玩家");
-            kick3 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "05-踢3号位", KeyCode.Alpha3, "按键踢出3号玩家");
-            kick4 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "06-踢4号位", KeyCode.Alpha4, "按键踢出4号玩家");
-            kickAndBan2 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "01-踢2号位并拉黑", KeyCode.F2, "按键踢出2号玩家");
-            kickAndBan3 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "02-踢3号位并拉黑", KeyCode.F3, "按键踢出3号玩家");
-            kickAndBan4 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "03-踢4号位并拉黑", KeyCode.F4, "按键踢出4号玩家");
+            kick2 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "04-仅踢出2号位", KeyCode.Alpha2, "按键踢出2号玩家");
+            kick3 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "05-仅踢出3号位", KeyCode.Alpha3, "按键踢出3号玩家");
+            kick4 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "06-仅踢出4号位", KeyCode.Alpha4, "按键踢出4号玩家");
+            kickAndBan2 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "01-拉黑2号位(并踢出)", KeyCode.F2, "拉黑并踢出2号玩家");
+            kickAndBan3 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "02-拉黑3号位(并踢出)", KeyCode.F3, "拉黑并踢出3号玩家");
+            kickAndBan4 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "03-拉黑4号位(并踢出)", KeyCode.F4, "拉黑并踢出4号玩家");
 
-            saveAll = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "07-保存当前房间的主页链接", KeyCode.Alpha5, "保存当前房间除自己外的所有用户主页链接");
+            saveAll = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "07-保存当前房间除自己外所有人的主页链接", KeyCode.Alpha5, "保存当前房间除自己外的所有用户主页链接");
             LoadBannedSteamIdList();
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             MODEntry.AllHarmony.Add(HarmonyInstance);
@@ -288,6 +288,7 @@ namespace LobbyMODS
                             ServerUserSystem.RemoveUser(user, true);
                         }
                     }
+
                     DateTime currentTime = DateTime.Now;
                     string formattedTime = currentTime.ToString("yyyy-MM-dd HH:mm:ss");
                     string[] autoSavedSteamIdList = new string[]

@@ -1,26 +1,18 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
-using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using Team17.Online;
 using UnityEngine;
-using static ClientPortalMapNode;
-using static DebugDrawManager;
-//dll文件输出路径更改: 本项目名LobbyMOD右键属性-生成-输出路径 改为你的游戏所在路径 Overcooked! 2/BepInEx/plugins/ 下
-//生成dll后自动打开游戏测试: 本项目名LobbyMOD右键属性-生成事件-生成前/后  将gamePath替换成自己游戏的路径
-
 namespace LobbyMODS
 {
-    [BepInPlugin("com.ch3ngyz.plugin.LobbyMods", "[街机主机MOD] By.酷茶 Q群164509805 本MOD完全免费", "1.0.28")]
+    [BepInPlugin("com.ch3ngyz.plugin.LobbyMods", "[街机主机MOD] By.酷茶 Q群164509805 本MOD完全免费", "1.0.32")]
     [BepInProcess("Overcooked2.exe")]
     public class MODEntry : BaseUnityPlugin
     {
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
-
         public static List<Harmony> AllHarmony = new List<Harmony>();
         public static string modName;
         public static MODEntry Instance;
@@ -34,8 +26,8 @@ namespace LobbyMODS
         public static ConfigEntry<string> defaultFontColor;
         public void Awake()
         {
-            defaultFontSize = Config.Bind<int>("00-UI字体", "UI字体大小", 20);
-            defaultFontColor = Config.Bind<string>("00-UI字体", "UI字体颜色(#+6位字母数字组合)", "#FFFFFF");
+            defaultFontSize = Config.Bind<int>("00-UI", "MOD的UI字体大小", 20);
+            defaultFontColor = Config.Bind<string>("00-UI", "MOD的UI字体颜色(#+6位字母数字组合)", "#FFFFFF");
             modName = "街机主机工具";
             Instance = this;
             IsInLobby = false;
@@ -61,7 +53,7 @@ namespace LobbyMODS
             MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
             foreach (string harmony in AllHarmonyName)
             {
-                LogWarning($"Patched {harmony}!");
+                LogError($"Patched {harmony}!");
             }
         }
 
@@ -79,8 +71,6 @@ namespace LobbyMODS
 
         public void Update()
         {
-            if (Screen.width != Mathf.RoundToInt(baseScreenWidth * dpiScaleFactor) || Screen.height != Mathf.RoundToInt(baseScreenHeight * dpiScaleFactor))
-                UpdateGUIDpi();
             DisplayModsOnResultsScreenUI.Update();
             SkipLevel.Update();
             LobbyKickUser.Update();
@@ -140,83 +130,22 @@ namespace LobbyMODS
         public static void LogHarmony(string classname, MethodBase methodBase) => BepInEx.Logging.Logger.CreateLogSource(modName).LogError($"{classname}: {methodBase.Name}");
 
         [HarmonyPatch(typeof(DisconnectionHandler), "HandleKickMessage")]
-        [HarmonyPostfix]
-        public static void postfix1()
-        {
-            IsInParty = false;
-        }
-
         [HarmonyPatch(typeof(DisconnectionHandler), "HandleSessionConnectionLost")]
-        [HarmonyPostfix]
-        public static void postfix2()
-        {
-            IsInParty = false;
-        }
-
         [HarmonyPatch(typeof(DisconnectionHandler), "FireSessionConnectionLostEvent")]
-        [HarmonyPostfix]
-        public static void postfix3()
-        {
-            IsInParty = false;
-        }
-
         [HarmonyPatch(typeof(DisconnectionHandler), "OnlineMultiplayerConnectionModeErrorCallback")]
-        [HarmonyPostfix]
-        public static void postfix4()
-        {
-            IsInParty = false;
-        }
-
         [HarmonyPatch(typeof(DisconnectionHandler), "FireConnectionModeErrorEvent")]
-        [HarmonyPostfix]
-        public static void postfix5()
-        {
-            IsInParty = false;
-        }
-
         [HarmonyPatch(typeof(DisconnectionHandler), "HandleLocalDisconnection")]
-        [HarmonyPostfix]
-        public static void postfix6()
-        {
-            IsInParty = false;
-        }
-
         [HarmonyPatch(typeof(DisconnectionHandler), "FireLocalDisconnectionEvent")]
-        [HarmonyPostfix]
-        public static void postfix7()
-        {
-            IsInParty = false;
-        }
-
         [HarmonyPatch(typeof(DisconnectionHandler), "HandleKickMessage")]
-        [HarmonyPostfix]
-        public static void postfix8()
-        {
-            IsInParty = false;
-        }
-
         [HarmonyPatch(typeof(DisconnectionHandler), "FireKickedFromSessionEvent")]
-        [HarmonyPostfix]
-        public static void postfix9()
-        {
-            IsInParty = false;
-        }
-
         [HarmonyPatch(typeof(ClientLobbyFlowController), "Leave")]
-        [HarmonyPrefix]
-        public static bool prefix5()
+        [HarmonyPatch(typeof(LoadingScreenFlow), "RequestReturnToStartScreen")]
+        [HarmonyPostfix]
+        public static void ExitFromParty()
         {
             IsInParty = false;
-            return true;
         }
 
-        [HarmonyPatch(typeof(LoadingScreenFlow), "RequestReturnToStartScreen")]
-        [HarmonyPrefix]
-        public static bool prefix6()
-        {
-            IsInParty = false;
-            return true;
-        }
 
         public static bool isHost()
         {
@@ -246,10 +175,9 @@ namespace LobbyMODS
         {
             IsHost = isHost();
             isInLobby();
+            if (Screen.width != Mathf.RoundToInt(MODEntry.Instance.baseScreenWidth * dpiScaleFactor) || Screen.height != Mathf.RoundToInt(MODEntry.Instance.baseScreenHeight * dpiScaleFactor))
+                MODEntry.Instance.UpdateGUIDpi();
             //LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
         }
-
-
-
     }
 }
