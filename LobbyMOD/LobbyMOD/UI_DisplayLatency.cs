@@ -8,9 +8,9 @@ using HarmonyLib;
 using System;
 using System.Reflection;
 
-namespace LobbyMODS
+namespace HostPartyMODs
 {
-    public class DisplayLatencyUI
+    public class UI_DisplayLatency
     {
         public static Harmony HarmonyInstance { get; set; }
         private static MyOnScreenDebugDisplay onScreenDebugDisplay;
@@ -26,14 +26,14 @@ namespace LobbyMODS
 
         public static void Awake()
         {
-            ShowEnabled = MODEntry.Instance.Config.Bind<bool>("00-UI", "03-屏幕右上角显示延迟", true);
-            isShowDebugInfo = MODEntry.Instance.Config.Bind<bool>("00-UI", "04-屏幕右上角增加显示调试信息", false);
+            ShowEnabled = _MODEntry.Instance.Config.Bind<bool>("00-UI", "03-屏幕右上角显示延迟", true);
+            isShowDebugInfo = _MODEntry.Instance.Config.Bind<bool>("00-UI", "04-屏幕右上角增加显示调试信息", false);
             canAdd = false;
             onScreenDebugDisplay = new MyOnScreenDebugDisplay();
             onScreenDebugDisplay.Awake();
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            MODEntry.AllHarmony.Add(HarmonyInstance);
-            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            _MODEntry.AllHarmony.Add(HarmonyInstance);
+            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
 
         public static void Update()
@@ -93,10 +93,10 @@ namespace LobbyMODS
             public void Awake()
             {
                 m_GUIStyle.alignment = TextAnchor.UpperRight;
-                m_GUIStyle.fontSize = Mathf.RoundToInt(MODEntry.defaultFontSize.Value * MODEntry.dpiScaleFactor);
+                m_GUIStyle.fontSize = Mathf.RoundToInt(_MODEntry.defaultFontSize.Value * _MODEntry.dpiScaleFactor);
                 try
                 {
-                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
+                    this.m_GUIStyle.normal.textColor = HexToColor(_MODEntry.defaultFontColor.Value);
                 }
                 catch
                 {
@@ -113,10 +113,10 @@ namespace LobbyMODS
 
             public void OnGUI()
             {
-                m_GUIStyle.fontSize = Mathf.RoundToInt(MODEntry.defaultFontSize.Value * MODEntry.dpiScaleFactor);
+                m_GUIStyle.fontSize = Mathf.RoundToInt(_MODEntry.defaultFontSize.Value * _MODEntry.dpiScaleFactor);
                 try
                 {
-                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
+                    this.m_GUIStyle.normal.textColor = HexToColor(_MODEntry.defaultFontColor.Value);
                 }
                 catch
                 {
@@ -223,7 +223,7 @@ namespace LobbyMODS
                             }
                             catch (Exception)
                             {
-                                //MODEntry.LogError($"{ex}");
+                                //_MODEntry.LogError($"{ex}");
                             }
                         }
                         //DrawText(ref rect, style, empty);
@@ -273,7 +273,7 @@ namespace LobbyMODS
                     }
                     catch (Exception ex)
                     {
-                        MODEntry.LogError($"{ex}");
+                        _MODEntry.LogError($"{ex}");
                     }
                     //    DrawText(ref rect, style, string.Concat(new object[]
                     //    {

@@ -7,7 +7,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace LobbyMODS
+namespace HostPartyMODs
 {
     public class ReplaceOneShotAudio
     {
@@ -15,10 +15,10 @@ namespace LobbyMODS
         private static ConfigEntry<bool> isEnabled;
         public static void Awake()
         {
-            isEnabled = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "替换表情语音", true);
+            isEnabled = _MODEntry.Instance.Config.Bind<bool>("00-功能开关", "替换表情语音", true);
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            MODEntry.AllHarmony.Add(HarmonyInstance);
-            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            _MODEntry.AllHarmony.Add(HarmonyInstance);
+            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
 
         [HarmonyPatch(typeof(AudioManager), "FindEntry", new System.Type[] { typeof(GameOneShotAudioTag) })]
@@ -186,12 +186,12 @@ namespace LobbyMODS
                 }
                 else
                 {
-                    MODEntry.LogError("读取wav失败");
+                    _MODEntry.LogError("读取wav失败");
                 }
             }
             else
             {
-                MODEntry.LogError($"文件夹内没有 {_tag.ToString()}*.wav 文件");
+                _MODEntry.LogError($"文件夹内没有 {_tag.ToString()}*.wav 文件");
             }
         }
 

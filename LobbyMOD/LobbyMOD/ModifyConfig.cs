@@ -3,7 +3,7 @@ using HarmonyLib;
 using System;
 using System.Reflection;
 
-namespace LobbyMODS
+namespace HostPartyMODs
 {
     public class ModifyConfig
     {
@@ -11,10 +11,10 @@ namespace LobbyMODS
         private static ConfigEntry<bool> modify_SingleplayerChopTimeMultiplier;
         public static void Awake()
         {
-            modify_SingleplayerChopTimeMultiplier = MODEntry.Instance.Config.Bind<bool>("01-配置修改", "单人切菜倍率(仅街机有效)", false, "单人切菜倍率");
+            modify_SingleplayerChopTimeMultiplier = _MODEntry.Instance.Config.Bind<bool>("01-配置修改", "单人切菜倍率(仅街机有效)", false, "单人切菜倍率");
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            MODEntry.AllHarmony.Add(HarmonyInstance);
-            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            _MODEntry.AllHarmony.Add(HarmonyInstance);
+            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
 
         //mosify SingleplayerChopTimeMultiplier to 1
@@ -22,7 +22,7 @@ namespace LobbyMODS
         [HarmonyPostfix]
         private static void GameUtils_GetGameConfig_Postfix(ref GameConfig __result)
         {
-            if (__result != null && modify_SingleplayerChopTimeMultiplier.Value && MODEntry.IsInParty)
+            if (__result != null && modify_SingleplayerChopTimeMultiplier.Value && _MODEntry.IsInParty)
             {
                 __result.SingleplayerChopTimeMultiplier = 1;
             }

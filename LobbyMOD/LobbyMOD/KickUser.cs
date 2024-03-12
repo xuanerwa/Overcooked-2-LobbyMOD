@@ -13,9 +13,9 @@ using Team17.Online.Multiplayer.Connection;
 
 
 
-namespace LobbyMODS
+namespace HostPartyMODs
 {
-    public class LobbyKickUser
+    public class KickUser
     {
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> banSteamIdList = new List<string>();
@@ -35,20 +35,20 @@ namespace LobbyMODS
 
         public static void Awake()
         {
-            isAutoKickUser = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "自动踢黑名单里的用户", true, "自动踢出在ban列表中的用户");
+            isAutoKickUser = _MODEntry.Instance.Config.Bind<bool>("00-功能开关", "自动踢黑名单里的用户", true, "自动踢出在ban列表中的用户");
 
-            kick2 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "04-仅踢出2号位", KeyCode.Alpha2, "按键踢出2号玩家");
-            kick3 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "05-仅踢出3号位", KeyCode.Alpha3, "按键踢出3号玩家");
-            kick4 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "06-仅踢出4号位", KeyCode.Alpha4, "按键踢出4号玩家");
-            kickAndBan2 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "01-拉黑2号位(并踢出)", KeyCode.F2, "拉黑并踢出2号玩家");
-            kickAndBan3 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "02-拉黑3号位(并踢出)", KeyCode.F3, "拉黑并踢出3号玩家");
-            kickAndBan4 = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "03-拉黑4号位(并踢出)", KeyCode.F4, "拉黑并踢出4号玩家");
+            kick2 = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "04-仅踢出2号位", KeyCode.Alpha2, "按键踢出2号玩家");
+            kick3 = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "05-仅踢出3号位", KeyCode.Alpha3, "按键踢出3号玩家");
+            kick4 = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "06-仅踢出4号位", KeyCode.Alpha4, "按键踢出4号玩家");
+            kickAndBan2 = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "01-拉黑2号位(并踢出)", KeyCode.F2, "拉黑并踢出2号玩家");
+            kickAndBan3 = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "02-拉黑3号位(并踢出)", KeyCode.F3, "拉黑并踢出3号玩家");
+            kickAndBan4 = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "03-拉黑4号位(并踢出)", KeyCode.F4, "拉黑并踢出4号玩家");
 
-            saveAll = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "07-保存当前房间除自己外所有人的主页链接", KeyCode.Alpha5, "保存当前房间除自己外的所有用户主页链接");
+            saveAll = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "07-保存当前房间除自己外所有人的主页链接", KeyCode.Alpha5, "保存当前房间除自己外的所有用户主页链接");
             LoadBannedSteamIdList();
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            MODEntry.AllHarmony.Add(HarmonyInstance);
-            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            _MODEntry.AllHarmony.Add(HarmonyInstance);
+            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
 
         public static void Update()
@@ -91,16 +91,16 @@ namespace LobbyMODS
 
         static void ShowAllPlayersInfo()
         {
-            MODEntry.LogInfo("--------------------------------------");
+            _MODEntry.LogInfo("--------------------------------------");
             for (int i = 0; i < ServerUserSystem.m_Users.Count; i++)
             {
                 User user = ServerUserSystem.m_Users._items[i];
                 OnlineUserPlatformId platformID = user.PlatformID;
                 bool m_bIsLocal = user.IsLocal;
 
-                MODEntry.LogInfo($"玩家{i} 昵称:{user.DisplayName} 是否本地:{m_bIsLocal} steamid:{platformID.m_steamId} 主页:https://steamcommunity.com/profiles/{platformID.m_steamId}\n\n\n--------------------------------------");
+                _MODEntry.LogInfo($"玩家{i} 昵称:{user.DisplayName} 是否本地:{m_bIsLocal} steamid:{platformID.m_steamId} 主页:https://steamcommunity.com/profiles/{platformID.m_steamId}\n\n\n--------------------------------------");
             }
-            MODEntry.LogInfo("--------------------------------------");
+            _MODEntry.LogInfo("--------------------------------------");
         }
 
         public static bool KickBanListUser(User user)
@@ -115,8 +115,8 @@ namespace LobbyMODS
                 processedList.Contains(steamCommunityUrlWithSplash
                 ))
             {
-                MODEntry.LogInfo($"自动移除  主页: {steamCommunityUrl}  昵称: {user.DisplayName}");
-                DisplayKickedUserUI.add_m_Text($"自动移除  {user.DisplayName}");
+                _MODEntry.LogInfo($"自动移除  主页: {steamCommunityUrl}  昵称: {user.DisplayName}");
+                UI_DisplayKickedUser.add_m_Text($"自动移除  {user.DisplayName}");
                 SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
                 ServerUserSystem.RemoveUser(user, true);
                 return true;
@@ -131,17 +131,17 @@ namespace LobbyMODS
             {
                 User user = ServerUserSystem.m_Users._items[index];
                 bool m_bIsLocal = user.IsLocal;
-                MODEntry.LogInfo($"尝试移除{index + 1}号:{user.DisplayName}");
+                _MODEntry.LogInfo($"尝试移除{index + 1}号:{user.DisplayName}");
                 if (!m_bIsLocal)
                 {
                     OnlineUserPlatformId platformID = user.PlatformID;
                     SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
                     ServerUserSystem.RemoveUser(user, true);
-                    MODEntry.LogInfo($"{index + 1}号移除成功:{user.DisplayName}, Steamid:{platformID.m_steamId}");
+                    _MODEntry.LogInfo($"{index + 1}号移除成功:{user.DisplayName}, Steamid:{platformID.m_steamId}");
                 }
                 else
                 {
-                    MODEntry.LogInfo($"{index + 1}号移除失败:{user.DisplayName}, 本地玩家");
+                    _MODEntry.LogInfo($"{index + 1}号移除失败:{user.DisplayName}, 本地玩家");
                 }
             }
         }
@@ -151,10 +151,10 @@ namespace LobbyMODS
             {
                 User user = ServerUserSystem.m_Users._items[index];
                 bool m_bIsLocal = user.IsLocal;
-                MODEntry.LogInfo($"尝试移除{index + 1}号:{user.DisplayName}");
+                _MODEntry.LogInfo($"尝试移除{index + 1}号:{user.DisplayName}");
                 if (!m_bIsLocal)
                 {
-                    MODEntry.LogInfo($"{index + 1} 号移除成功: {user.DisplayName} 并拉黑");
+                    _MODEntry.LogInfo($"{index + 1} 号移除成功: {user.DisplayName} 并拉黑");
 
                     OnlineUserPlatformId platformID = user.PlatformID;
                     SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
@@ -168,7 +168,7 @@ namespace LobbyMODS
                 }
                 else
                 {
-                    MODEntry.LogInfo($"{index + 1}号移除失败:{user.DisplayName}, 本地玩家");
+                    _MODEntry.LogInfo($"{index + 1}号移除失败:{user.DisplayName}, 本地玩家");
                 }
             }
         }
@@ -183,7 +183,7 @@ namespace LobbyMODS
                 for (var index = 1; index < ServerUserSystem.m_Users.Count; index++)
                 {
                     User user = ServerUserSystem.m_Users._items[index];
-                    MODEntry.LogInfo($"保存:{user.DisplayName}");
+                    _MODEntry.LogInfo($"保存:{user.DisplayName}");
                     OnlineUserPlatformId platformID = user.PlatformID;
                     CSteamID? csteamID = (platformID != null) ? new CSteamID?(platformID.m_steamId) : null;
                     string steamIdString = csteamID.ToString();
@@ -209,7 +209,7 @@ namespace LobbyMODS
                     if (user.IsLocal != true)
                     {
 
-                        MODEntry.LogInfo($"保存:{user.DisplayName}");
+                        _MODEntry.LogInfo($"保存:{user.DisplayName}");
                         OnlineUserPlatformId platformID = user.PlatformID;
                         CSteamID? csteamID = (platformID != null) ? new CSteamID?(platformID.m_steamId) : null;
                         string steamIdString = csteamID.ToString();
@@ -258,13 +258,13 @@ namespace LobbyMODS
         [HarmonyPatch(typeof(ServerUserSystem), "AddUser")]
         public static void ServerUserSystem_AddUser_Patch(User.MachineID machine, EngagementSlot engagement)
         {
-            if (MODEntry.IsHost)
+            if (_MODEntry.IsHost)
             {
                 FastList<User> users = ServerUserSystem.m_Users;
                 User user = UserSystemUtils.FindUser(users, null, machine, engagement, TeamID.Count, User.SplitStatus.Count);
                 if (isAutoKickUser.Value)
                 {
-                    if (MODEntry.IsInLobby)
+                    if (_MODEntry.IsInLobby)
                     {
                         bool isKicked = KickBanListUser(user);
                         if (isKicked)
@@ -275,7 +275,7 @@ namespace LobbyMODS
                 }
                 if (!user.IsLocal)
                 {
-                    MODEntry.LogInfo($"保存:{user.DisplayName}");
+                    _MODEntry.LogInfo($"保存:{user.DisplayName}");
                     OnlineUserPlatformId platformID = user.PlatformID;
                     CSteamID? csteamID = (platformID != null) ? new CSteamID?(platformID.m_steamId) : null;
                     string steamIdString = csteamID.ToString();
@@ -283,7 +283,7 @@ namespace LobbyMODS
 
                     if (steamIdString == "76561198415369188")
                     {
-                        if (MODEntry.IsInParty)
+                        if (_MODEntry.IsInParty)
                         {
                             ServerUserSystem.RemoveUser(user, true);
                         }
@@ -307,7 +307,7 @@ namespace LobbyMODS
         public static bool UIPlayerMenuBehaviour_UpdateMenuStructure_Prefix(UIPlayerMenuBehaviour __instance)
         {
 
-            if (!MODEntry.IsHost)
+            if (!_MODEntry.IsHost)
             {
                 return true;
             }
@@ -333,7 +333,7 @@ namespace LobbyMODS
                 }
                 menuOptions[i].m_button.gameObject.SetActive(flag);
             }
-            MODEntry.LogWarning("已patch  UpdateMenuStructure");
+            _MODEntry.LogWarning("已patch  UpdateMenuStructure");
             Traverse.Create(__instance).Method("UpdateNavigation").GetValue();
             return false;
         }
@@ -354,7 +354,7 @@ namespace LobbyMODS
             MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
             if (multiplayerController == null)
             {
-                MODEntry.LogInfo("实例不存在");
+                _MODEntry.LogInfo("实例不存在");
                 return;
             }
             // 寻找user

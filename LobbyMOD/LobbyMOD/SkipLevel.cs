@@ -4,18 +4,18 @@ using GameModes.Horde;
 using HarmonyLib;
 
 
-namespace LobbyMODS
+namespace HostPartyMODs
 {
     public class SkipLevel
     {
-        public static void log(string mes) => MODEntry.LogInfo(mes);
+        public static void log(string mes) => _MODEntry.LogInfo(mes);
         public static ConfigEntry<KeyCode> stopLevel;
         public static int startTime;
         public static bool cooling = false;
 
         public static void Awake()
         {
-            stopLevel = MODEntry.Instance.Config.Bind("01-按键绑定", "10-直接跳过关卡", KeyCode.Delete, "跳过关卡");
+            stopLevel = _MODEntry.Instance.Config.Bind("01-按键绑定", "10-直接跳过关卡", KeyCode.Delete, "跳过关卡");
         }
 
         public static void Update()
@@ -40,7 +40,7 @@ namespace LobbyMODS
 
         public static void EndLevel()
         {
-            if (!MODEntry.IsHost)
+            if (!_MODEntry.IsHost)
             {
                 log("不是主机玩家");
                 return;

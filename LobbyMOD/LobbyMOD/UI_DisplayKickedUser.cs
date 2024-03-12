@@ -5,9 +5,9 @@ using System.Reflection;
 using UnityEngine;
 using static ClientPortalMapNode;
 
-namespace LobbyMODS
+namespace HostPartyMODs
 {
-    public class DisplayKickedUserUI
+    public class UI_DisplayKickedUser
     {
         private static MyOnScreenDebugDisplayKickedUser onScreenDebugDisplayKickedUser;
         private static MyKickedUserCounter kickedUserCounter = null;
@@ -17,7 +17,7 @@ namespace LobbyMODS
 
         public static void Awake()
         {
-            ShowKickedUserEnabled = MODEntry.Instance.Config.Bind<bool>("00-UI", "02-街机大厅内显示自动踢的黑名单玩家", true);
+            ShowKickedUserEnabled = _MODEntry.Instance.Config.Bind<bool>("00-UI", "02-街机大厅内显示自动踢的黑名单玩家", true);
             onScreenDebugDisplayKickedUser = new MyOnScreenDebugDisplayKickedUser();
             onScreenDebugDisplayKickedUser.Awake();
         }
@@ -27,9 +27,9 @@ namespace LobbyMODS
         {
             onScreenDebugDisplayKickedUser.Update();
 
-            if (((!MODEntry.IsInLobby) || Input.GetKeyDown(KeyCode.End)) && kickedUserCounter != null)
+            if (((!_MODEntry.IsInLobby) || Input.GetKeyDown(KeyCode.End)) && kickedUserCounter != null)
                 RemoveKickedUserCounter();
-            else if (((MODEntry.IsInLobby && ShowKickedUserEnabled.Value) || Input.GetKeyDown(KeyCode.Home)) && kickedUserCounter == null)
+            else if (((_MODEntry.IsInLobby && ShowKickedUserEnabled.Value) || Input.GetKeyDown(KeyCode.Home)) && kickedUserCounter == null)
                 AddKickedUserCounter();
         }
 
@@ -89,10 +89,10 @@ namespace LobbyMODS
             public void Awake()
             {
                 m_GUIStyle.alignment = TextAnchor.UpperLeft;
-                m_GUIStyle.fontSize = MODEntry.defaultFontSize.Value;
+                m_GUIStyle.fontSize = _MODEntry.defaultFontSize.Value;
                 try
                 {
-                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
+                    this.m_GUIStyle.normal.textColor = HexToColor(_MODEntry.defaultFontColor.Value);
                 }
                 catch
                 {
@@ -108,10 +108,10 @@ namespace LobbyMODS
 
             public void OnGUI()
             {
-                m_GUIStyle.fontSize = Mathf.RoundToInt(MODEntry.defaultFontSize.Value * MODEntry.dpiScaleFactor);
+                m_GUIStyle.fontSize = Mathf.RoundToInt(_MODEntry.defaultFontSize.Value * _MODEntry.dpiScaleFactor);
                 try
                 {
-                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
+                    this.m_GUIStyle.normal.textColor = HexToColor(_MODEntry.defaultFontColor.Value);
                 }
                 catch
                 {

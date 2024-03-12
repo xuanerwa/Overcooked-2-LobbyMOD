@@ -1,20 +1,19 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
-using System;
 using System.Reflection;
-namespace LobbyMODS
+namespace HostPartyMODs
 {
     public class FixDoubleServing
     {
         public static Harmony HarmonyInstance { get; set; }
-        public static void log(string mes) => MODEntry.LogInfo(mes);
+        public static void log(string mes) => _MODEntry.LogInfo(mes);
         public static ConfigEntry<bool> isDoubleServingBanned;
         public static void Awake()
         {
-            isDoubleServingBanned = MODEntry.Instance.Config.Bind<bool>("00-功能开关", "禁止卡盘", true, "禁止卡盘子");
+            isDoubleServingBanned = _MODEntry.Instance.Config.Bind<bool>("00-功能开关", "禁止卡盘", true, "禁止卡盘子");
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            MODEntry.AllHarmony.Add(HarmonyInstance);
-            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            _MODEntry.AllHarmony.Add(HarmonyInstance);
+            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
 
         private static bool skipNext = false;

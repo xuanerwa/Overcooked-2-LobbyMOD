@@ -5,17 +5,17 @@ using System.Collections.Generic;
 using System.Reflection;
 using Team17.Online;
 using UnityEngine;
-namespace LobbyMODS
+namespace HostPartyMODs
 {
-    [BepInPlugin("com.ch3ngyz.plugin.LobbyMods", "[街机主机MOD] By.酷茶 Q群164509805 本MOD完全免费", "1.0.32")]
+    [BepInPlugin("com.ch3ngyz.plugin.LobbyMods", "[主机实用工具] By.酷茶 Q群164509805 本MOD完全免费", "1.0.33")]
     [BepInProcess("Overcooked2.exe")]
-    public class MODEntry : BaseUnityPlugin
+    public class _MODEntry : BaseUnityPlugin
     {
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
         public static string modName;
-        public static MODEntry Instance;
+        public static _MODEntry Instance;
         public static bool IsInLobby;
         public static bool IsHost;
         public static bool IsInParty;
@@ -28,29 +28,27 @@ namespace LobbyMODS
         {
             defaultFontSize = Config.Bind<int>("00-UI", "MOD的UI字体大小", 20);
             defaultFontColor = Config.Bind<string>("00-UI", "MOD的UI字体颜色(#+6位字母数字组合)", "#FFFFFF");
-            modName = "街机主机工具";
+            modName = "主机实用工具";
             Instance = this;
             IsInLobby = false;
             IsHost = false;
             ModifyConfig.Awake();
-            DisplayModsOnResultsScreenUI.Awake();
+            UI_DisplayModsOnResultsScreen.Awake();
             SkipLevel.Awake();
-            LobbyKickUser.Awake();
-            LobbyKevin.Awake();
-            QuitWhenLoadScene.Awake();
-            DisplayKickedUserUI.Awake();
+            KickUser.Awake();
+            PartyKevin.Awake();
+            QuitInLoadingScreen.Awake();
+            UI_DisplayKickedUser.Awake();
             ReplaceOneShotAudio.Awake();
             ForceHost.Awake();
             Recipe.Awake();
-            DisplayLatencyUI.Awake();
+            UI_DisplayLatency.Awake();
             FixDoubleServing.Awake();
             RestartLevel.Awake();
             ChangeDisplayName.Awake();
-            //UnlockChefs.Awake();
-            //UnlockDlcs.Awake();
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            MODEntry.AllHarmony.Add(HarmonyInstance);
-            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            AllHarmony.Add(HarmonyInstance);
+            AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
             foreach (string harmony in AllHarmonyName)
             {
                 LogError($"Patched {harmony}!");
@@ -71,13 +69,13 @@ namespace LobbyMODS
 
         public void Update()
         {
-            DisplayModsOnResultsScreenUI.Update();
+            UI_DisplayModsOnResultsScreen.Update();
             SkipLevel.Update();
-            LobbyKickUser.Update();
-            LobbyKevin.Update();
-            QuitWhenLoadScene.Update();
-            DisplayKickedUserUI.Update();
-            DisplayLatencyUI.Update();
+            KickUser.Update();
+            PartyKevin.Update();
+            QuitInLoadingScreen.Update();
+            UI_DisplayKickedUser.Update();
+            UI_DisplayLatency.Update();
             ForceHost.Update();
             Recipe.Update();
             RestartLevel.Update();
@@ -85,9 +83,9 @@ namespace LobbyMODS
 
         public void OnGUI()
         {
-            DisplayModsOnResultsScreenUI.OnGUI();
-            DisplayKickedUserUI.OnGUI();
-            DisplayLatencyUI.OnGUI();
+            UI_DisplayModsOnResultsScreen.OnGUI();
+            UI_DisplayKickedUser.OnGUI();
+            UI_DisplayLatency.OnGUI();
             Recipe.OnGUI();
         }
 
@@ -175,9 +173,9 @@ namespace LobbyMODS
         {
             IsHost = isHost();
             isInLobby();
-            if (Screen.width != Mathf.RoundToInt(MODEntry.Instance.baseScreenWidth * dpiScaleFactor) || Screen.height != Mathf.RoundToInt(MODEntry.Instance.baseScreenHeight * dpiScaleFactor))
-                MODEntry.Instance.UpdateGUIDpi();
-            //LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
+            if (Screen.width != Mathf.RoundToInt(_MODEntry.Instance.baseScreenWidth * dpiScaleFactor) || Screen.height != Mathf.RoundToInt(_MODEntry.Instance.baseScreenHeight * dpiScaleFactor))
+                _MODEntry.Instance.UpdateGUIDpi();
+            LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
         }
     }
 }

@@ -6,9 +6,9 @@ using BepInEx.Configuration;
 using System.Reflection;
 using System;
 
-namespace LobbyMODS
+namespace HostPartyMODs
 {
-    public class DisplayModsOnResultsScreenUI
+    public class UI_DisplayModsOnResultsScreen
     {
         public static Harmony HarmonyInstance { get; set; }
         private static MyOnScreenDebugDisplay onScreenDebugDisplay;
@@ -18,7 +18,7 @@ namespace LobbyMODS
 
         public static void Awake()
         {
-            isshow = MODEntry.Instance.Config.Bind<bool>("00-UI", "05-关卡结束时显示自定义关卡状态", true);
+            isshow = _MODEntry.Instance.Config.Bind<bool>("00-UI", "05-关卡结束时显示自定义关卡状态", true);
             /* Setup */
             onScreenDebugDisplay = new MyOnScreenDebugDisplay();
             onScreenDebugDisplay.Awake();
@@ -26,8 +26,8 @@ namespace LobbyMODS
             onScreenDebugDisplay.AddDisplay(modsDisplay);
             /* Inject Mod */
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            MODEntry.AllHarmony.Add(HarmonyInstance);
-            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            _MODEntry.AllHarmony.Add(HarmonyInstance);
+            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
 
         public static void Update()
@@ -65,10 +65,10 @@ namespace LobbyMODS
                 this.m_Displays = new List<DebugDisplay>();
                 this.m_GUIStyle = new GUIStyle();
                 this.m_GUIStyle.alignment = TextAnchor.UpperRight;
-                this.m_GUIStyle.fontSize = MODEntry.defaultFontSize.Value;
+                this.m_GUIStyle.fontSize = _MODEntry.defaultFontSize.Value;
                 try
                 {
-                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
+                    this.m_GUIStyle.normal.textColor = HexToColor(_MODEntry.defaultFontColor.Value);
                 }
                 catch
                 {
@@ -86,10 +86,10 @@ namespace LobbyMODS
 
             public void OnGUI()
             {
-                m_GUIStyle.fontSize = Mathf.RoundToInt(MODEntry.defaultFontSize.Value * MODEntry.dpiScaleFactor);
+                m_GUIStyle.fontSize = Mathf.RoundToInt(_MODEntry.defaultFontSize.Value * _MODEntry.dpiScaleFactor);
                 try
                 {
-                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
+                    this.m_GUIStyle.normal.textColor = HexToColor(_MODEntry.defaultFontColor.Value);
                 }
                 catch
                 {
@@ -140,7 +140,7 @@ namespace LobbyMODS
             if (isshow.Value)
             {
 
-                if (LobbyKevin.kevinEnabled.Value)
+                if (PartyKevin.kevinEnabled.Value)
                 {
                     bool shouldNtDisplayKevinState = true;
                     bool shouldNtDisplayNormalState = true;

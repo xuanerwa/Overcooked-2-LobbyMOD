@@ -1,19 +1,18 @@
 ﻿using BepInEx.Configuration;
-using HarmonyLib;
 using UnityEngine;
 
-namespace LobbyMODS
+namespace HostPartyMODs
 {
     public class RestartLevel
     {
-        public static void log(string mes) => MODEntry.LogInfo(mes);
+        public static void log(string mes) => _MODEntry.LogInfo(mes);
         public static ConfigEntry<KeyCode> restartLevel;
         public static int startTime;
         public static bool cooling = false;
 
         public static void Awake()
         {
-            restartLevel = MODEntry.Instance.Config.Bind("01-按键绑定", "12-一键重开", KeyCode.F11, "跳过关卡");
+            restartLevel = _MODEntry.Instance.Config.Bind("01-按键绑定", "12-一键重开", KeyCode.F11, "跳过关卡");
         }
 
         public static void Update()

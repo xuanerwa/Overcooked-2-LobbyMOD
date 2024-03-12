@@ -7,12 +7,12 @@ using Team17.Online;
 using UnityEngine;
 
 
-namespace LobbyMODS
+namespace HostPartyMODs
 {
-    public class LobbyKevin
+    public class PartyKevin
     {
         public static Harmony HarmonyInstance { get; set; }
-        public static void log(string mes) => MODEntry.LogInfo(mes);
+        public static void log(string mes) => _MODEntry.LogInfo(mes);
         public static ConfigEntry<KeyCode> resetTimer;
         public static ConfigEntry<KeyCode> PlayRandom;
         public static ConfigEntry<bool> kevinEnabled;
@@ -27,12 +27,12 @@ namespace LobbyMODS
             MServerLobbyFlowController.CreateConfigEntries();
 
 
-            PlayRandom = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "08-大厅计时器归零", KeyCode.Alpha6, "4秒后直接开始随机关卡");
-            resetTimer = MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "09-大厅计时器45秒", KeyCode.Alpha7, "重置街机大厅时间为45秒");
-            kevinEnabled = MODEntry.Instance.Config.Bind<bool>("02-修改关卡", "02区域总开关(开启关卡修改)", true);
+            PlayRandom = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "08-大厅计时器归零", KeyCode.Alpha6, "4秒后直接开始随机关卡");
+            resetTimer = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "09-大厅计时器45秒", KeyCode.Alpha7, "重置街机大厅时间为45秒");
+            kevinEnabled = _MODEntry.Instance.Config.Bind<bool>("02-修改关卡", "02区域总开关(开启关卡修改)", true);
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            MODEntry.AllHarmony.Add(HarmonyInstance);
-            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            _MODEntry.AllHarmony.Add(HarmonyInstance);
+            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
         public static void Update()
         {
@@ -129,7 +129,7 @@ namespace LobbyMODS
         [HarmonyPrefix]
         private static bool Prefix(ref ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
         {
-            if (!LobbyKevin.kevinEnabled.Value)
+            if (!PartyKevin.kevinEnabled.Value)
             {
                 log("街机凯文未启用,执行原函数");
                 return true;
@@ -187,12 +187,12 @@ namespace LobbyMODS
         private static ConfigEntry<bool> configEntry;
         private static void CreateConfigEntry(string cls, string key)
         {
-            configEntry = MODEntry.Instance.Config.Bind(cls, key, false);
+            configEntry = _MODEntry.Instance.Config.Bind(cls, key, false);
             sceneDisableConfigEntries.Add(key, configEntry);
         }
         private static void CreateConfigEntry(string cls, string key, bool init)
         {
-            configEntry = MODEntry.Instance.Config.Bind(cls, key, init);
+            configEntry = _MODEntry.Instance.Config.Bind(cls, key, init);
             sceneDisableConfigEntries.Add(key, configEntry);
         }
 
@@ -209,7 +209,7 @@ namespace LobbyMODS
 
         public static void MPickLevel(ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
         {
-            MODEntry.LogInfo($"街机凯文已启用, 选择的世界是{_theme}");
+            _MODEntry.LogInfo($"街机凯文已启用, 选择的世界是{_theme}");
             //Traverse Tvinstance = Traverse.Create(__instance);
             Predicate<SceneDirectoryData.SceneDirectoryEntry> matchOnlyCarnival3_4 = (SceneDirectoryData.SceneDirectoryEntry entry) =>
             {
@@ -359,7 +359,7 @@ namespace LobbyMODS
 
             if (fastList.Count == 0)
             {
-                MODEntry.LogInfo($"未匹配到{_theme}里的关卡,随机全部关卡(带凯文)");
+                _MODEntry.LogInfo($"未匹配到{_theme}里的关卡,随机全部关卡(带凯文)");
                 for (int i = 0; i < sceneDirectories.Length; i++)
                 {
                     //Predicate<SceneDirectoryData.SceneDirectoryEntry> Random = (SceneDirectoryData.SceneDirectoryEntry entry) => !entry.Label.Contains("TutorialLevel") && !entry.Label.Contains("ThroneRoom");
@@ -372,7 +372,7 @@ namespace LobbyMODS
             if (sceneDisableConfigEntries["只玩麻3-4"].Value)
             {
                 fastList.Clear();
-                MODEntry.LogInfo("只玩麻3-4");
+                _MODEntry.LogInfo("只玩麻3-4");
                 for (int i = 0; i < sceneDirectories.Length; i++)
                 {
                     fastList.AddRange(sceneDirectories[i].Scenes.FindAll(matchOnlyCarnival3_4));
@@ -382,7 +382,7 @@ namespace LobbyMODS
             else if (sceneDisableConfigEntries["只玩海3-4"].Value)
             {
                 fastList.Clear();
-                MODEntry.LogInfo("只玩海3-4");
+                _MODEntry.LogInfo("只玩海3-4");
                 for (int i = 0; i < sceneDirectories.Length; i++)
                 {
                     fastList.AddRange(sceneDirectories[i].Scenes.FindAll(matchOnlyBeach3_4));
@@ -396,11 +396,11 @@ namespace LobbyMODS
                 string Message = $"Filter: index: {kkk}   Theme: {fastList._items[kkk].Theme}   World: {fastList._items[kkk].World}  label:{fastList._items[kkk].Label}  AvailableInLobby:{fastList._items[kkk].AvailableInLobby}  IsHidden:{fastList._items[kkk].IsHidden}";
                 if (fastList._items[kkk].AvailableInLobby == false)
                 {
-                    MODEntry.LogWarning(Message);
+                    _MODEntry.LogWarning(Message);
                 }
                 else
                 {
-                    MODEntry.LogInfo(Message);
+                    _MODEntry.LogInfo(Message);
                 }
             }
             if (sceneDisableConfigEntries["街机关卡不重复"].Value && !(sceneDisableConfigEntries["只玩麻3-4"].Value || sceneDisableConfigEntries["只玩海3-4"].Value))
@@ -431,13 +431,13 @@ namespace LobbyMODS
                 {
                     while (alreadyPlayedSet[fastList._items[num].Label])
                     {
-                        MODEntry.LogInfo($"alreadyPlayed:{fastList._items[num].Label}");
+                        _MODEntry.LogInfo($"alreadyPlayed:{fastList._items[num].Label}");
                         num = UnityEngine.Random.Range(0, fastList.Count);
                     }
                 }
             }
             alreadyPlayedSet[fastList._items[num].Label] = true;
-            MODEntry.LogInfo($"Picked: index: {num}   Theme: {fastList._items[num].Theme}   World: {fastList._items[num].World}  label:{fastList._items[num].Label}  AvailableInLobby:{fastList._items[num].AvailableInLobby}  IsHidden:{fastList._items[num].IsHidden}");
+            _MODEntry.LogInfo($"Picked: index: {num}   Theme: {fastList._items[num].Theme}   World: {fastList._items[num].World}  label:{fastList._items[num].Label}  AvailableInLobby:{fastList._items[num].AvailableInLobby}  IsHidden:{fastList._items[num].IsHidden}");
 
             int idx = -1;
             for (int k = 0; k < array.Length; k++)

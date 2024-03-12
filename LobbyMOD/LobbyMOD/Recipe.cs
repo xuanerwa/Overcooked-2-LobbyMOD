@@ -10,12 +10,12 @@ using Team17.Online;
 using System.Collections;
 using System.Reflection;
 
-namespace LobbyMODS
+namespace HostPartyMODs
 {
     public class Recipe
     {
         public static Harmony HarmonyInstance { get; set; }
-        public static void log(string mes) => MODEntry.LogInfo(mes);
+        public static void log(string mes) => _MODEntry.LogInfo(mes);
         public static ConfigEntry<bool> enabled;
         public static ConfigEntry<bool> namesymplify;
         public static ConfigEntry<bool> displayhistory;
@@ -350,24 +350,24 @@ namespace LobbyMODS
 
         public static void Awake()
         {
-            enabled = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "(03区域总开关)菜单显示功能", false);
-            displayhistory = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "显示历史菜单", false);
-            //displaymore = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "显示未来菜单", false);
-            predict = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "预测未来菜单", false);
-            namesymplify = MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "简化显示菜单名称", false);
+            enabled = _MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "(03区域总开关)菜单显示功能", false);
+            displayhistory = _MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "显示历史菜单", false);
+            //displaymore = _MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "显示未来菜单", false);
+            predict = _MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "预测未来菜单", false);
+            namesymplify = _MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "简化显示菜单名称", false);
             initial();
             symplify();
             OnScreenDisplayRecipe = new MyOnScreenDebugDisplayRecipe();
             OnScreenDisplayRecipe.Awake();
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            MODEntry.AllHarmony.Add(HarmonyInstance);
-            MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            _MODEntry.AllHarmony.Add(HarmonyInstance);
+            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
 
         public static void Update()
         {
             OnScreenDisplayRecipe.Update();
-            if (MODEntry.IsInParty)
+            if (_MODEntry.IsInParty)
             {
                 if (displayhistory.Value)
                 {
@@ -665,10 +665,10 @@ namespace LobbyMODS
 
             public void AddDisplay(DebugDisplay display)
             {
-                m_GUIStyle.fontSize = MODEntry.defaultFontSize.Value;
+                m_GUIStyle.fontSize = _MODEntry.defaultFontSize.Value;
                 try
                 {
-                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
+                    this.m_GUIStyle.normal.textColor = HexToColor(_MODEntry.defaultFontColor.Value);
                 }
                 catch
                 {
@@ -698,10 +698,10 @@ namespace LobbyMODS
 
             public void OnGUI()
             {
-                m_GUIStyle.fontSize = MODEntry.defaultFontSize.Value;
+                m_GUIStyle.fontSize = _MODEntry.defaultFontSize.Value;
                 try
                 {
-                    this.m_GUIStyle.normal.textColor = HexToColor(MODEntry.defaultFontColor.Value);
+                    this.m_GUIStyle.normal.textColor = HexToColor(_MODEntry.defaultFontColor.Value);
                 }
                 catch
                 {
