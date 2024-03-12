@@ -3,4 +3,4 @@ bin/
 obj/
 oc2-modding/
 .vscode/
-LobbyMOD/LobbyMOD/LobbyMOD.csproj
+HostUtilities/HostUtilities/HostUtilities.csproj
