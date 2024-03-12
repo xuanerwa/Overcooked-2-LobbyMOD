@@ -35,7 +35,7 @@ jobs:
           git clone https://github.com/CH3NGYZ/Overcooked-2-HostUtilities-ResourceFiles.git
           mkdir -p CHA\Audio
 
-          copy  $Env:GITHUB_WORKSPACE\HostUtilities\HostUtilities\bin\Release\HostUtilities.dll Overcooked-2-LobbyMOD-ResourceFiles
+          copy  $Env:GITHUB_WORKSPACE\HostUtilities\HostUtilities\bin\Release\HostUtilities.dll Overcooked-2-HostUtilities-ResourceFiles
           copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\HostUtilities.dll CHA
           copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\ConfigurationManager.xml CHA
           copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\ConfigurationManager.dll CHA
