@@ -10,7 +10,7 @@ using Team17.Online;
 using System.Collections;
 using System.Reflection;
 
-namespace HostPartyMODs
+namespace HostUtilities
 {
     public class Recipe
     {

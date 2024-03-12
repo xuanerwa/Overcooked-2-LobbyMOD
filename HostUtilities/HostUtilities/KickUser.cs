@@ -13,7 +13,7 @@ using Team17.Online.Multiplayer.Connection;
 
 
 
-namespace HostPartyMODs
+namespace HostUtilities
 {
     public class KickUser
     {

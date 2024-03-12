@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using Team17.Online;
 using UnityEngine;
-namespace HostPartyMODs
+namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.LobbyMods", "[主机实用工具] By.酷茶 Q群164509805 本MOD完全免费", "1.0.33")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.酷茶 Q群164509805 本MOD完全免费", "1.0.33")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
@@ -28,7 +28,7 @@ namespace HostPartyMODs
         {
             defaultFontSize = Config.Bind<int>("00-UI", "MOD的UI字体大小", 20);
             defaultFontColor = Config.Bind<string>("00-UI", "MOD的UI字体颜色(#+6位字母数字组合)", "#FFFFFF");
-            modName = "主机实用工具";
+            modName = "HostUtilities";
             Instance = this;
             IsInLobby = false;
             IsHost = false;

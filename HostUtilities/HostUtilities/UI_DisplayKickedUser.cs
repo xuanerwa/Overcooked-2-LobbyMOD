@@ -5,7 +5,7 @@ using System.Reflection;
 using UnityEngine;
 using static ClientPortalMapNode;
 
-namespace HostPartyMODs
+namespace HostUtilities
 {
     public class UI_DisplayKickedUser
     {

@@ -3,7 +3,7 @@ using HarmonyLib;
 using System;
 using UnityEngine;
 
-namespace HostPartyMODs
+namespace HostUtilities
 {
     internal class QuitInLoadingScreen
     {

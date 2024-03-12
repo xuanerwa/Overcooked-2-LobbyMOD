@@ -6,7 +6,7 @@ using BepInEx.Configuration;
 using System.Reflection;
 using System;
 
-namespace HostPartyMODs
+namespace HostUtilities
 {
     public class UI_DisplayModsOnResultsScreen
     {

@@ -7,8 +7,8 @@
     <ProjectGuid>{46968944-4C1C-4875-A79D-7E5ADE20EF54}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HostPartyMODs</RootNamespace>
-    <AssemblyName>LobbyMOD</AssemblyName>
+    <RootNamespace>HostUtilities</RootNamespace>
+    <AssemblyName>HostUtilities</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

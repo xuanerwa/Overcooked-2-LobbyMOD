@@ -4,7 +4,7 @@ using GameModes.Horde;
 using HarmonyLib;
 
 
-namespace HostPartyMODs
+namespace HostUtilities
 {
     public class SkipLevel
     {

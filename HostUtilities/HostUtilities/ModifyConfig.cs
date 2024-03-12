@@ -3,7 +3,7 @@ using HarmonyLib;
 using System;
 using System.Reflection;
 
-namespace HostPartyMODs
+namespace HostUtilities
 {
     public class ModifyConfig
     {

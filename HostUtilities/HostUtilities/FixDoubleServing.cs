@@ -1,7 +1,7 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
 using System.Reflection;
-namespace HostPartyMODs
+namespace HostUtilities
 {
     public class FixDoubleServing
     {

@@ -7,7 +7,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace HostPartyMODs
+namespace HostUtilities
 {
     public class ReplaceOneShotAudio
     {

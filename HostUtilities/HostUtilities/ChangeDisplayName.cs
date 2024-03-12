@@ -3,7 +3,7 @@ using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
 using Team17.Online;
-namespace HostPartyMODs
+namespace HostUtilities
 {
     public class ChangeDisplayName
     {

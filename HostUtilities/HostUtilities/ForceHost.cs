@@ -4,7 +4,7 @@ using System.Reflection;
 using Team17.Online;
 using UnityEngine;
 
-namespace HostPartyMODs
+namespace HostUtilities
 {
     public class ForceHost
     {

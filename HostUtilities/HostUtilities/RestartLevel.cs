@@ -1,7 +1,7 @@
 ﻿using BepInEx.Configuration;
 using UnityEngine;
 
-namespace HostPartyMODs
+namespace HostUtilities
 {
     public class RestartLevel
     {
