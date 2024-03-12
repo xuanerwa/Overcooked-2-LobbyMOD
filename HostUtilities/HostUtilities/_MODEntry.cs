@@ -8,7 +8,7 @@ using UnityEngine;
 namespace HostUtilities
 {
     [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.酷茶 Q群164509805 本MOD完全免费", "1.0.33")]
-    [BepInProcess("Overcooked2.exe")] 
+    [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
         public static Harmony HarmonyInstance { get; set; }
