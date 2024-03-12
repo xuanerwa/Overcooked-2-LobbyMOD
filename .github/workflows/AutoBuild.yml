@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'LobbyMOD/**'
+      - 'HostUtilities/**'
   # workflow_dispatch:
 
 
@@ -18,12 +18,12 @@ jobs:
           
       - name: Copy Project File
         run: |
-          copy LobbyMOD.csproj LobbyMOD/LobbyMOD/
+          copy HostUtilities.csproj HostUtilities/HostUtilities/
 
       - name: Build DotNET35
         run: |
           cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
-          .\MSBuild.exe $Env:GITHUB_WORKSPACE\LobbyMOD\LobbyMOD\LobbyMOD.csproj
+          .\MSBuild.exe $Env:GITHUB_WORKSPACE\HostUtilities\HostUtilities\HostUtilities.csproj
 
       - name: Install 7-Zip
         run: |
@@ -32,15 +32,15 @@ jobs:
       - name: Compress Files
         run: |
           cd $Env:GITHUB_WORKSPACE
-          git clone https://github.com/CH3NGYZ/Overcooked-2-LobbyMOD-ResourceFiles.git
+          git clone https://github.com/CH3NGYZ/Overcooked-2-HostUtilities-ResourceFiles.git
           mkdir -p CHA\Audio
 
-          copy  $Env:GITHUB_WORKSPACE\LobbyMOD\LobbyMOD\bin\Release\LobbyMOD.dll Overcooked-2-LobbyMOD-ResourceFiles
-          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\LobbyMOD.dll CHA
-          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\ConfigurationManager.xml CHA
-          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\ConfigurationManager.dll CHA
-          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\ConfigurationManagerAttributes.cs CHA
-          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-LobbyMOD-ResourceFiles\Audio\* CHA\Audio
+          copy  $Env:GITHUB_WORKSPACE\HostUtilities\HostUtilities\bin\Release\HostUtilities.dll Overcooked-2-LobbyMOD-ResourceFiles
+          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\HostUtilities.dll CHA
+          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\ConfigurationManager.xml CHA
+          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\ConfigurationManager.dll CHA
+          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\ConfigurationManagerAttributes.cs CHA
+          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\Audio\* CHA\Audio
 
           & "C:\Program Files\7-Zip\7z.exe" a $Env:GITHUB_WORKSPACE\CHA.zip $Env:GITHUB_WORKSPACE\CHA
       - name: Show CHA Folder
