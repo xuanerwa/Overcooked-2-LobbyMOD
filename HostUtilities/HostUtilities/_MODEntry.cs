@@ -16,9 +16,9 @@ namespace HostUtilities
         public static List<Harmony> AllHarmony = new List<Harmony>();
         public static string modName;
         public static _MODEntry Instance;
-        public static bool IsInLobby;
-        public static bool IsHost;
-        public static bool IsInParty;
+        public static bool IsInLobby = false;
+        public static bool IsHost = false;
+        public static bool IsInParty = false;
         public static float dpiScaleFactor = 1f;
         private float baseScreenWidth = 1920f;
         private float baseScreenHeight = 1080f;
@@ -30,8 +30,6 @@ namespace HostUtilities
             defaultFontColor = Config.Bind<string>("00-UI", "MOD的UI字体颜色(#+6位字母数字组合)", "#FFFFFF");
             modName = "HostUtilities";
             Instance = this;
-            IsInLobby = false;
-            IsHost = false;
             ModifyConfig.Awake();
             UI_DisplayModsOnResultsScreen.Awake();
             SkipLevel.Awake();
@@ -46,6 +44,7 @@ namespace HostUtilities
             FixDoubleServing.Awake();
             RestartLevel.Awake();
             ChangeDisplayName.Awake();
+            AlwaysServeOldestOrder.Awake();
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             AllHarmony.Add(HarmonyInstance);
             AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);

@@ -29,7 +29,7 @@ namespace HostUtilities
 
             PlayRandom = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "08-大厅计时器归零", KeyCode.Alpha6, "4秒后直接开始随机关卡");
             resetTimer = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "09-大厅计时器45秒", KeyCode.Alpha7, "重置街机大厅时间为45秒");
-            kevinEnabled = _MODEntry.Instance.Config.Bind<bool>("02-修改关卡", "02区域总开关(开启关卡修改)", true);
+            kevinEnabled = _MODEntry.Instance.Config.Bind<bool>("02-修改关卡", "02区域总开关(以下四个选项互斥)", true);
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             _MODEntry.AllHarmony.Add(HarmonyInstance);
             _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
@@ -42,7 +42,6 @@ namespace HostUtilities
             {
                 //LobbyManager lobbyManager = new LobbyManager();
                 //ServerLobbyFlowController instance = ServerLobbyFlowController.Instance;
-
                 //if (instance != null)
                 //{
                 //    int num = 0;
@@ -66,10 +65,8 @@ namespace HostUtilities
                 //        }
                 //        num++;
                 //    }
-
                 //}
                 MServerLobbyFlowController.ResetServerLobbyTimer(0f);
-
             }
             //重置街机大厅时间
             else if (Input.GetKeyDown(resetTimer.Value))
@@ -85,10 +82,13 @@ namespace HostUtilities
             bool onlyBeach3_4_ = MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value;
 
             //凯文,麻,海 选项4选1
+            //任意两个为true
             if ((onlyKevin_ && notKevin_) || (onlyKevin_ && onlyCarnival3_4_) || (onlyKevin_ && onlyBeach3_4_) || (notKevin_ && onlyCarnival3_4_) || (notKevin_ && onlyBeach3_4_) || (onlyCarnival3_4_ && onlyBeach3_4_))
             {
+                //谁和之前不一样
                 if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value != onlyCarnival3_4)
                 {
+                    //不一样的为true, 其他的为false
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value = true;
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value = false;
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value = false;
@@ -116,12 +116,29 @@ namespace HostUtilities
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value = false;
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value = false;
                 }
-
             }
+            //保存现在的状态供下次使用
             onlyKevin = MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value;
             notKevin = MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value;
             onlyCarnival3_4 = MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value;
             onlyBeach3_4 = MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ClientTime), "OnTimeSyncReceived")]
+        public static void ClientTime_OnTimeSyncReceived_Patch()
+        {
+            if (MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value == true)
+            {
+                //不玩凯文时以下所有选项自动关闭
+                MServerLobbyFlowController.sceneDisableConfigEntries["01-关闭小节关"].Value = false;
+                MServerLobbyFlowController.sceneDisableConfigEntries["02-关闭主线凯文"].Value = false;
+                MServerLobbyFlowController.sceneDisableConfigEntries["03-关闭海滩凯文"].Value = false;
+                MServerLobbyFlowController.sceneDisableConfigEntries["04-关闭完美露营地凯文"].Value = false;
+                MServerLobbyFlowController.sceneDisableConfigEntries["05-关闭恐怖地宫凯文"].Value = false;
+                MServerLobbyFlowController.sceneDisableConfigEntries["06-关闭翻滚帐篷凯文"].Value = false;
+                MServerLobbyFlowController.sceneDisableConfigEntries["07-关闭咸咸马戏团凯文"].Value = false;
+            }
         }
 
         //选关patch
@@ -129,7 +146,7 @@ namespace HostUtilities
         [HarmonyPrefix]
         private static bool Prefix(ref ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
         {
-            if (!PartyKevin.kevinEnabled.Value)
+            if (!kevinEnabled.Value)
             {
                 log("街机凯文未启用,执行原函数");
                 return true;
@@ -153,8 +170,8 @@ namespace HostUtilities
         {
             CreateConfigEntry("02-修改关卡", "只玩麻3-4", false);
             CreateConfigEntry("02-修改关卡", "只玩海3-4", false);
-            CreateConfigEntry("02-修改关卡", "不玩凯文和小节关", true);
-            CreateConfigEntry("02-修改关卡", "只玩凯文和小节关", false);
+            CreateConfigEntry("02-修改关卡", "不玩凯文和小节关", true, "此选项打开时,02-禁用主题(凯文)下的所有开关,会被自动关闭.");
+            CreateConfigEntry("02-修改关卡", "只玩凯文和小节关", false, "此选项打开时,02-禁用主题(非凯文)下的所有选项会失效,因为不玩普通关卡了.");
             CreateConfigEntry("02-禁用主题(凯文)", "01-关闭小节关");
             CreateConfigEntry("02-禁用主题(凯文)", "02-关闭主线凯文");
             CreateConfigEntry("02-禁用主题(凯文)", "03-关闭海滩凯文");
@@ -170,15 +187,15 @@ namespace HostUtilities
             CreateConfigEntry("02-禁用主题(非凯文)", "06-关闭世界6");
             CreateConfigEntry("02-禁用主题(非凯文)", "07-关闭节庆大餐");
             CreateConfigEntry("02-禁用主题(非凯文)", "08-关闭王朝餐厅");
-            CreateConfigEntry("02-禁用主题(非凯文)", "09-关闭桃子游行");
-            CreateConfigEntry("02-禁用主题(非凯文)", "10-关闭幸运灯笼");
+            CreateConfigEntry("02-禁用主题(非凯文)", "09-关闭桃子游行", true);
+            CreateConfigEntry("02-禁用主题(非凯文)", "10-关闭幸运灯笼", true);
             CreateConfigEntry("02-禁用主题(非凯文)", "11-关闭海滩");
             CreateConfigEntry("02-禁用主题(非凯文)", "12-关闭烧烤度假村");
             CreateConfigEntry("02-禁用主题(非凯文)", "13-关闭完美露营地");
             CreateConfigEntry("02-禁用主题(非凯文)", "14-关闭美味树屋");
             CreateConfigEntry("02-禁用主题(非凯文)", "15-关闭恐怖地宫");
             CreateConfigEntry("02-禁用主题(非凯文)", "16-关闭惊悚庭院");
-            CreateConfigEntry("02-禁用主题(非凯文)", "17-关闭凶残城垛");
+            CreateConfigEntry("02-禁用主题(非凯文)", "17-关闭凶残城垛", true);
             CreateConfigEntry("02-禁用主题(非凯文)", "18-关闭翻滚帐篷");
             CreateConfigEntry("02-禁用主题(非凯文)", "19-关闭咸咸马戏团");
 
@@ -193,6 +210,11 @@ namespace HostUtilities
         private static void CreateConfigEntry(string cls, string key, bool init)
         {
             configEntry = _MODEntry.Instance.Config.Bind(cls, key, init);
+            sceneDisableConfigEntries.Add(key, configEntry);
+        }
+        private static void CreateConfigEntry(string cls, string key, bool init, string desc)
+        {
+            configEntry = _MODEntry.Instance.Config.Bind(cls, key, init, desc);
             sceneDisableConfigEntries.Add(key, configEntry);
         }
 
@@ -291,7 +313,6 @@ namespace HostUtilities
             DLCManager dlcmanager = GameUtils.RequireManager<DLCManager>();
             List<DLCFrontendData> allDlc = dlcmanager.AllDlc;
             bool m_bIsCoop = ServerLobbyFlowController.Instance.m_bIsCoop;
-            //GameSession.GameType gameType = (!m_bIsCoop) ? GameSession.GameType.Competitive : GameSession.GameType.Cooperative;
             GameSession.GameType gameType = (!m_bIsCoop) ? GameSession.GameType.Competitive : GameSession.GameType.Cooperative;
             int[] array = new int[sceneDirectories.Length];
             for (int i = 0; i < sceneDirectories.Length; i++)

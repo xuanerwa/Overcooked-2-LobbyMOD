@@ -37,6 +37,7 @@ namespace HostUtilities
         public static bool changephrase = false;
         private static MyOnScreenDebugDisplayRecipe OnScreenDisplayRecipe;
         private static RecipeDisplay recipedisplay = null;
+        private static bool flags = false;
 
         public static void initial()
         {
@@ -351,9 +352,9 @@ namespace HostUtilities
         public static void Awake()
         {
             enabled = _MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "(03区域总开关)菜单显示功能", false);
-            displayhistory = _MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "显示历史菜单", false);
+            displayhistory = _MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "显示历史菜单(仅街机,与预测未来菜单互斥)", false);
             //displaymore = _MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "显示未来菜单", false);
-            predict = _MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "预测未来菜单", false);
+            predict = _MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "预测未来菜单(仅街机,与显示历史菜单互斥)", false);
             namesymplify = _MODEntry.Instance.Config.Bind<bool>("03-菜单功能开关", "简化显示菜单名称", false);
             initial();
             symplify();
@@ -369,14 +370,16 @@ namespace HostUtilities
             OnScreenDisplayRecipe.Update();
             if (_MODEntry.IsInParty)
             {
-                if (displayhistory.Value)
+                if (displayhistory.Value && flags)
                 {
                     //displaymore.Value = false;
                     predict.Value = false;
+                    flags = false;
                 }
                 else if (predict.Value)
                 {
                     displayhistory.Value = false;
+                    flags = true;
                     //displaymore.Value = false;
                 }
                 //else if (displaymore.Value)

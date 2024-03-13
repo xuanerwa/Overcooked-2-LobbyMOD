@@ -147,7 +147,8 @@ namespace HostUtilities
             // Token: 0x06002A65 RID: 10853 RVA: 0x000C642C File Offset: 0x000C482C
             public override void OnDraw(ref Rect rect, GUIStyle style)
             {
-                if (isShowDebugInfo.Value){
+                if (isShowDebugInfo.Value)
+                {
                     string text = string.Empty;
                     string text2 = string.Empty;
                     if (ConnectionModeSwitcher.GetRequestedConnectionState() == NetConnectionState.Server)
@@ -190,8 +191,8 @@ namespace HostUtilities
                     ",joinCode: ",
                     ForceHost.joinReturnCode
                     }));
+                    DrawText(ref rect, style, ClientGameSetup.Mode + ", time: " + ClientTime.Time().ToString("00000.000"));
                 }
-                DrawText(ref rect, style, ClientGameSetup.Mode + ", time: " + ClientTime.Time().ToString("00000.000"));
                 if (ConnectionStatus.IsHost())
                 {
 
@@ -200,7 +201,7 @@ namespace HostUtilities
                     Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection> remoteClientConnectionsDict = server.m_RemoteClientConnections;
 
                     FastList<ConnectionStats> serverConnectionStats = m_MultiplayerController.GetServerConnectionStats(true);
-                    //FastList<ConnectionStats> serverConnectionStats2 = m_MultiplayerController.GetServerConnectionStats(false);
+                    FastList<ConnectionStats> serverConnectionStats2 = m_MultiplayerController.GetServerConnectionStats(false);
 
                     if (serverConnectionStats.Count > 0)
                     {
@@ -212,8 +213,10 @@ namespace HostUtilities
                                 DrawText(ref rect, style, string.Concat(new object[]
                                 {
                                 ServerUserSystem.m_Users._items[i+1].DisplayName,
-                                $" {i+2}号位延迟: ",
+                                $" {i+2}号位 RLag ",
                                 (serverConnectionStats._items[i].m_fLatency * 1000f).ToString("000"),
+                                " ms,URLag ",
+                                (serverConnectionStats2._items[i].m_fLatency * 1000f).ToString("000"),
                                 " ms"
                                     //" Sequence: I",
                                     //serverConnectionStats._items[i].m_fIncomingSequenceNumber,
@@ -255,13 +258,15 @@ namespace HostUtilities
                     {
                         ConnectionStats clientConnectionStats = m_MultiplayerController.GetClientConnectionStats(true);
 
-                        //ConnectionStats clientConnectionStats2 = m_MultiplayerController.GetClientConnectionStats(false);
+                        ConnectionStats clientConnectionStats2 = m_MultiplayerController.GetClientConnectionStats(false);
                         DrawText(ref rect, style, string.Concat(
                             new object[]
                             {
-                            "本机延迟: ",
+                            "本机 RLag ",
                             (clientConnectionStats.m_fLatency * 1000f).ToString("000"),
-                            " ms",
+                            " ms,URLag ",
+                            (clientConnectionStats2.m_fLatency * 1000f).ToString("000"),
+                            " ms"
                                 //clientConnectionStats.m_fMaxTimeBetweenReceives.ToString("00.00"),
                                 //" Sequence: I",
                                 //clientConnectionStats.m_fIncomingSequenceNumber,
@@ -271,9 +276,9 @@ namespace HostUtilities
                         ));
 
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-                        _MODEntry.LogError($"{ex}");
+                        //_MODEntry.LogError($"{ex}");
                     }
                     //    DrawText(ref rect, style, string.Concat(new object[]
                     //    {
