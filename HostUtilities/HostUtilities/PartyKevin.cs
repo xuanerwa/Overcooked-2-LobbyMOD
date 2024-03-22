@@ -144,7 +144,7 @@ namespace HostUtilities
         //选关patch
         [HarmonyPatch(typeof(ServerLobbyFlowController), "PickLevel")]
         [HarmonyPrefix]
-        private static bool Prefix(ref ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
+        private static bool ServerLobbyFlowController_PickLevel_Prefix(ref ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
         {
             if (!kevinEnabled.Value)
             {

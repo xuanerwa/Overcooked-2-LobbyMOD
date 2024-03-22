@@ -7,7 +7,7 @@ using Team17.Online;
 using UnityEngine;
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.酷茶 Q群164509805 本MOD完全免费", "1.0.33")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.阿哲 Q群860480677 本MOD免费 点击下方“‧‧‧”展开", "1.0.36")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
