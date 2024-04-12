@@ -2,7 +2,7 @@
 
 latest：[![Download](https://img.shields.io/github/downloads/CH3NGYZ/Overcooked-2-LobbyMOD/latest/total)](https://github.com/CH3NGYZ/Overcooked-2-LobbyMOD/releases)
 
-将 HostUtilities_local.csproj 复制到 "HostUtilities/HostUtilities/" 里, 再通过 vs 打开 "HostUtilities/HostUtilities.sln" 项目文件
+将 HostUtilities_local.csproj 复制到 "HostUtilities/HostUtilities/" 里, 并改名为`HostUtilities.csproj`, 再通过 vs 打开 "HostUtilities/HostUtilities.sln" 项目文件
 
 如果你想编写 mod:
 
