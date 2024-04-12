@@ -137,7 +137,7 @@ namespace HostUtilities
         [HarmonyPostfix]
         private static void OnOutro()
         {
-            if (isshow.Value)
+            if (isshow.Value && _MODEntry.IsHost)
             {
 
                 if (PartyKevin.kevinEnabled.Value)
