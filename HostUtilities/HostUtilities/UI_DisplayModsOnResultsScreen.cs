@@ -137,6 +137,7 @@ namespace HostUtilities
         [HarmonyPostfix]
         private static void OnOutro()
         {
+            //客机不显示自定义状态, 因为不生效
             if (isshow.Value && _MODEntry.IsHost)
             {
 
