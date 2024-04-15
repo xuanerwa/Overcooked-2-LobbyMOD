@@ -94,14 +94,7 @@ namespace HostUtilities
             {
                 m_GUIStyle.alignment = TextAnchor.UpperRight;
                 m_GUIStyle.fontSize = Mathf.RoundToInt(_MODEntry.defaultFontSize.Value * _MODEntry.dpiScaleFactor);
-                try
-                {
-                    this.m_GUIStyle.normal.textColor = HexToColor(_MODEntry.defaultFontColor.Value);
-                }
-                catch
-                {
-                    this.m_GUIStyle.normal.textColor = HexToColor("#FFFFFF");
-                }
+                this.m_GUIStyle.normal.textColor = _MODEntry.defaultFontColor.Value;
                 m_GUIStyle.richText = false;
             }
 
@@ -114,14 +107,8 @@ namespace HostUtilities
             public void OnGUI()
             {
                 m_GUIStyle.fontSize = Mathf.RoundToInt(_MODEntry.defaultFontSize.Value * _MODEntry.dpiScaleFactor);
-                try
-                {
-                    this.m_GUIStyle.normal.textColor = HexToColor(_MODEntry.defaultFontColor.Value);
-                }
-                catch
-                {
-                    this.m_GUIStyle.normal.textColor = HexToColor("#FFFFFF");
-                }
+                this.m_GUIStyle.normal.textColor = _MODEntry.defaultFontColor.Value;
+
                 Rect rect = new Rect(0f, 0f, Screen.width, m_GUIStyle.fontSize);
                 for (int i = 0; i < m_Displays.Count; i++)
                     m_Displays[i].OnDraw(ref rect, m_GUIStyle);

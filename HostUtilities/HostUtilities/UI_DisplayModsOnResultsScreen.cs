@@ -66,14 +66,8 @@ namespace HostUtilities
                 this.m_GUIStyle = new GUIStyle();
                 this.m_GUIStyle.alignment = TextAnchor.UpperRight;
                 this.m_GUIStyle.fontSize = _MODEntry.defaultFontSize.Value;
-                try
-                {
-                    this.m_GUIStyle.normal.textColor = HexToColor(_MODEntry.defaultFontColor.Value);
-                }
-                catch
-                {
-                    this.m_GUIStyle.normal.textColor = HexToColor("#FFFFFF");
-                }
+                this.m_GUIStyle.normal.textColor = _MODEntry.defaultFontColor.Value;
+
             }
 
             public void Update()
@@ -87,14 +81,7 @@ namespace HostUtilities
             public void OnGUI()
             {
                 m_GUIStyle.fontSize = Mathf.RoundToInt(_MODEntry.defaultFontSize.Value * _MODEntry.dpiScaleFactor);
-                try
-                {
-                    this.m_GUIStyle.normal.textColor = HexToColor(_MODEntry.defaultFontColor.Value);
-                }
-                catch
-                {
-                    this.m_GUIStyle.normal.textColor = HexToColor("#FFFFFF");
-                }
+                this.m_GUIStyle.normal.textColor = _MODEntry.defaultFontColor.Value;
                 Rect rect = new Rect(0f, (float)Screen.height * 0.14f, (float)Screen.width * 0.99f, (float)this.m_GUIStyle.fontSize);
                 for (int i = 0; i < this.m_Displays.Count; i++)
                 {

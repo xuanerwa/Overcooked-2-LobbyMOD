@@ -24,11 +24,13 @@ namespace HostUtilities
         private float baseScreenWidth = 1920f;
         private float baseScreenHeight = 1080f;
         public static ConfigEntry<int> defaultFontSize;
-        public static ConfigEntry<string> defaultFontColor;
+        public static ConfigEntry<Color> defaultFontColor;
         public void Awake()
         {
-            defaultFontSize = Config.Bind<int>("00-UI", "MOD的UI字体大小", 20);
-            defaultFontColor = Config.Bind<string>("00-UI", "MOD的UI字体颜色(#+6位字母数字组合)", "#FFFFFF");
+            defaultFontSize = Config.Bind<int>("00-UI", "MOD的UI字体大小", 20, new ConfigDescription("MOD的UI字体大小", new AcceptableValueRange<int>(5, 40)));
+            defaultFontColor = Config.Bind<Color>("00-UI", "MOD的UI字体颜色", new Color(1, 1, 1, 1));
+
+
             modName = "HostUtilities";
             Instance = this;
             ModifyConfig.Awake();
