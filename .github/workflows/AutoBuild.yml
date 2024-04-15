@@ -37,9 +37,7 @@ jobs:
 
           copy  $Env:GITHUB_WORKSPACE\HostUtilities\HostUtilities\bin\Release\HostUtilities.dll Overcooked-2-HostUtilities-ResourceFiles
           copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\HostUtilities.dll CHA
-          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\ConfigurationManager.xml CHA
           copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\ConfigurationManager.dll CHA
-          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\ConfigurationManagerAttributes.cs CHA
           copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\Audio\* CHA\Audio
 
           & "C:\Program Files\7-Zip\7z.exe" a $Env:GITHUB_WORKSPACE\CHA.zip $Env:GITHUB_WORKSPACE\CHA
