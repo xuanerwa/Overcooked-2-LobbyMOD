@@ -197,18 +197,26 @@ namespace HostUtilities
                         {
                             try
                             {
+                                string latency = (serverConnectionStats._items[i].m_fLatency * 1000f).ToString("000");
+                                if (latency == "000")
+                                {
+                                    latency = "Error";
+                                }
+
+                                string latency2 = (serverConnectionStats2._items[i].m_fLatency * 1000f).ToString("000");
+                                if (latency2 == "000")
+                                {
+                                    latency2 = "Error";
+                                }
+
                                 DrawText(ref rect, style, string.Concat(new object[]
                                 {
-                                ServerUserSystem.m_Users._items[i+1].DisplayName,
-                                $" {i+2}号位 RLag ",
-                                (serverConnectionStats._items[i].m_fLatency * 1000f).ToString("000"),
-                                " ms,URLag ",
-                                (serverConnectionStats2._items[i].m_fLatency * 1000f).ToString("000"),
-                                " ms"
-                                    //" Sequence: I",
-                                    //serverConnectionStats._items[i].m_fIncomingSequenceNumber,
-                                    //" / O",
-                                    //serverConnectionStats._items[i].m_fOutgoingSequenceNumber
+                                    ServerUserSystem.m_Users._items[i+1].DisplayName,
+                                    $" {i+2}号位 RLag ",
+                                    latency,
+                                    " ms,URLag ",
+                                    latency2,
+                                    " ms"
                                 }));
                             }
                             catch (Exception)
@@ -246,21 +254,26 @@ namespace HostUtilities
                         ConnectionStats clientConnectionStats = m_MultiplayerController.GetClientConnectionStats(true);
 
                         ConnectionStats clientConnectionStats2 = m_MultiplayerController.GetClientConnectionStats(false);
-                        DrawText(ref rect, style, string.Concat(
-                            new object[]
-                            {
+                        string clientLatency = (clientConnectionStats.m_fLatency * 1000f).ToString("000");
+                        if (clientLatency == "000")
+                        {
+                            clientLatency = "Error";
+                        }
+
+                        string clientLatency2 = (clientConnectionStats2.m_fLatency * 1000f).ToString("000");
+                        if (clientLatency2 == "000")
+                        {
+                            clientLatency2 = "Error";
+                        }
+
+                        DrawText(ref rect, style, string.Concat(new object[]
+                        {
                             "本机 RLag ",
-                            (clientConnectionStats.m_fLatency * 1000f).ToString("000"),
+                            clientLatency,
                             " ms,URLag ",
-                            (clientConnectionStats2.m_fLatency * 1000f).ToString("000"),
+                            clientLatency2,
                             " ms"
-                                //clientConnectionStats.m_fMaxTimeBetweenReceives.ToString("00.00"),
-                                //" Sequence: I",
-                                //clientConnectionStats.m_fIncomingSequenceNumber,
-                                //" / O",
-                                //clientConnectionStats.m_fOutgoingSequenceNumber
-                            }
-                        ));
+                        }));
 
                     }
                     catch (Exception)

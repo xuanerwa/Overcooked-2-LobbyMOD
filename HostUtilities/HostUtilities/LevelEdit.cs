@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace HostUtilities
 {
-    public class PartyKevin
+    public class LevelEdit
     {
         public static Harmony HarmonyInstance { get; set; }
         public static void log(string mes) => _MODEntry.LogInfo(mes);

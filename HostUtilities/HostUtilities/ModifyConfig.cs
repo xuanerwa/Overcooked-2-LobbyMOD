@@ -11,7 +11,7 @@ namespace HostUtilities
         private static ConfigEntry<bool> modify_SingleplayerChopTimeMultiplier;
         public static void Awake()
         {
-            modify_SingleplayerChopTimeMultiplier = _MODEntry.Instance.Config.Bind<bool>("01-配置修改", "单人切菜倍率(仅街机有效)", false, "单人切菜倍率");
+            modify_SingleplayerChopTimeMultiplier = _MODEntry.Instance.Config.Bind<bool>("00-功能开关", "单人切菜倍率(仅街机有效)", true, "单人切菜倍率");
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             _MODEntry.AllHarmony.Add(HarmonyInstance);
             _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);

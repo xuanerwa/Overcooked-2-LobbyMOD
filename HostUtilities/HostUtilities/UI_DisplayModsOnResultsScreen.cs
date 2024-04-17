@@ -128,7 +128,7 @@ namespace HostUtilities
             if (isshow.Value && _MODEntry.IsHost)
             {
 
-                if (PartyKevin.kevinEnabled.Value)
+                if (LevelEdit.kevinEnabled.Value)
                 {
                     bool shouldNtDisplayKevinState = true;
                     bool shouldNtDisplayNormalState = true;

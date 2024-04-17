@@ -8,7 +8,7 @@ using UnityEngine;
  
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.阿哲 Q群860480677 本MOD免费 点击下方“‧‧‧”展开", "1.0.36")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.40")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
@@ -37,7 +37,7 @@ namespace HostUtilities
             UI_DisplayModsOnResultsScreen.Awake();
             SkipLevel.Awake();
             KickUser.Awake();
-            PartyKevin.Awake();
+            LevelEdit.Awake();
             QuitInLoadingScreen.Awake();
             UI_DisplayKickedUser.Awake();
             ReplaceOneShotAudio.Awake();
@@ -74,7 +74,7 @@ namespace HostUtilities
             UI_DisplayModsOnResultsScreen.Update();
             SkipLevel.Update();
             KickUser.Update();
-            PartyKevin.Update();
+            LevelEdit.Update();
             QuitInLoadingScreen.Update();
             UI_DisplayKickedUser.Update();
             UI_DisplayLatency.Update();
