@@ -1,6 +1,6 @@
-总：[![Download](https://img.shields.io/github/downloads/CH3NGYZ/Overcooked-2-LobbyMOD/total)](https://github.com/CH3NGYZ/Overcooked-2-LobbyMOD/releases)
+总：[![Download](https://img.shields.io/github/downloads/CH3NGYZ/Overcooked-2-HostUtilities/total)](https://github.com/CH3NGYZ/Overcooked-2-HostUtilities/releases)
 
-latest：[![Download](https://img.shields.io/github/downloads/CH3NGYZ/Overcooked-2-LobbyMOD/latest/total)](https://github.com/CH3NGYZ/Overcooked-2-LobbyMOD/releases)
+latest：[![Download](https://img.shields.io/github/downloads/CH3NGYZ/Overcooked-2-HostUtilities/latest/total)](https://github.com/CH3NGYZ/Overcooked-2-HostUtilities/releases)
 
 将 HostUtilities_local.csproj 复制到 "HostUtilities/HostUtilities/" 里, 并改名为`HostUtilities.csproj`, 再通过 vs 打开 "HostUtilities/HostUtilities.sln" 项目文件
 
