@@ -25,22 +25,19 @@ jobs:
           cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
           .\MSBuild.exe $Env:GITHUB_WORKSPACE\HostUtilities\HostUtilities\HostUtilities.csproj
 
-      - name: Install 7-Zip
-        run: |
-          choco install 7zip.commandline
-
       - name: Compress Files
         run: |
           cd $Env:GITHUB_WORKSPACE
           git clone https://github.com/CH3NGYZ/Overcooked-2-HostUtilities-ResourceFiles.git
           mkdir -p CHA\Audio
+      
+          Copy-Item -Path "$Env:GITHUB_WORKSPACE\HostUtilities\HostUtilities\bin\Release\HostUtilities.dll" -Destination Overcooked-2-HostUtilities-ResourceFiles -Force
+          Copy-Item -Path "$Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\HostUtilities.dll" -Destination CHA -Force
+          Copy-Item -Path "$Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\ConfigurationManager.dll" -Destination CHA -Force
+          Copy-Item -Path "$Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\Audio\*" -Destination CHA\Audio -Force
+      
+          Compress-Archive -Path "$Env:GITHUB_WORKSPACE\CHA" -DestinationPath "$Env:GITHUB_WORKSPACE\CHA.zip"
 
-          copy  $Env:GITHUB_WORKSPACE\HostUtilities\HostUtilities\bin\Release\HostUtilities.dll Overcooked-2-HostUtilities-ResourceFiles
-          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\HostUtilities.dll CHA
-          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\ConfigurationManager.dll CHA
-          copy  $Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\Audio\* CHA\Audio
-
-          & "C:\Program Files\7-Zip\7z.exe" a $Env:GITHUB_WORKSPACE\CHA.zip $Env:GITHUB_WORKSPACE\CHA
       - name: Show CHA Folder
         run: |
           ls $Env:GITHUB_WORKSPACE\CHA
