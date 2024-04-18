@@ -14,7 +14,7 @@ namespace HostUtilities
         private static string[] strList = {
             "游戏默认逻辑",
             "强制主机",
-            "强制客机"
+            //"强制客机"
         };
         public static void Awake()
         {
@@ -25,65 +25,64 @@ namespace HostUtilities
         }
         public static void Update()
         {
-            if (Input.GetKeyDown(KeyCode.J))
-            {
-                ClientLobbyFlowController lobbyFlowController = ClientLobbyFlowController.Instance;
+            //if (Input.GetKeyDown(KeyCode.J))
+            //{
+            //    ClientLobbyFlowController lobbyFlowController = ClientLobbyFlowController.Instance;
 
-                if (lobbyFlowController != null)
-                {
-                    log("call TryJoinGame()");
-                    lobbyFlowController.TryJoinGame();
-                }
-                else
-                {
-                    log("未找到 ClientLobbyFlowController 实例");
-                }
-            }
-            else if (Input.GetKeyDown(KeyCode.H))
-            {
-                ClientLobbyFlowController lobbyFlowController = ClientLobbyFlowController.Instance;
+            //    if (lobbyFlowController != null)
+            //    {
+            //        log("call TryJoinGame()");
+            //        lobbyFlowController.TryJoinGame();
+            //    }
+            //    else
+            //    {
+            //        log("未找到 ClientLobbyFlowController 实例");
+            //    }
+            //}
+            //else if (Input.GetKeyDown(KeyCode.H))
+            //{
+            //    ClientLobbyFlowController lobbyFlowController = ClientLobbyFlowController.Instance;
 
-                if (lobbyFlowController != null)
-                {
-                    log("call HostGame()");
-                    lobbyFlowController.HostGame();
-                }
-                else
-                {
-                    log("未找到 ClientLobbyFlowController 实例");
-                }
-            }
-            else if (Input.GetKeyDown(KeyCode.K))
-            {
-                ClientLobbyFlowController __instance = ClientLobbyFlowController.Instance;
-                ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Offline, null, new GenericVoid<IConnectionModeSwitchStatus>(__instance.OnRequestOfflineStateFollowingFailureComplete));
-                IPlayerManager playerManager = GameUtils.RequireManagerInterface<IPlayerManager>();
-                IOnlinePlatformManager onlinePlatformManager = GameUtils.RequireManagerInterface<IOnlinePlatformManager>();
-                IOnlineMultiplayerSessionCoordinator onlineMultiplayerSessionCoordinator = onlinePlatformManager.OnlineMultiplayerSessionCoordinator();
-                if (onlineMultiplayerSessionCoordinator != null)
-                {
-                    ServerOptions serverOptions = default(ServerOptions);
-                    serverOptions.gameMode = ((!__instance.m_bIsCoop) ? GameMode.Versus : GameMode.Party);
-                    if (__instance.m_lobbyInfo.m_visiblity == OnlineMultiplayerSessionVisibility.ePrivate)
-                    {
-                        serverOptions.visibility = OnlineMultiplayerSessionVisibility.eClosed;
-                    }
-                    else
-                    {
-                        serverOptions.visibility = __instance.m_lobbyInfo.m_visiblity;
-                    }
-                    serverOptions.hostUser = playerManager.GetUser(EngagementSlot.One);
-                    serverOptions.connectionMode = __instance.m_lobbyInfo.m_connectionMode;
-                    ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Server, serverOptions, new GenericVoid<IConnectionModeSwitchStatus>(__instance.OnRequestConnectionStateServerComplete));
-                    ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Matchmake, new MatchmakeData
-                    {
-                        gameMode = ((!__instance.m_bIsCoop) ? GameMode.Versus : GameMode.Party),
-                        User = playerManager.GetUser(EngagementSlot.One),
-                        connectionMode = __instance.m_lobbyInfo.m_connectionMode
-                    }, new GenericVoid<IConnectionModeSwitchStatus>(__instance.OnRequestConnectionStateJoinComplete));
-                }
-            }
-
+            //    if (lobbyFlowController != null)
+            //    {
+            //        log("call HostGame()");
+            //        lobbyFlowController.HostGame();
+            //    }
+            //    else
+            //    {
+            //        log("未找到 ClientLobbyFlowController 实例");
+            //    }
+            //}
+            //else if (Input.GetKeyDown(KeyCode.K))
+            //{
+            //    ClientLobbyFlowController __instance = ClientLobbyFlowController.Instance;
+            //    ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Offline, null, new GenericVoid<IConnectionModeSwitchStatus>(__instance.OnRequestOfflineStateFollowingFailureComplete));
+            //    IPlayerManager playerManager = GameUtils.RequireManagerInterface<IPlayerManager>();
+            //    IOnlinePlatformManager onlinePlatformManager = GameUtils.RequireManagerInterface<IOnlinePlatformManager>();
+            //    IOnlineMultiplayerSessionCoordinator onlineMultiplayerSessionCoordinator = onlinePlatformManager.OnlineMultiplayerSessionCoordinator();
+            //    if (onlineMultiplayerSessionCoordinator != null)
+            //    {
+            //        ServerOptions serverOptions = default(ServerOptions);
+            //        serverOptions.gameMode = ((!__instance.m_bIsCoop) ? GameMode.Versus : GameMode.Party);
+            //        if (__instance.m_lobbyInfo.m_visiblity == OnlineMultiplayerSessionVisibility.ePrivate)
+            //        {
+            //            serverOptions.visibility = OnlineMultiplayerSessionVisibility.eClosed;
+            //        }
+            //        else
+            //        {
+            //            serverOptions.visibility = __instance.m_lobbyInfo.m_visiblity;
+            //        }
+            //        serverOptions.hostUser = playerManager.GetUser(EngagementSlot.One);
+            //        serverOptions.connectionMode = __instance.m_lobbyInfo.m_connectionMode;
+            //        ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Server, serverOptions, new GenericVoid<IConnectionModeSwitchStatus>(__instance.OnRequestConnectionStateServerComplete));
+            //        ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Matchmake, new MatchmakeData
+            //        {
+            //            gameMode = ((!__instance.m_bIsCoop) ? GameMode.Versus : GameMode.Party),
+            //            User = playerManager.GetUser(EngagementSlot.One),
+            //            connectionMode = __instance.m_lobbyInfo.m_connectionMode
+            //        }, new GenericVoid<IConnectionModeSwitchStatus>(__instance.OnRequestConnectionStateJoinComplete));
+            //    }
+            //}
         }
         public static string joinReturnCode = "还未返回值";
         //[HarmonyPatch(typeof(ClientLobbyFlowController), "OnRequestConnectionStateJoinComplete")]

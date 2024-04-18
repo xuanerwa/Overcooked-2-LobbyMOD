@@ -25,6 +25,7 @@ namespace HostUtilities
         private float baseScreenHeight = 1080f;
         public static ConfigEntry<int> defaultFontSize;
         public static ConfigEntry<Color> defaultFontColor;
+        public static bool IsSelectedAndPlay = false;
         public void Awake()
         {
             defaultFontSize = Config.Bind<int>("00-UI", "MOD的UI字体大小", 20, new ConfigDescription("MOD的UI字体大小", new AcceptableValueRange<int>(5, 40)));
@@ -48,6 +49,7 @@ namespace HostUtilities
             RestartLevel.Awake();
             ChangeDisplayName.Awake();
             AlwaysServeOldestOrder.Awake();
+            LevelSelector.Awake();
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             AllHarmony.Add(HarmonyInstance);
             AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
@@ -81,6 +83,7 @@ namespace HostUtilities
             ForceHost.Update();
             Recipe.Update();
             RestartLevel.Update();
+            LevelSelector.Update();
         }
 
         public void OnGUI()
@@ -175,9 +178,19 @@ namespace HostUtilities
         {
             IsHost = isHost();
             isInLobby();
-            if (Screen.width != Mathf.RoundToInt(_MODEntry.Instance.baseScreenWidth * dpiScaleFactor) || Screen.height != Mathf.RoundToInt(_MODEntry.Instance.baseScreenHeight * dpiScaleFactor))
-                _MODEntry.Instance.UpdateGUIDpi();
-            LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
+            if (Screen.width != Mathf.RoundToInt(_MODEntry.Instance.baseScreenWidth * dpiScaleFactor) || Screen.height != Mathf.RoundToInt(_MODEntry.Instance.baseScreenHeight * dpiScaleFactor)) { Instance.UpdateGUIDpi(); }
+
+            //LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
+        }
+
+        public static void ShowWarningDialog(string message)
+        {
+            T17DialogBox dialog = T17DialogBoxManager.GetDialog(false);
+            if (dialog != null)
+            {
+                dialog.Initialize("Text.Warning", "\"" + message + "\"", "Text.Button.Continue", string.Empty, string.Empty, T17DialogBox.Symbols.Warning, true, true, false);
+                dialog.Show();
+            }
         }
     }
 }

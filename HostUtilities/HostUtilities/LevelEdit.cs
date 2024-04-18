@@ -146,11 +146,17 @@ namespace HostUtilities
         [HarmonyPrefix]
         private static bool ServerLobbyFlowController_PickLevel_Prefix(ref ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
         {
+            if (_MODEntry.IsSelectedAndPlay)
+            {
+                log("已经选关,不执行原函数");
+                return false;
+            }
             if (!kevinEnabled.Value)
             {
                 log("街机凯文未启用,执行原函数");
                 return true;
             }
+            
             MServerLobbyFlowController.MPickLevel(__instance, _theme);
             return false;
         }
