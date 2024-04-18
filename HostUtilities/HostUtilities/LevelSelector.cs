@@ -36,7 +36,7 @@ namespace HostUtilities
         {
             Predicate<SceneDirectoryData.SceneDirectoryEntry> matchScene = (SceneDirectoryData.SceneDirectoryEntry entry) =>
             {
-                if (entry.Label.Contains("ThroneRoom") || entry.Label.Contains("TutorialLevel"))
+                if (entry.Label.Contains("ThroneRoom") || entry.Label.Contains("TutorialLevel") || entry.Label.Contains("DLC07Battlements08"))
                 {
                     return false;
                 }
@@ -85,7 +85,7 @@ namespace HostUtilities
                     //ServerLobbyFlowController.Instance.ResetTimer(0);
                     //_MODEntry.ShowWarningDialog("4秒后自动开始选择的关卡, 请不要重复点击按键, 点击继续关闭");
                 }
-                //log($"ValueList.Value: {ValueList.Value}, instance: {GetSceneDirectoryEntryFromChinese(ValueList.Value).Label}");
+                log($"ValueList.Value: {ValueList.Value}, instance: {GetSceneDirectoryEntryFromChinese(ValueList.Value).Label}");
                 string[] strList = DirectoryDict.Keys.ToArray();
                 int num = 0;
                 foreach (var pair in DirectoryDict)
@@ -93,7 +93,7 @@ namespace HostUtilities
                     num++;
                     if (pair.Value == GetSceneDirectoryEntryFromChinese(ValueList.Value))
                     {
-                        //log($"index: {num} Key: {pair.Key}, Value: {pair.Value}, Label: {GetLevelName(pair.Value, false)}");
+                        log($"index: {num} Key: {pair.Key}, Value: {pair.Value}, Label: {GetLevelName(pair.Value, false)}");
                         break;
                     }
                 }
@@ -179,7 +179,7 @@ namespace HostUtilities
             {
                 SceneDirectoryEntry sceneDirectoryEntry = levelList[i];
                 DirectoryDict.Add(sceneDirectoryEntry.Label, sceneDirectoryEntry);
-                //log($"I: {i + 1} L: {sceneDirectoryEntry.Label} N: {GetLevelName(sceneDirectoryEntry, false)}");
+                log($"I: {i + 1} L: {sceneDirectoryEntry.Label} N: {GetLevelName(sceneDirectoryEntry, false)}");
             }
             //log("finished");
 
@@ -260,6 +260,7 @@ namespace HostUtilities
             }
             list.RemoveAll((SceneDirectoryEntry x) => x.Label.Contains("ThroneRoom"));
             list.RemoveAll((SceneDirectoryEntry x) => x.Label.Contains("Tutorial"));
+            list.RemoveAll((SceneDirectoryEntry x) => x.Label.Contains("DLC07Battlements08"));
             return list;
         }
         public static string GetLevelName(SceneDirectoryData.SceneDirectoryEntry entry, bool withLevelLabel = false)
