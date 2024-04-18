@@ -121,9 +121,9 @@ namespace HostUtilities
             // Token: 0x06002A63 RID: 10851 RVA: 0x000C6400 File Offset: 0x000C4800
             public override void OnSetUp()
             {
-                m_MultiplayerController = GameUtils.RequireManager<MultiplayerController>();
-                IOnlinePlatformManager onlinePlatformManager = GameUtils.RequireManagerInterface<IOnlinePlatformManager>();
-                m_ConnectionModeCoordinator = onlinePlatformManager.OnlineMultiplayerConnectionModeCoordinator();
+                //m_MultiplayerController = GameUtils.RequireManager<MultiplayerController>();
+                //IOnlinePlatformManager onlinePlatformManager = GameUtils.RequireManagerInterface<IOnlinePlatformManager>();
+                //m_ConnectionModeCoordinator = onlinePlatformManager.OnlineMultiplayerConnectionModeCoordinator();
             }
 
             // Token: 0x06002A64 RID: 10852 RVA: 0x000C642A File Offset: 0x000C482A
@@ -180,70 +180,101 @@ namespace HostUtilities
                     }));
                     DrawText(ref rect, style, ClientGameSetup.Mode + ", time: " + ClientTime.Time().ToString("00000.000"));
                 }
-                if (ConnectionStatus.IsHost())
+                if (_MODEntry.IsHost)
                 {
-
                     MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
                     Server server = multiplayerController.m_LocalServer;
                     Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection> remoteClientConnectionsDict = server.m_RemoteClientConnections;
 
-                    FastList<ConnectionStats> serverConnectionStats = m_MultiplayerController.GetServerConnectionStats(true);
-                    FastList<ConnectionStats> serverConnectionStats2 = m_MultiplayerController.GetServerConnectionStats(false);
-
-                    if (serverConnectionStats.Count > 0)
+                    if (server != null)
                     {
-                        string empty = string.Empty;
-                        for (int i = 0; i < serverConnectionStats.Count; i++)
+                        int index = 2;
+                        foreach (var kvp in remoteClientConnectionsDict)
                         {
-                            try
-                            {
-                                string latency = (serverConnectionStats._items[i].m_fLatency * 1000f).ToString("000");
-                                if (latency == "000")
-                                {
-                                    latency = "Error";
-                                }
+                            IOnlineMultiplayerSessionUserId sessionUserId = kvp.Key;
+                            NetworkConnection connection = kvp.Value;
 
-                                string latency2 = (serverConnectionStats2._items[i].m_fLatency * 1000f).ToString("000");
-                                if (latency2 == "000")
-                                {
-                                    latency2 = "Error";
-                                }
+                            // 获取客户端玩家昵称
+                            string playerName = sessionUserId.DisplayName;
 
-                                DrawText(ref rect, style, string.Concat(new object[]
-                                {
-                                    ServerUserSystem.m_Users._items[i+1].DisplayName,
-                                    $" {i+2}号位 RLag ",
-                                    latency,
-                                    " ms,URLag ",
-                                    latency2,
-                                    " ms"
-                                }));
-                            }
-                            catch (Exception)
+                            // 获取服务器到客户端的延迟
+                            float latency = connection.GetConnectionStats(bReliable: false).m_fLatency;
+                            DrawText(ref rect, style, string.Concat(new object[]
                             {
-                                //_MODEntry.LogError($"{ex}");
-                            }
+                                playerName,
+                                $" {index}号位 ",
+                                latency == 0 ? "ERRLat":  (latency * 1000).ToString("000") + " ms" ,
+                            }));
+                            index += 1;
                         }
-                        //DrawText(ref rect, style, empty);
-                        //empty = string.Empty;
-                        //for (int j = 0; j < serverConnectionStats.Count; j++)
-                        //{
-                        //    DrawText(ref rect, style, string.Concat(new object[]
-                        //    {
-                        //        $"UnReliable {j+2}号位延迟: ",
-                        //(serverConnectionStats2._items[j].m_fLatency * 1000f).ToString("000"),
-                        //"ms  MaxWait: ",
-                        //serverConnectionStats2._items[j].m_fMaxTimeBetweenReceives.ToString("00.00"),
-                        //"  昵称: ",
-                        //ServerUserSystem.m_Users._items[j+1].DisplayName
-
-                        ////" Sequence: I",
-                        ////serverConnectionStats2._items[j].m_fIncomingSequenceNumber,
-                        ////" / O",
-                        ////serverConnectionStats2._items[j].m_fOutgoingSequenceNumber
-                        //    }));
-                        //}
                     }
+                    //MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
+                    //Server server = multiplayerController.m_LocalServer;
+                    //Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection> remoteClientConnectionsDict = server.m_RemoteClientConnections;
+
+                    //FastList<ConnectionStats> serverConnectionStats = m_MultiplayerController.GetServerConnectionStats(true);
+                    //FastList<ConnectionStats> serverConnectionStats2 = m_MultiplayerController.GetServerConnectionStats(false);
+
+                    //if (serverConnectionStats.Count > 0)
+                    //{
+                    //    string empty = string.Empty;
+                    //    for (int i = 0; i < serverConnectionStats.Count; i++)
+                    //    {
+                    //        try
+                    //        {
+                    //            float latency1 = serverConnectionStats._items[i].m_fLatency * 1000f;
+                    //            float latency2 = serverConnectionStats2._items[i].m_fLatency * 1000f;
+
+                    //            string latencyStr1 = latency1.ToString("000");
+                    //            string latencyStr2 = latency2.ToString("000");
+
+                    //            string latency = (latency1 > latency2) ? latencyStr1 : latencyStr2;
+
+                    //            if (latencyStr1 == "000" || latencyStr2 == "000")
+                    //            {
+                    //                DrawText(ref rect, style, string.Concat(new object[]
+                    //                {
+                    //                    ServerUserSystem.m_Users._items[i+1].DisplayName,
+                    //                    $" {i+2}号位 ERRLat"
+                    //                }));
+                    //            }
+
+                    //            else
+                    //            {
+                    //                DrawText(ref rect, style, string.Concat(new object[]
+                    //                {
+                    //                ServerUserSystem.m_Users._items[i+1].DisplayName,
+                    //                $" {i+2}号位 ",
+                    //                latency,
+                    //                " ms"
+                    //                }));
+                    //            }
+                    //        }
+                    //        catch (Exception)
+                    //        {
+                    //            //_MODEntry.LogError($"{ex}");
+                    //        }
+                    //    }
+                    //    //DrawText(ref rect, style, empty);
+                    //    //empty = string.Empty;
+                    //    //for (int j = 0; j < serverConnectionStats.Count; j++)
+                    //    //{
+                    //    //    DrawText(ref rect, style, string.Concat(new object[]
+                    //    //    {
+                    //    //        $"UnReliable {j+2}号位延迟: ",
+                    //    //(serverConnectionStats2._items[j].m_fLatency * 1000f).ToString("000"),
+                    //    //"ms  MaxWait: ",
+                    //    //serverConnectionStats2._items[j].m_fMaxTimeBetweenReceives.ToString("00.00"),
+                    //    //"  昵称: ",
+                    //    //ServerUserSystem.m_Users._items[j+1].DisplayName
+
+                    //    ////" Sequence: I",
+                    //    ////serverConnectionStats2._items[j].m_fIncomingSequenceNumber,
+                    //    ////" / O",
+                    //    ////serverConnectionStats2._items[j].m_fOutgoingSequenceNumber
+                    //    //    }));
+                    //    //}
+                    //}
 
 
                 }
@@ -251,30 +282,41 @@ namespace HostUtilities
                 {
                     try
                     {
-                        ConnectionStats clientConnectionStats = m_MultiplayerController.GetClientConnectionStats(true);
-
-                        ConnectionStats clientConnectionStats2 = m_MultiplayerController.GetClientConnectionStats(false);
-                        string clientLatency = (clientConnectionStats.m_fLatency * 1000f).ToString("000");
-                        if (clientLatency == "000")
+                        MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
+                        Client client = multiplayerController.m_LocalClient;
+                        if (client != null)
                         {
-                            clientLatency = "Error";
+                            ConnectionStats connectionStats = client.GetConnectionStats(bReliable: false);
+                            DrawText(ref rect, style, string.Concat(new object[]
+                            {
+                                "本机 ",
+                                connectionStats.m_fLatency == (float)0 ? "ERRLat" : (connectionStats.m_fLatency*1000).ToString("000")+" ms"
+                            }));
                         }
+                        //ConnectionStats clientConnectionStats = m_MultiplayerController.GetClientConnectionStats(true);
+                        //ConnectionStats clientConnectionStats2 = m_MultiplayerController.GetClientConnectionStats(false);
 
-                        string clientLatency2 = (clientConnectionStats2.m_fLatency * 1000f).ToString("000");
-                        if (clientLatency2 == "000")
-                        {
-                            clientLatency2 = "Error";
-                        }
+                        //string clientLatency1 = (clientConnectionStats.m_fLatency * 1000f).ToString("000");
+                        //string clientLatency2 = (clientConnectionStats2.m_fLatency * 1000f).ToString("000");
 
-                        DrawText(ref rect, style, string.Concat(new object[]
-                        {
-                            "本机 RLag ",
-                            clientLatency,
-                            " ms,URLag ",
-                            clientLatency2,
-                            " ms"
-                        }));
+                        //string latency = (clientLatency1.CompareTo(clientLatency2) > 0) ? clientLatency1 : clientLatency2;
 
+                        //if (latency == "000")
+                        //{
+                        //    DrawText(ref rect, style, string.Concat(new object[]
+                        //    {
+                        //        "本机 ERRLat",
+                        //    }));
+                        //}
+                        //else
+                        //{
+                        //DrawText(ref rect, style, string.Concat(new object[]
+                        //{
+                        //        "本机 ",
+                        //        latency,
+                        //        " ms"
+                        //}));
+                        //}
                     }
                     catch (Exception)
                     {
@@ -292,28 +334,14 @@ namespace HostUtilities
                     ////clientConnectionStats2.m_fOutgoingSequenceNumber
                     //    }));
                 }
-                if (m_ConnectionModeCoordinator != null)
-                {
-                    DrawText(ref rect, style, m_ConnectionModeCoordinator.DebugStatus());
-                }
+                //if (m_ConnectionModeCoordinator != null)
+                //{
+                //    DrawText(ref rect, style, m_ConnectionModeCoordinator.DebugStatus());
+                //}
             }
 
-            // Token: 0x04002170 RID: 8560
-            private MultiplayerController m_MultiplayerController;
-
-            // Token: 0x04002171 RID: 8561
-            private IOnlineMultiplayerConnectionModeCoordinator m_ConnectionModeCoordinator;
+            //private MultiplayerController m_MultiplayerController;
+            //private IOnlineMultiplayerConnectionModeCoordinator m_ConnectionModeCoordinator;
         }
-
-
-
-        private static Color HexToColor(string hex)
-        {
-            Color color = new Color();
-            ColorUtility.TryParseHtmlString(hex, out color);
-            return color;
-        }
-
-
     }
 }
