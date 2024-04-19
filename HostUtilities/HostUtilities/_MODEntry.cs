@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.40")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.45")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
@@ -50,6 +50,7 @@ namespace HostUtilities
             ChangeDisplayName.Awake();
             AlwaysServeOldestOrder.Awake();
             LevelSelector.Awake();
+            AddCleanDishes.Awake();
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             AllHarmony.Add(HarmonyInstance);
             AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
@@ -84,6 +85,7 @@ namespace HostUtilities
             Recipe.Update();
             RestartLevel.Update();
             LevelSelector.Update();
+            AddCleanDishes.Update();
         }
 
         public void OnGUI()

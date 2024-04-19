@@ -246,6 +246,7 @@ namespace HostUtilities
             if (flag)
             {
                 log("强制主机已生效");
+                _MODEntry.ShowWarningDialog("强制主机已生效。");
                 __instance.HostGame();
                 return false;
             }

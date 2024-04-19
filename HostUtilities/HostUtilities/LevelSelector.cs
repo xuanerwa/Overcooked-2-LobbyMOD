@@ -46,7 +46,7 @@ namespace HostUtilities
             {
                 if (ValueList == null)
                 {
-                    _MODEntry.ShowWarningDialog("请至少进入一次街机大厅");
+                    _MODEntry.ShowWarningDialog("请至少以主机身份进入一次街机大厅(可以打开强制主机)");
                     return;
                 }
                 if (!_MODEntry.IsInLobby)
