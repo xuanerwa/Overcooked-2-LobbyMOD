@@ -117,7 +117,7 @@ namespace HostUtilities
             {
                 _MODEntry.LogInfo($"自动移除  主页: {steamCommunityUrl}  昵称: {user.DisplayName}");
                 UI_DisplayKickedUser.add_m_Text($"自动移除  {user.DisplayName}");
-                SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
+                //SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
                 ServerUserSystem.RemoveUser(user, true);
                 return true;
             }
@@ -135,7 +135,7 @@ namespace HostUtilities
                 if (!m_bIsLocal)
                 {
                     OnlineUserPlatformId platformID = user.PlatformID;
-                    SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
+                    //SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
                     ServerUserSystem.RemoveUser(user, true);
                     _MODEntry.LogInfo($"{index + 1}号移除成功:{user.DisplayName}, Steamid:{platformID.m_steamId}");
                 }
@@ -157,7 +157,7 @@ namespace HostUtilities
                     _MODEntry.LogInfo($"{index + 1} 号移除成功: {user.DisplayName} 并拉黑");
 
                     OnlineUserPlatformId platformID = user.PlatformID;
-                    SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
+                    //SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
                     ServerUserSystem.RemoveUser(user, true);
 
                     string steamIdString = platformID.m_steamId.ToString();
@@ -312,9 +312,9 @@ namespace HostUtilities
                 return true;
             }
 
-            List<UIPlayerMenuBehaviour.MenuOption> menuOptions = Traverse.Create(__instance).Field("m_menuOptions").GetValue<List<UIPlayerMenuBehaviour.MenuOption>>();
+            List<UIPlayerMenuBehaviour.MenuOption> menuOptions = __instance.m_menuOptions;
 
-            User m_User = Traverse.Create(__instance).Field("m_User").GetValue<User>();
+            User m_User = __instance.m_User;
             for (int i = 0; i < menuOptions.Count; i++)
             {
                 bool flag = true;
@@ -334,7 +334,7 @@ namespace HostUtilities
                 menuOptions[i].m_button.gameObject.SetActive(flag);
             }
             _MODEntry.LogWarning("已patch  UpdateMenuStructure");
-            Traverse.Create(__instance).Method("UpdateNavigation").GetValue();
+            __instance.UpdateNavigation();
             return false;
         }
 
@@ -358,35 +358,30 @@ namespace HostUtilities
                 return;
             }
             // 寻找user
-            User m_User = Traverse.Create(__instance).Field("m_User").GetValue<User>();
+            User m_User = __instance.m_User;
             int num = ClientUserSystem.m_Users.FindIndex((User x) => x == m_User);
             User user = ServerUserSystem.m_Users._items[num];
-            OnlineUserPlatformId platformID = user.PlatformID;
+            //OnlineUserPlatformId platformID = user.PlatformID;
 
-            Server LocalServer = m_LocalServer.GetValue(multiplayerController) as Server;
-            Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection> RemoteClientConnectionsDict = m_RemoteClientConnections.GetValue(LocalServer) as Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection>;
-            SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
+            //Server LocalServer = m_LocalServer.GetValue(multiplayerController) as Server;
+            //Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection> RemoteClientConnectionsDict = m_RemoteClientConnections.GetValue(LocalServer) as Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection>;
+            //SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
 
-            {
-                IOnlineMultiplayerSessionUserId sessionId = user.SessionId;
+            //{
+            //    IOnlineMultiplayerSessionUserId sessionId = user.SessionId;
 
-                if (sessionId != null && RemoteClientConnectionsDict.ContainsKey(sessionId))
-                {
-                    NetworkConnection networkConnection = RemoteClientConnectionsDict[sessionId];
-                    LocalServer.HandleDisconnectMessage(networkConnection);
-                    //        object[] parameters = new object[] { sessionId, networkConnection };
-                    //        RemoveConnection.Invoke(LocalServer, parameters);
-                }
-            }
+            //    if (sessionId != null && RemoteClientConnectionsDict.ContainsKey(sessionId))
+            //    {
+            //        NetworkConnection networkConnection = RemoteClientConnectionsDict[sessionId];
+            //        LocalServer.HandleDisconnectMessage(networkConnection);
+            //        //        object[] parameters = new object[] { sessionId, networkConnection };
+            //        //        RemoveConnection.Invoke(LocalServer, parameters);
+            //    }
+            //}
 
             ServerUserSystem.RemoveUser(user, true);
-            OnUserRemoved.Invoke(LocalServer, new object[] { user });
+            //OnUserRemoved.Invoke(LocalServer, new object[] { user });
         }
-        // Token: 0x0200000F RID: 15
-        private static readonly FieldInfo m_ConnectionStatus = AccessTools.Field(typeof(MultiplayerController), "m_ConnectionStatus");
-        private static readonly FieldInfo m_RemoteClientConnections = AccessTools.Field(typeof(Team17.Online.Multiplayer.Server), "m_RemoteClientConnections");
-        private static readonly FieldInfo m_LocalServer = AccessTools.Field(typeof(MultiplayerController), "m_LocalServer");
-        private static readonly MethodInfo OnUserRemoved = AccessTools.Method(typeof(Server), "OnUserRemoved", null);
-        private static readonly MethodInfo RemoveConnection = AccessTools.Method(typeof(Server), "RemoveConnection", null);
+       
     }
 }
