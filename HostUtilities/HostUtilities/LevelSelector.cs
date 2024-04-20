@@ -46,7 +46,7 @@ namespace HostUtilities
             {
                 if (ValueList == null)
                 {
-                    _MODEntry.ShowWarningDialog("请至少以主机身份进入一次街机大厅(可以打开强制主机)");
+                    _MODEntry.ShowWarningDialog("请至少以主机身份进入一次街机大厅并等待5秒(可以打开强制主机)");
                     return;
                 }
                 if (!_MODEntry.IsInLobby)
@@ -144,6 +144,7 @@ namespace HostUtilities
                 SceneDirectoryData.PerPlayerCountDirectoryEntry sceneVarient = sceneDirectoryEntry.GetSceneVarient(ServerUserSystem.m_Users.Count);
                 ServerLobbyFlowController.Instance.m_delayedLevelLoad = ServerLobbyFlowController.Instance.StartCoroutine(ServerLobbyFlowController.Instance.DelayedLevelLoad(sceneVarient.SceneName, dlcidfromSceneDirIndex2));
                 _MODEntry.IsSelectedAndPlay = false;
+                AddCleanDishes.plateOrGlassNum = 0;
             }
 
             //if (Input.GetKeyDown(KeyCode.F5))
