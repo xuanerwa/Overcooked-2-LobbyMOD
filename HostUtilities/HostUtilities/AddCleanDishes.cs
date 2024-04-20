@@ -35,9 +35,10 @@ namespace HostUtilities
                 GameObject cleanPlateStackObject = GameObject.Find("CleanPlateStack");
                 GameObject cleanGlassStackObject = GameObject.Find("CleanGlassStack");
                 GameObject DLC_08CleanTrayStackObject = GameObject.Find("DLC08_CleanTrayStack");
+                GameObject CleanMugStackObject = GameObject.Find("CleanMugStack");
                 if (cleanPlateStackObject != null)
                 {
-
+                    //盘子
                     // 获取 cleanPlateStackObject 对象上的 ServerCleanPlateStack 组件
                     ServerCleanPlateStack serverCleanPlateStack = cleanPlateStackObject.GetComponent<ServerCleanPlateStack>();
                     if (serverCleanPlateStack != null)
@@ -50,6 +51,7 @@ namespace HostUtilities
 
                 if (cleanGlassStackObject != null)
                 {
+                    //杯子
                     // 获取 cleanGlassStackObject 对象上的 ServerCleanPlateStack 组件
                     ServerCleanPlateStack serverCleanGlassStack = cleanGlassStackObject.GetComponent<ServerCleanPlateStack>();
                     if (serverCleanGlassStack != null)
@@ -59,9 +61,10 @@ namespace HostUtilities
                         plateOrGlassNum += 1;
                     }
                 }
+
                 if (DLC_08CleanTrayStackObject != null)
                 {
-
+                    //托盘
                     // 获取 DLC_08CleanTrayStackObject 对象上的 ServerCleanPlateStack 组件
                     ServerCleanPlateStack serverDLC_08CleanTrayStack = DLC_08CleanTrayStackObject.GetComponent<ServerCleanPlateStack>();
                     if (serverDLC_08CleanTrayStack != null)
@@ -71,14 +74,26 @@ namespace HostUtilities
                         plateOrGlassNum += 1;
                     }
                 }
+                if (CleanMugStackObject != null)
+                {
+                    // 马克杯
+                    // 获取 CleanMugStackObject 对象上的 ServerCleanPlateStack 组件
+                    ServerCleanPlateStack serverCleanMugStack = CleanMugStackObject.GetComponent<ServerCleanPlateStack>();
+                    if (serverCleanMugStack != null)
+                    {
+                        // 调用 serverCleanMugStack 组件的 AddToStack 方法
+                        serverCleanMugStack.AddToStack();
+                        plateOrGlassNum += 1;
+                    }
+                }
                 if (cleanGlassStackObject != null && cleanPlateStackObject != null)
                 {
                     plateOrGlassNum -= 1;
                 }
 
-                if (cleanPlateStackObject == null && cleanGlassStackObject == null)
+                if (cleanPlateStackObject == null && cleanGlassStackObject == null && CleanMugStackObject == null && DLC_08CleanTrayStackObject == null)
                 {
-                    _MODEntry.ShowWarningDialog("请先洗一个盘子/杯子/托盘后再按。");
+                    _MODEntry.ShowWarningDialog("请先洗一个盘子/杯子/托盘/马克杯后再按。");
                 }
 
             }
