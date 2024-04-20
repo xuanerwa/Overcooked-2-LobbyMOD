@@ -120,7 +120,7 @@ namespace HostUtilities
                 UI_DisplayKickedUser.add_m_Text($"自动移除  {user.DisplayName}");
                 //SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
                 ServerUserSystem.RemoveUser(user, true);
-                _MODEntry.ShowWarningDialog($"自动移除黑名单  {user.DisplayName}");
+                //_MODEntry.ShowWarningDialog($"自动移除黑名单  {user.DisplayName}");
                 return true;
 
             }
