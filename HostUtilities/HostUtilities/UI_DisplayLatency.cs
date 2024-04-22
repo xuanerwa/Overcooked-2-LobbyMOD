@@ -183,29 +183,33 @@ namespace HostUtilities
                 }
                 if (_MODEntry.IsHost)
                 {
-                    MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
-                    Server server = multiplayerController.m_LocalServer;
-                    Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection> remoteClientConnectionsDict = server.m_RemoteClientConnections;
-
-                    if (server != null)
+                    try
                     {
-                        int index = 2;
-                        foreach (User user in ServerUserSystem.m_Users._items.Skip(1))
-                        {
-                            foreach (var kvp in remoteClientConnectionsDict)
-                            {
-                                IOnlineMultiplayerSessionUserId sessionUserId = kvp.Key;
-                                NetworkConnection connection = kvp.Value;
+                        MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
+                        Server server = multiplayerController.m_LocalServer;
+                        Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection> remoteClientConnectionsDict = server.m_RemoteClientConnections;
 
-                                if (user.DisplayName == sessionUserId.DisplayName)
+                        if (server != null)
+                        {
+                            int index = 2;
+                            foreach (User user in ServerUserSystem.m_Users._items.Skip(1))
+                            {
+                                foreach (var kvp in remoteClientConnectionsDict)
                                 {
-                                    float latency = connection.GetConnectionStats(bReliable: false).m_fLatency;
-                                    DrawText(ref rect, style, $"{user.DisplayName} {index}号位 {(latency == 0 ? "ERRLat" : (latency * 1000).ToString("000") + " ms")}");
-                                    index++;
+                                    IOnlineMultiplayerSessionUserId sessionUserId = kvp.Key;
+                                    NetworkConnection connection = kvp.Value;
+
+                                    if (user.DisplayName == sessionUserId.DisplayName)
+                                    {
+                                        float latency = connection.GetConnectionStats(bReliable: false).m_fLatency;
+                                        DrawText(ref rect, style, $"{user.DisplayName} {index}号位 {(latency == 0 ? "ERRLat" : (latency * 1000).ToString("000") + " ms")}");
+                                        index++;
+                                    }
                                 }
                             }
                         }
                     }
+                    catch (Exception) { }
                     //MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
                     //Server server = multiplayerController.m_LocalServer;
                     //Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection> remoteClientConnectionsDict = server.m_RemoteClientConnections;
