@@ -156,6 +156,7 @@ namespace HostUtilities
             //}
 
         }
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ClientTime), "OnTimeSyncReceived")]
         public static void ClientTime_OnTimeSyncReceived_Patch()

@@ -34,7 +34,7 @@ namespace HostUtilities
 
             modName = "HostUtilities";
             Instance = this;
-            ModifyConfig.Awake();
+            ModifySingleplayerChopTimeMultiplier.Awake();
             UI_DisplayModsOnResultsScreen.Awake();
             SkipLevel.Awake();
             KickUser.Awake();
@@ -51,6 +51,7 @@ namespace HostUtilities
             AlwaysServeOldestOrder.Awake();
             LevelSelector.Awake();
             AddCleanDishes.Awake();
+            ModifyMaxActiveOrders.Awake();
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             AllHarmony.Add(HarmonyInstance);
             AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
@@ -182,7 +183,7 @@ namespace HostUtilities
             isInLobby();
             if (Screen.width != Mathf.RoundToInt(_MODEntry.Instance.baseScreenWidth * dpiScaleFactor) || Screen.height != Mathf.RoundToInt(_MODEntry.Instance.baseScreenHeight * dpiScaleFactor)) { Instance.UpdateGUIDpi(); }
 
-            //LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
+            LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
         }
 
         public static void ShowWarningDialog(string message)

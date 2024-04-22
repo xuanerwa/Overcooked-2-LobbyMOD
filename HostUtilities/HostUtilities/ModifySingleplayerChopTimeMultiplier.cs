@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace HostUtilities
 {
-    public class ModifyConfig
+    public class ModifySingleplayerChopTimeMultiplier
     {
         public static Harmony HarmonyInstance { get; set; }
         private static ConfigEntry<bool> modify_SingleplayerChopTimeMultiplier;
