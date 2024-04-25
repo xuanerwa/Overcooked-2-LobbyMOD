@@ -52,6 +52,7 @@ namespace HostUtilities
             LevelSelector.Awake();
             AddCleanDishes.Awake();
             ModifyMaxActiveOrders.Awake();
+            HeatedPositionFix.Awake();
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             AllHarmony.Add(HarmonyInstance);
             AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
