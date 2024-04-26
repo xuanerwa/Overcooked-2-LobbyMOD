@@ -29,8 +29,11 @@ namespace HostUtilities
             {
                 _MODEntry.LogInfo("HeatedPositionFix");
                 __instance.m_heatedStationGUI = (HeatedStationGUI)synchronisedObject;
-                __instance.m_heatedStation = __instance.gameObject.RequireComponent<ClientHeatedStation>();
+                __instance.m_heatedStationGUI.m_Offset = Vector3.up;
                 __instance.m_heatedStationGUI.m_Offset = __instance.m_heatedStationGUI.m_Offset.AddY(2f);
+                __instance.m_heatedStation = __instance.gameObject.RequireComponent<ClientHeatedStation>();
+                __instance.m_heatValue = __instance.m_heatedStation.HeatValue;
+                __instance.OnHeatValueChanged(__instance.m_heatValue);
                 return false;
             }
             else
