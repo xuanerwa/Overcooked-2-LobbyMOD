@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace HostUtilities
 {
-    public class HeatedPositionFix
+    public class FixHeatedPosition
     {
         public static ConfigEntry<bool> heatedPositionFixEnabled;
         public static Harmony HarmonyInstance { get; set; }
