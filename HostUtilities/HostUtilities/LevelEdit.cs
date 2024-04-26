@@ -146,7 +146,7 @@ namespace HostUtilities
         [HarmonyPrefix]
         private static bool ServerLobbyFlowController_PickLevel_Prefix(ref ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
         {
-            AddCleanDishes.plateOrGlassNum = 0;
+            //AddCleanDishes.plateOrGlassNum = 0;
             if (_MODEntry.IsSelectedAndPlay)
             {
                 log("已经选关,不执行原函数");

@@ -28,7 +28,7 @@ namespace HostUtilities
             }
             else
             {
-                log($"当前Instancename: {__instance.name}, Object: {_item.name}, PlacementContext: {_context}");
+                log($"CanAttachToSelf: InstanceName: 【{__instance.name}】, ObjectName: 【{_item.name}】");
                 return true;
             }
         }

@@ -144,7 +144,7 @@ namespace HostUtilities
                 SceneDirectoryData.PerPlayerCountDirectoryEntry sceneVarient = sceneDirectoryEntry.GetSceneVarient(ServerUserSystem.m_Users.Count);
                 ServerLobbyFlowController.Instance.m_delayedLevelLoad = ServerLobbyFlowController.Instance.StartCoroutine(ServerLobbyFlowController.Instance.DelayedLevelLoad(sceneVarient.SceneName, dlcidfromSceneDirIndex2));
                 _MODEntry.IsSelectedAndPlay = false;
-                AddCleanDishes.plateOrGlassNum = 0;
+                //AddCleanDishes.plateOrGlassNum = 0;
             }
 
             //if (Input.GetKeyDown(KeyCode.F5))

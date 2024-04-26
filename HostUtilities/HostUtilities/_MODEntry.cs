@@ -50,7 +50,7 @@ namespace HostUtilities
             ChangeDisplayName.Awake();
             AlwaysServeOldestOrder.Awake();
             LevelSelector.Awake();
-            AddCleanDishes.Awake();
+            AddDirtyDishes.Awake();
             ModifyMaxActiveOrders.Awake();
             FixHeatedPosition.Awake();
             FixBrokenWashingStation.Awake();
@@ -88,7 +88,7 @@ namespace HostUtilities
             Recipe.Update();
             RestartLevel.Update();
             LevelSelector.Update();
-            AddCleanDishes.Update();
+            AddDirtyDishes.Update();
         }
 
         public void OnGUI()
