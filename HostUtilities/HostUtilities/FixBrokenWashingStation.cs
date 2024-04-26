@@ -24,7 +24,7 @@ namespace HostUtilities
         [HarmonyPatch(typeof(ServerAttachStation), "CanAttachToSelf")]
         public static bool ServerAttachStation_CanAttachToSelf_Prefix(ref ServerAttachStation __instance, UnityEngine.GameObject _item, PlacementContext _context)
         {
-            if (__instance.name == "WashingPart" || __instance.name == "Switch(1)" || __instance.name == "workstation_cooker_01")
+            if (__instance.name == "WashingPart")
             {
                 return false;
             }
