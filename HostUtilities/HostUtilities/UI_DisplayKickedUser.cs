@@ -91,7 +91,6 @@ namespace HostUtilities
                 m_GUIStyle.alignment = TextAnchor.UpperLeft;
                 m_GUIStyle.fontSize = _MODEntry.defaultFontSize.Value;
                 this.m_GUIStyle.normal.textColor = _MODEntry.defaultFontColor.Value;
-                m_GUIStyle.richText = false;
             }
 
             public void Update()
