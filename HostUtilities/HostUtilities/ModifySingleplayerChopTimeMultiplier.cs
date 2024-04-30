@@ -25,6 +25,12 @@ namespace HostUtilities
             if (__result != null && modify_SingleplayerChopTimeMultiplier.Value && _MODEntry.IsInParty)
             {
                 __result.SingleplayerChopTimeMultiplier = 1;
+                log($"单人切菜倍率：{__result.SingleplayerChopTimeMultiplier}");
+            }
+            else
+            {
+                __result.SingleplayerChopTimeMultiplier = 5;
+                log($"单人切菜倍率：{__result.SingleplayerChopTimeMultiplier}");
             }
         }
     }
