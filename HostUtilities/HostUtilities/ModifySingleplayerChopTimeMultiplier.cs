@@ -8,6 +8,7 @@ namespace HostUtilities
     public class ModifySingleplayerChopTimeMultiplier
     {
         public static Harmony HarmonyInstance { get; set; }
+        public static void log(string mes) => _MODEntry.LogInfo(mes);
         private static ConfigEntry<bool> modify_SingleplayerChopTimeMultiplier;
         public static void Awake()
         {
