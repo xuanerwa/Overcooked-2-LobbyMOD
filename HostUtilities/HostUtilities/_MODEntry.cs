@@ -34,7 +34,7 @@ namespace HostUtilities
 
             modName = "HostUtilities";
             Instance = this;
-            ModifySingleplayerChopTimeMultiplier.Awake();
+            // ModifySingleplayerChopTimeMultiplier.Awake();
             UI_DisplayModsOnResultsScreen.Awake();
             SkipLevel.Awake();
             KickUser.Awake();
@@ -43,7 +43,7 @@ namespace HostUtilities
             UI_DisplayKickedUser.Awake();
             ReplaceOneShotAudio.Awake();
             ForceHost.Awake();
-            Recipe.Awake();
+            // Recipe.Awake();
             UI_DisplayLatency.Awake();
             FixDoubleServing.Awake();
             RestartLevel.Awake();
@@ -51,7 +51,7 @@ namespace HostUtilities
             AlwaysServeOldestOrder.Awake();
             LevelSelector.Awake();
             AddDirtyDishes.Awake();
-            ModifyMaxActiveOrders.Awake();
+            // ModifyMaxActiveOrders.Awake();
             FixHeatedPosition.Awake();
             FixBrokenWashingStation.Awake();
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
@@ -85,7 +85,7 @@ namespace HostUtilities
             UI_DisplayKickedUser.Update();
             UI_DisplayLatency.Update();
             ForceHost.Update();
-            Recipe.Update();
+            // Recipe.Update();
             RestartLevel.Update();
             LevelSelector.Update();
             AddDirtyDishes.Update();
@@ -96,7 +96,7 @@ namespace HostUtilities
             UI_DisplayModsOnResultsScreen.OnGUI();
             UI_DisplayKickedUser.OnGUI();
             UI_DisplayLatency.OnGUI();
-            Recipe.OnGUI();
+            // Recipe.OnGUI();
         }
 
 
