@@ -89,7 +89,7 @@ namespace HostUtilities
 
                 if (DirtyPlateStackObject == null && DirtyGlassStackObject == null && DirtyMugStackObject == null && DLC_08DirtyTrayStackObject == null)
                 {
-                    _MODEntry.ShowWarningDialog("请先上一个菜, 出“脏盘子/脏杯子/脏托盘/脏马克杯”后再按。");
+                    _MODEntry.ShowWarningDialog("请先上一个菜, 出“脏盘子/脏杯子/脏托盘/脏马克杯”后再按。无脏盘关无法使用。");
                 }
 
             }

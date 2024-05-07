@@ -8,10 +8,11 @@ using UnityEngine;
 
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.58")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.59")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
+        public static string Version = "1.0.59";
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
@@ -28,13 +29,13 @@ namespace HostUtilities
         public static bool IsSelectedAndPlay = false;
         public void Awake()
         {
+            UI_DisplayModName.Awake();
             defaultFontSize = Config.Bind<int>("00-UI", "MOD的UI字体大小", 20, new ConfigDescription("MOD的UI字体大小", new AcceptableValueRange<int>(5, 40)));
             defaultFontColor = Config.Bind<Color>("00-UI", "MOD的UI字体颜色", new Color(1, 1, 1, 1));
 
 
             modName = "HostUtilities";
             Instance = this;
-            // ModifySingleplayerChopTimeMultiplier.Awake();
             UI_DisplayModsOnResultsScreen.Awake();
             SkipLevel.Awake();
             KickUser.Awake();
@@ -43,7 +44,6 @@ namespace HostUtilities
             UI_DisplayKickedUser.Awake();
             ReplaceOneShotAudio.Awake();
             ForceHost.Awake();
-            // Recipe.Awake();
             UI_DisplayLatency.Awake();
             FixDoubleServing.Awake();
             RestartLevel.Awake();
@@ -51,9 +51,11 @@ namespace HostUtilities
             AlwaysServeOldestOrder.Awake();
             LevelSelector.Awake();
             AddDirtyDishes.Awake();
-            // ModifyMaxActiveOrders.Awake();
-            FixHeatedPosition.Awake();
             FixBrokenWashingStation.Awake();
+            // Recipe.Awake();
+            // ModifySingleplayerChopTimeMultiplier.Awake();
+            // ModifyMaxActiveOrders.Awake();
+            // FixHeatedPosition.Awake();
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             AllHarmony.Add(HarmonyInstance);
             AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
@@ -77,6 +79,7 @@ namespace HostUtilities
 
         public void Update()
         {
+            UI_DisplayModName.Update();
             UI_DisplayModsOnResultsScreen.Update();
             SkipLevel.Update();
             KickUser.Update();
@@ -85,14 +88,15 @@ namespace HostUtilities
             UI_DisplayKickedUser.Update();
             UI_DisplayLatency.Update();
             ForceHost.Update();
-            // Recipe.Update();
             RestartLevel.Update();
             LevelSelector.Update();
             AddDirtyDishes.Update();
+            // Recipe.Update();
         }
 
         public void OnGUI()
         {
+            UI_DisplayModName.OnGUI();
             UI_DisplayModsOnResultsScreen.OnGUI();
             UI_DisplayKickedUser.OnGUI();
             UI_DisplayLatency.OnGUI();
