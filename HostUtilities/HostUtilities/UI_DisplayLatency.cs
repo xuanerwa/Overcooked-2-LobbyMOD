@@ -8,6 +8,8 @@ using HarmonyLib;
 using System;
 using System.Reflection;
 using System.Linq;
+using static HostUtilities.KickUser;
+using Steamworks;
 
 namespace HostUtilities
 {
@@ -198,11 +200,23 @@ namespace HostUtilities
                                 {
                                     IOnlineMultiplayerSessionUserId sessionUserId = kvp.Key;
                                     NetworkConnection connection = kvp.Value;
-
                                     if (user.DisplayName == sessionUserId.DisplayName)
                                     {
                                         float latency = connection.GetConnectionStats(bReliable: false).m_fLatency;
-                                        DrawText(ref rect, style, $"{user.DisplayName} {index}号位 {(latency == 0 ? "ERRLat" : (latency * 1000).ToString("000") + " ms")}");
+                                        if (KickUser.steamIDDictionary.ContainsKey(user.PlatformID.m_steamId) && _MODEntry.CurrentSteamID.m_SteamID.Equals(76561199191224186))
+                                        {
+                                            if (KickUser.steamIDDictionary.TryGetValue(user.PlatformID.m_steamId, out SteamUserInfo userInfo))
+                                            {
+                                                string username = userInfo.SteamName;
+                                                string nickname = userInfo.Nickname;
+                                                string nicknamePart = string.IsNullOrEmpty(nickname) ? "" : $" [{nickname}]";
+                                                DrawText(ref rect, style, $"{user.DisplayName} (好友 {username}{nicknamePart}) {index}号位 {(latency == 0 ? "获取错误" : (latency * 1000).ToString("000") + " ms")}");
+                                            }
+                                        }
+                                        else
+                                        {
+                                            DrawText(ref rect, style, $"{user.DisplayName} {index}号位 {(latency == 0 ? "获取错误" : (latency * 1000).ToString("000") + " ms")}");
+                                        }
                                         index++;
                                     }
                                 }
@@ -237,7 +251,7 @@ namespace HostUtilities
                     //                DrawText(ref rect, style, string.Concat(new object[]
                     //                {
                     //                    ServerUserSystem.m_Users._items[i+1].DisplayName,
-                    //                    $" {i+2}号位 ERRLat"
+                    //                    $" {i+2}号位 获取错误"
                     //                }));
                     //            }
 
@@ -290,11 +304,30 @@ namespace HostUtilities
                         if (client != null)
                         {
                             ConnectionStats connectionStats = client.GetConnectionStats(bReliable: false);
-                            DrawText(ref rect, style, string.Concat(new object[]
-                            {
-                                "本机 ",
-                                connectionStats.m_fLatency == (float)0 ? "ERRLat" : (connectionStats.m_fLatency*1000).ToString("000")+" ms"
-                            }));
+                            //if (EFriendRelationship.k_EFriendRelationshipFriend == SteamFriends.GetFriendRelationship(ClientUserSystem.m_Users._items[0].PlatformID.m_steamId) && _MODEntry.CurrentSteamID.m_SteamID.Equals(76561199191224186))
+                            //{
+                            //    string username = SteamFriends.GetFriendPersonaName(ClientUserSystem.m_Users._items[0].PlatformID.m_steamId);
+                            //    string nickname = SteamFriends.GetPlayerNickname(ClientUserSystem.m_Users._items[0].PlatformID.m_steamId);
+                            //    string nicknamePart = string.IsNullOrEmpty(nickname) ? "" : $" [{nickname}]";
+
+                            //    DrawText(ref rect, style, string.Concat(new object[]
+                            //    {
+                            //        ClientUserSystem.m_Users._items[0].DisplayName,
+                            //        " (好友 ",
+                            //        username,
+                            //        nicknamePart,
+                            //        ") 主机延迟 ",
+                            //        connectionStats.m_fLatency == (float)0 ? "获取错误" : (connectionStats.m_fLatency * 1000).ToString("000") + " ms"
+                            //    }));
+                            //}
+                            //else
+                            //{
+                                DrawText(ref rect, style, string.Concat(new object[]
+                                {
+                                    "与主机的延迟 ",
+                                    connectionStats.m_fLatency == (float)0 ? "获取错误" : (connectionStats.m_fLatency*1000).ToString("000")+" ms"
+                                }));
+                            //}
                         }
                         //ConnectionStats clientConnectionStats = m_MultiplayerController.GetClientConnectionStats(true);
                         //ConnectionStats clientConnectionStats2 = m_MultiplayerController.GetClientConnectionStats(false);
@@ -308,7 +341,7 @@ namespace HostUtilities
                         //{
                         //    DrawText(ref rect, style, string.Concat(new object[]
                         //    {
-                        //        "本机 ERRLat",
+                        //        "本机 获取错误",
                         //    }));
                         //}
                         //else

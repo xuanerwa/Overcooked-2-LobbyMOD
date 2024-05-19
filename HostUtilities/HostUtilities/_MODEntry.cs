@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using Steamworks;
 using System.Collections.Generic;
 using System.Reflection;
 using Team17.Online;
@@ -8,11 +9,11 @@ using UnityEngine;
 
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.60")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.61")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.60";
+        public static string Version = "1.0.61";
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
@@ -27,6 +28,7 @@ namespace HostUtilities
         public static ConfigEntry<int> defaultFontSize;
         public static ConfigEntry<Color> defaultFontColor;
         public static bool IsSelectedAndPlay = false;
+        public static CSteamID CurrentSteamID;
         public void Awake()
         {
             UI_DisplayModName.Awake();
@@ -188,8 +190,12 @@ namespace HostUtilities
             IsHost = isHost();
             isInLobby();
             if (Screen.width != Mathf.RoundToInt(_MODEntry.Instance.baseScreenWidth * dpiScaleFactor) || Screen.height != Mathf.RoundToInt(_MODEntry.Instance.baseScreenHeight * dpiScaleFactor)) { Instance.UpdateGUIDpi(); }
-
             LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
+            if (CurrentSteamID == null || CurrentSteamID.m_SteamID == 0)
+            {
+                CurrentSteamID = SteamUser.GetSteamID();
+                LogError("CurrentSteamID: " + CurrentSteamID.m_SteamID);
+            }
         }
 
         public static void ShowWarningDialog(string message)

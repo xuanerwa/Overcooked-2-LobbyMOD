@@ -17,6 +17,7 @@ namespace HostUtilities
 {
     public class KickUser
     {
+        public static void log(string mes) => _MODEntry.LogInfo(mes);
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> banSteamIdList = new List<string>();
         public static List<string> savedSteamIdList = new List<string>();
@@ -32,6 +33,19 @@ namespace HostUtilities
         public static ConfigEntry<KeyCode> kickAndBan3;
         public static ConfigEntry<KeyCode> kickAndBan4;
         public static bool IsInLobby = false;
+        public static Dictionary<CSteamID, SteamUserInfo> steamIDDictionary = new Dictionary<CSteamID, SteamUserInfo>();
+        public class SteamUserInfo
+        {
+            public string SteamName { get; set; }
+            public string Nickname { get; set; }
+
+            public SteamUserInfo(string personaName, string nickname)
+            {
+                SteamName = personaName;
+                Nickname = nickname;
+            }
+        }
+
 
         public static void Awake()
         {
@@ -281,16 +295,22 @@ namespace HostUtilities
                     _MODEntry.LogInfo($"保存:{user.DisplayName}");
                     OnlineUserPlatformId platformID = user.PlatformID;
                     CSteamID? csteamID = (platformID != null) ? new CSteamID?(platformID.m_steamId) : null;
+                    if (EFriendRelationship.k_EFriendRelationshipFriend == SteamFriends.GetFriendRelationship(csteamID.Value)){
+                        string personaName = SteamFriends.GetFriendPersonaName(csteamID.Value);
+                        string nickname = SteamFriends.GetPlayerNickname(csteamID.Value);
+                        // 将好友信息存储到字典中
+                        steamIDDictionary[csteamID.Value] = new SteamUserInfo(personaName, nickname);
+                    };
                     string steamIdString = csteamID.ToString();
                     string steamCommunityUrl = $"steam主页链接: https://steamcommunity.com/profiles/{steamIdString}";
 
-                    if (steamIdString == "76561198415369188")
-                    {
-                        if (_MODEntry.IsInParty)
-                        {
-                            ServerUserSystem.RemoveUser(user, true);
-                        }
-                    }
+                    //if (steamIdString == "76561198415369188")
+                    //{
+                    //    if (_MODEntry.IsInParty)
+                    //    {
+                    //        ServerUserSystem.RemoveUser(user, true);
+                    //    }
+                    //}
 
                     DateTime currentTime = DateTime.Now;
                     string formattedTime = currentTime.ToString("yyyy-MM-dd HH:mm:ss");
@@ -385,6 +405,6 @@ namespace HostUtilities
             ServerUserSystem.RemoveUser(user, true);
             //OnUserRemoved.Invoke(LocalServer, new object[] { user });
         }
-       
+
     }
 }

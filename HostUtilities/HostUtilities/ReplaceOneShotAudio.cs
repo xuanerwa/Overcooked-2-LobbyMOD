@@ -222,7 +222,7 @@ namespace HostUtilities
             }
             else
             {
-                _MODEntry.LogError($"文件夹内没有 {_tag.ToString()}-*.wav 文件");
+                //_MODEntry.LogError($"文件夹内没有 {_tag.ToString()}-*.wav 文件");
             }
         }
 
