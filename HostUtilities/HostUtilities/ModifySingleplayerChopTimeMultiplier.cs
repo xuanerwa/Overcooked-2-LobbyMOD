@@ -23,7 +23,9 @@ namespace HostUtilities
         [HarmonyPostfix]
         private static void GameUtils_GetGameConfig_Postfix(ref GameConfig __result)
         {
-            if (__result != null && modify_SingleplayerChopTimeMultiplier.Value && _MODEntry.IsInParty)
+            try
+            {
+                if (__result != null && modify_SingleplayerChopTimeMultiplier.Value && _MODEntry.IsInParty)
             {
                 __result.SingleplayerChopTimeMultiplier = 1;
                 log($"单人切菜倍率：{__result.SingleplayerChopTimeMultiplier}");
@@ -32,6 +34,12 @@ namespace HostUtilities
             {
                 __result.SingleplayerChopTimeMultiplier = 5;
                 log($"单人切菜倍率：{__result.SingleplayerChopTimeMultiplier}");
+            }
+                }
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
             }
         }
     }

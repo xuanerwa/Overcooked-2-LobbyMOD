@@ -1,5 +1,6 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Team17.Online;
@@ -26,27 +27,35 @@ namespace HostUtilities
         [HarmonyPatch(typeof(ClientTime), "OnTimeSyncReceived")]
         public static void ClientTime_OnTimeSyncReceived_Patch()
         {
-            if (isReplaceName.Value)
+            try
             {
-                if (lastPlayerName != playerName.Value)
+                if (isReplaceName.Value)
                 {
-                    FastList<User> serveruser = ServerUserSystem.m_Users;
-                    for (int i = 0; i < serveruser.Count; i++)
+                    if (lastPlayerName != playerName.Value)
                     {
-                        if (serveruser._items[i].IsLocal)
-                            serveruser._items[i].DisplayName =
-                                PromptWords +
-                                playerName.Value;
-                    }
-                    FastList<User> clientuser = ClientUserSystem.m_Users;
-                    for (int i = 0; i < clientuser.Count; i++)
-                    {
-                        if (clientuser._items[i].IsLocal)
-                            clientuser._items[i].DisplayName =
-                                PromptWords +
-                                playerName.Value;
+                        FastList<User> serveruser = ServerUserSystem.m_Users;
+                        for (int i = 0; i < serveruser.Count; i++)
+                        {
+                            if (serveruser._items[i].IsLocal)
+                                serveruser._items[i].DisplayName =
+                                    PromptWords +
+                                    playerName.Value;
+                        }
+                        FastList<User> clientuser = ClientUserSystem.m_Users;
+                        for (int i = 0; i < clientuser.Count; i++)
+                        {
+                            if (clientuser._items[i].IsLocal)
+                                clientuser._items[i].DisplayName =
+                                    PromptWords +
+                                    playerName.Value;
+                        }
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
             }
         }
 
@@ -55,14 +64,22 @@ namespace HostUtilities
         [HarmonyPostfix]
         public static void DisplayName_Getter_Prefix(ref string __result, User __instance)
         {
-            if (isReplaceName.Value)
+            try
             {
-                if (__instance.IsLocal)
+                if (isReplaceName.Value)
                 {
-                    __result =
-                        PromptWords +
-                        playerName.Value;
+                    if (__instance.IsLocal)
+                    {
+                        __result =
+                            PromptWords +
+                            playerName.Value;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
             }
         }
 
@@ -70,14 +87,22 @@ namespace HostUtilities
         [HarmonyPrefix]
         public static void DisplayNameSetterPrefix(ref string value, User __instance)
         {
-            if (isReplaceName.Value)
+            try
             {
-                if (__instance.IsLocal)
+                if (isReplaceName.Value)
                 {
-                    value =
-                        PromptWords +
-                        playerName.Value;
+                    if (__instance.IsLocal)
+                    {
+                        value =
+                            PromptWords +
+                            playerName.Value;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
             }
         }
 
@@ -85,11 +110,19 @@ namespace HostUtilities
         [HarmonyPrefix]
         public static void JoinDataProvider_BuildJoinRequestData_Prefix(ref OnlineMultiplayerLocalUserId requestingLocalUser)
         {
-            if (isReplaceName.Value)
+            try
             {
-                requestingLocalUser.m_userName =
-                PromptWords +
-                playerName.Value;
+                if (isReplaceName.Value)
+                {
+                    requestingLocalUser.m_userName =
+                    PromptWords +
+                    playerName.Value;
+                }
+            }
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
             }
         }
     }

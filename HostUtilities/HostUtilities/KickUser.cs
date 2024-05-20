@@ -275,53 +275,62 @@ namespace HostUtilities
         [HarmonyPatch(typeof(ServerUserSystem), "AddUser")]
         public static void ServerUserSystem_AddUser_Patch(User.MachineID machine, EngagementSlot engagement)
         {
-            if (_MODEntry.IsHost)
+            try
             {
-                FastList<User> users = ServerUserSystem.m_Users;
-                User user = UserSystemUtils.FindUser(users, null, machine, engagement, TeamID.Count, User.SplitStatus.Count);
-                if (isAutoKickUser.Value)
+                if (_MODEntry.IsHost)
                 {
-                    if (_MODEntry.IsInLobby)
+                    FastList<User> users = ServerUserSystem.m_Users;
+                    User user = UserSystemUtils.FindUser(users, null, machine, engagement, TeamID.Count, User.SplitStatus.Count);
+                    if (isAutoKickUser.Value)
                     {
-                        bool isKicked = KickBanListUser(user);
-                        if (isKicked)
+                        if (_MODEntry.IsInLobby)
                         {
-                            return;
+                            bool isKicked = KickBanListUser(user);
+                            if (isKicked)
+                            {
+                                return;
+                            }
                         }
                     }
-                }
-                if (!user.IsLocal)
-                {
-                    _MODEntry.LogInfo($"保存:{user.DisplayName}");
-                    OnlineUserPlatformId platformID = user.PlatformID;
-                    CSteamID? csteamID = (platformID != null) ? new CSteamID?(platformID.m_steamId) : null;
-                    if (EFriendRelationship.k_EFriendRelationshipFriend == SteamFriends.GetFriendRelationship(csteamID.Value)){
-                        string personaName = SteamFriends.GetFriendPersonaName(csteamID.Value);
-                        string nickname = SteamFriends.GetPlayerNickname(csteamID.Value);
-                        // 将好友信息存储到字典中
-                        steamIDDictionary[csteamID.Value] = new SteamUserInfo(personaName, nickname);
-                    };
-                    string steamIdString = csteamID.ToString();
-                    string steamCommunityUrl = $"steam主页链接: https://steamcommunity.com/profiles/{steamIdString}";
-
-                    //if (steamIdString == "76561198415369188")
-                    //{
-                    //    if (_MODEntry.IsInParty)
-                    //    {
-                    //        ServerUserSystem.RemoveUser(user, true);
-                    //    }
-                    //}
-
-                    DateTime currentTime = DateTime.Now;
-                    string formattedTime = currentTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    string[] autoSavedSteamIdList = new string[]
+                    if (!user.IsLocal)
                     {
+                        _MODEntry.LogInfo($"保存:{user.DisplayName}");
+                        OnlineUserPlatformId platformID = user.PlatformID;
+                        CSteamID? csteamID = (platformID != null) ? new CSteamID?(platformID.m_steamId) : null;
+                        if (EFriendRelationship.k_EFriendRelationshipFriend == SteamFriends.GetFriendRelationship(csteamID.Value))
+                        {
+                            string personaName = SteamFriends.GetFriendPersonaName(csteamID.Value);
+                            string nickname = SteamFriends.GetPlayerNickname(csteamID.Value);
+                            // 将好友信息存储到字典中
+                            steamIDDictionary[csteamID.Value] = new SteamUserInfo(personaName, nickname);
+                        };
+                        string steamIdString = csteamID.ToString();
+                        string steamCommunityUrl = $"steam主页链接: https://steamcommunity.com/profiles/{steamIdString}";
+
+                        //if (steamIdString == "76561198415369188")
+                        //{
+                        //    if (_MODEntry.IsInParty)
+                        //    {
+                        //        ServerUserSystem.RemoveUser(user, true);
+                        //    }
+                        //}
+
+                        DateTime currentTime = DateTime.Now;
+                        string formattedTime = currentTime.ToString("yyyy-MM-dd HH:mm:ss");
+                        string[] autoSavedSteamIdList = new string[]
+                        {
                     $"------------{formattedTime}-----------",
                     $"steam显示昵称: {user.DisplayName}",steamCommunityUrl,
                     "---------------------------------------------"
-                    };
-                    SaveAutoSavedSteamIdList(autoSavedSteamIdList);
+                        };
+                        SaveAutoSavedSteamIdList(autoSavedSteamIdList);
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
             }
         }
 
@@ -329,35 +338,42 @@ namespace HostUtilities
         [HarmonyPatch(typeof(UIPlayerMenuBehaviour), "UpdateMenuStructure")]
         public static bool UIPlayerMenuBehaviour_UpdateMenuStructure_Prefix(UIPlayerMenuBehaviour __instance)
         {
-
-            if (!_MODEntry.IsHost)
+            try
             {
-                return true;
+                if (!_MODEntry.IsHost)
+                {
+                    return true;
+                }
+
+                List<UIPlayerMenuBehaviour.MenuOption> menuOptions = __instance.m_menuOptions;
+
+                User m_User = __instance.m_User;
+                for (int i = 0; i < menuOptions.Count; i++)
+                {
+                    bool flag = true;
+                    if (m_User == null)
+                    {
+                        flag = false;
+                    }
+                    UIPlayerMenuBehaviour.UIPlayerMenuOptions type = menuOptions[i].m_type;
+                    if (type == UIPlayerMenuBehaviour.UIPlayerMenuOptions.Mute || type == UIPlayerMenuBehaviour.UIPlayerMenuOptions.Unmute)
+                    {
+                        flag = false;
+                    }
+                    if (type == UIPlayerMenuBehaviour.UIPlayerMenuOptions.Kick && m_User.IsLocal)
+                    {
+                        flag = false;
+                    }
+                    menuOptions[i].m_button.gameObject.SetActive(flag);
+                }
+                _MODEntry.LogWarning("已patch  UpdateMenuStructure");
+                __instance.UpdateNavigation();
             }
-
-            List<UIPlayerMenuBehaviour.MenuOption> menuOptions = __instance.m_menuOptions;
-
-            User m_User = __instance.m_User;
-            for (int i = 0; i < menuOptions.Count; i++)
+            catch (Exception e)
             {
-                bool flag = true;
-                if (m_User == null)
-                {
-                    flag = false;
-                }
-                UIPlayerMenuBehaviour.UIPlayerMenuOptions type = menuOptions[i].m_type;
-                if (type == UIPlayerMenuBehaviour.UIPlayerMenuOptions.Mute || type == UIPlayerMenuBehaviour.UIPlayerMenuOptions.Unmute)
-                {
-                    flag = false;
-                }
-                if (type == UIPlayerMenuBehaviour.UIPlayerMenuOptions.Kick && m_User.IsLocal)
-                {
-                    flag = false;
-                }
-                menuOptions[i].m_button.gameObject.SetActive(flag);
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
             }
-            _MODEntry.LogWarning("已patch  UpdateMenuStructure");
-            __instance.UpdateNavigation();
             return false;
         }
 
@@ -367,43 +383,59 @@ namespace HostUtilities
         [HarmonyPatch(typeof(UIPlayerMenuBehaviour), "KickUser")]
         public static bool UIPlayerMenuBehaviour_KickUser_Prefix(UIPlayerMenuBehaviour __instance)
         {
-            HandleKickUserAsync(__instance);
+            try
+            {
+                HandleKickUserAsync(__instance);
+            }
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+            }
             return false;
         }
 
 
         public static void HandleKickUserAsync(UIPlayerMenuBehaviour __instance)
         {
-            MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
-            if (multiplayerController == null)
+            try
             {
-                _MODEntry.LogInfo("实例不存在");
-                return;
+                MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
+                if (multiplayerController == null)
+                {
+                    _MODEntry.LogInfo("实例不存在");
+                    return;
+                }
+                // 寻找user
+                User m_User = __instance.m_User;
+                int num = ClientUserSystem.m_Users.FindIndex((User x) => x == m_User);
+                User user = ServerUserSystem.m_Users._items[num];
+                //OnlineUserPlatformId platformID = user.PlatformID;
+
+                //Server LocalServer = m_LocalServer.GetValue(multiplayerController) as Server;
+                //Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection> RemoteClientConnectionsDict = m_RemoteClientConnections.GetValue(LocalServer) as Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection>;
+                //SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
+
+                //{
+                //    IOnlineMultiplayerSessionUserId sessionId = user.SessionId;
+
+                //    if (sessionId != null && RemoteClientConnectionsDict.ContainsKey(sessionId))
+                //    {
+                //        NetworkConnection networkConnection = RemoteClientConnectionsDict[sessionId];
+                //        LocalServer.HandleDisconnectMessage(networkConnection);
+                //        //        object[] parameters = new object[] { sessionId, networkConnection };
+                //        //        RemoveConnection.Invoke(LocalServer, parameters);
+                //    }
+                //}
+
+                ServerUserSystem.RemoveUser(user, true);
+                //OnUserRemoved.Invoke(LocalServer, new object[] { user });
             }
-            // 寻找user
-            User m_User = __instance.m_User;
-            int num = ClientUserSystem.m_Users.FindIndex((User x) => x == m_User);
-            User user = ServerUserSystem.m_Users._items[num];
-            //OnlineUserPlatformId platformID = user.PlatformID;
-
-            //Server LocalServer = m_LocalServer.GetValue(multiplayerController) as Server;
-            //Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection> RemoteClientConnectionsDict = m_RemoteClientConnections.GetValue(LocalServer) as Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection>;
-            //SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
-
-            //{
-            //    IOnlineMultiplayerSessionUserId sessionId = user.SessionId;
-
-            //    if (sessionId != null && RemoteClientConnectionsDict.ContainsKey(sessionId))
-            //    {
-            //        NetworkConnection networkConnection = RemoteClientConnectionsDict[sessionId];
-            //        LocalServer.HandleDisconnectMessage(networkConnection);
-            //        //        object[] parameters = new object[] { sessionId, networkConnection };
-            //        //        RemoveConnection.Invoke(LocalServer, parameters);
-            //    }
-            //}
-
-            ServerUserSystem.RemoveUser(user, true);
-            //OnUserRemoved.Invoke(LocalServer, new object[] { user });
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+            }
         }
 
     }

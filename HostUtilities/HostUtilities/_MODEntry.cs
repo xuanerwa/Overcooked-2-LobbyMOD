@@ -8,7 +8,10 @@ using System.Collections.Generic;
 using System.Reflection;
 using Team17.Online;
 using UnityEngine;
-using static TriggerCallback;
+using System.Net;
+using System.IO;
+using System.Text;
+using System.Threading;
 
 namespace HostUtilities
 {
@@ -41,80 +44,112 @@ namespace HostUtilities
         public static string ReleaseNote = "";
         public void Awake()
         {
-            UI_DisplayModName.Awake();
-            defaultFontSize = Config.Bind<int>("00-UI", "MOD的UI字体大小", 20, new ConfigDescription("MOD的UI字体大小", new AcceptableValueRange<int>(5, 40)));
-            defaultFontColor = Config.Bind<Color>("00-UI", "MOD的UI字体颜色", new Color(1, 1, 1, 1));
-
-
-            modName = "HostUtilities";
-            Instance = this;
-            UI_DisplayModsOnResultsScreen.Awake();
-            SkipLevel.Awake();
-            KickUser.Awake();
-            LevelEdit.Awake();
-            QuitInLoadingScreen.Awake();
-            UI_DisplayKickedUser.Awake();
-            ReplaceOneShotAudio.Awake();
-            ForceHost.Awake();
-            UI_DisplayLatency.Awake();
-            FixDoubleServing.Awake();
-            RestartLevel.Awake();
-            ChangeDisplayName.Awake();
-            AlwaysServeOldestOrder.Awake();
-            LevelSelector.Awake();
-            AddDirtyDishes.Awake();
-            FixBrokenWashingStation.Awake();
-
-            HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            AllHarmony.Add(HarmonyInstance);
-            AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
-            foreach (string harmony in AllHarmonyName)
+            try
             {
-                LogError($"Patched {harmony}!");
+                UI_DisplayModName.Awake();
+                defaultFontSize = Config.Bind<int>("00-UI", "MOD的UI字体大小", 20, new ConfigDescription("MOD的UI字体大小", new AcceptableValueRange<int>(5, 40)));
+                defaultFontColor = Config.Bind<Color>("00-UI", "MOD的UI字体颜色", new Color(1, 1, 1, 1));
+                
+
+                modName = "HostUtilities";
+                Instance = this;
+                UI_DisplayModsOnResultsScreen.Awake();
+                SkipLevel.Awake();
+                KickUser.Awake();
+                LevelEdit.Awake();
+                QuitInLoadingScreen.Awake();
+                UI_DisplayKickedUser.Awake();
+                ReplaceOneShotAudio.Awake();
+                ForceHost.Awake();
+                UI_DisplayLatency.Awake();
+                FixDoubleServing.Awake();
+                RestartLevel.Awake();
+                ChangeDisplayName.Awake();
+                AlwaysServeOldestOrder.Awake();
+                LevelSelector.Awake();
+                AddDirtyDishes.Awake();
+                FixBrokenWashingStation.Awake();
+
+                HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
+                AllHarmony.Add(HarmonyInstance);
+                AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+                foreach (string harmony in AllHarmonyName)
+                {
+                    LogError($"Patched {harmony}!");
+                }
+            }
+            catch (Exception e)
+            {
+                LogError($"An error occurred: \n{e.Message}");
+                LogError($"Stack trace: \n{e.StackTrace}");
             }
         }
 
         private void OnDestroy()
         {
-            Instance = null;
-            for (int i = 0; i < AllHarmony.Count; i++)
+            try
             {
-                AllHarmony[i].UnpatchAll();
-                LogWarning($"Unpatched {AllHarmonyName[i]}!");
+                Instance = null;
+                for (int i = 0; i < AllHarmony.Count; i++)
+                {
+                    AllHarmony[i].UnpatchAll();
+                    LogWarning($"Unpatched {AllHarmonyName[i]}!");
+                }
+                AllHarmony.Clear();
+                AllHarmonyName.Clear();
             }
-            AllHarmony.Clear();
-            AllHarmonyName.Clear();
+            catch (Exception e)
+            {
+                LogError($"An error occurred: \n{e.Message}");
+                LogError($"Stack trace: \n{e.StackTrace}");
+            }
         }
 
         public void Update()
         {
-            UI_DisplayModName.Update();
-            UI_DisplayModsOnResultsScreen.Update();
-            SkipLevel.Update();
-            KickUser.Update();
-            LevelEdit.Update();
-            QuitInLoadingScreen.Update();
-            UI_DisplayKickedUser.Update();
-            UI_DisplayLatency.Update();
-            ForceHost.Update();
-            RestartLevel.Update();
-            LevelSelector.Update();
-            AddDirtyDishes.Update();
-            if (IsAuthor)
+            try
             {
-                Recipe.Update();
+                UI_DisplayModName.Update();
+                UI_DisplayModsOnResultsScreen.Update();
+                SkipLevel.Update();
+                KickUser.Update();
+                LevelEdit.Update();
+                QuitInLoadingScreen.Update();
+                UI_DisplayKickedUser.Update();
+                UI_DisplayLatency.Update();
+                ForceHost.Update();
+                RestartLevel.Update();
+                LevelSelector.Update();
+                AddDirtyDishes.Update();
+                if (IsAuthor)
+                {
+                    Recipe.Update();
+                }
+            }
+            catch (Exception e)
+            {
+                LogError($"An error occurred: \n{e.Message}");
+                LogError($"Stack trace: \n{e.StackTrace}");
             }
         }
 
         public void OnGUI()
         {
-            UI_DisplayModName.OnGUI();
-            UI_DisplayModsOnResultsScreen.OnGUI();
-            UI_DisplayKickedUser.OnGUI();
-            UI_DisplayLatency.OnGUI();
-            if (IsAuthor)
+            try
             {
-                Recipe.OnGUI();
+                UI_DisplayModName.OnGUI();
+                UI_DisplayModsOnResultsScreen.OnGUI();
+                UI_DisplayKickedUser.OnGUI();
+                UI_DisplayLatency.OnGUI();
+                if (IsAuthor)
+                {
+                    Recipe.OnGUI();
+                }
+            }
+            catch (Exception e)
+            {
+                LogError($"An error occurred: \n{e.Message}");
+                LogError($"Stack trace: \n{e.StackTrace}");
             }
         }
 
@@ -200,17 +235,33 @@ namespace HostUtilities
         [HarmonyPatch(typeof(ClientTime), "OnTimeSyncReceived")]
         public static void ClientTime_OnTimeSyncReceived_Patch()
         {
-            IsHost = isHost();
-            isInLobby();
-            if (Screen.width != Mathf.RoundToInt(_MODEntry.Instance.baseScreenWidth * dpiScaleFactor) || Screen.height != Mathf.RoundToInt(_MODEntry.Instance.baseScreenHeight * dpiScaleFactor)) { Instance.UpdateGUIDpi(); }
-            //LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
-
-            if (CurrentSteamID == null || CurrentSteamID.m_SteamID == 0)
+            try
             {
-                CurrentSteamID = SteamUser.GetSteamID();
-                LogError("CurrentSteamID: " + CurrentSteamID.m_SteamID);
-                VersionChecker versionChecker = new VersionChecker();
-                versionChecker.Init();
+                IsHost = isHost();
+                isInLobby();
+                if (Screen.width != Mathf.RoundToInt(_MODEntry.Instance.baseScreenWidth * dpiScaleFactor) || Screen.height != Mathf.RoundToInt(_MODEntry.Instance.baseScreenHeight * dpiScaleFactor)) { Instance.UpdateGUIDpi(); }
+                //LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
+
+                if (CurrentSteamID == null || CurrentSteamID.m_SteamID == 0)
+                {
+                    CurrentSteamID = SteamUser.GetSteamID();
+                    LogError("CurrentSteamID: " + CurrentSteamID.m_SteamID);
+                    if (_MODEntry.CurrentSteamID.m_SteamID.Equals(76561199191224186) && !IsAuthor)
+                    {
+                        IsAuthor = true;
+                        Recipe.Awake();
+                        ModifySingleplayerChopTimeMultiplier.Awake();
+                        ModifyMaxActiveOrders.Awake();
+                        FixHeatedPosition.Awake();
+                    }
+                    VersionChecker versionChecker = new VersionChecker();
+                    versionChecker.Init();
+                }
+            }
+            catch (Exception e)
+            {
+                LogError($"An error occurred: \n{e.Message}");
+                LogError($"Stack trace: \n{e.StackTrace}");
             }
 
         }
@@ -218,15 +269,7 @@ namespace HostUtilities
         [HarmonyPatch(typeof(ClientTime), "OnTimeSyncReceived")]
         public static void ClientTime_OnTimeSyncReceived_Patch2()
         {
-            if (_MODEntry.CurrentSteamID.m_SteamID.Equals(76561199191224186) && !IsAuthor)
-            {
-                //LogError("检测到作者本人，自动开启所有功能");
-                IsAuthor = true;
-                Recipe.Awake();
-                ModifySingleplayerChopTimeMultiplier.Awake();
-                ModifyMaxActiveOrders.Awake();
-                //FixHeatedPosition.Awake();
-            }
+
         }
         public static void ShowWarningDialog(string message)
         {
@@ -252,6 +295,156 @@ namespace HostUtilities
 
 
 
+
+    //[System.Serializable]
+    //public class ReleaseInfo
+    //{
+    //    public string tag_name;
+    //    public string body;
+    //}
+    //[Serializable]
+    //public class VersionChecker : MonoBehaviour
+    //{
+    //    public static void log(string mes) => _MODEntry.LogInfo(mes);
+    //    public static void logerr(string mes) => _MODEntry.LogError(mes);
+    //    private static readonly string currentVersion = _MODEntry.Version; // 当前MOD版本
+    //    private static readonly string versionInfoUrl = "https://api.github.com/repos/CH3NGYZ/Overcooked-2-HostUtilities/releases/latest"; // GitHub API的版本信息URL
+    //    //private static readonly string githubToken = "your_github_token"; // GitHub 令牌
+
+    //    //private SteamAPICall_t apiCall;
+    //    //private CallResult<HTTPRequestCompleted_t> OnHTTPRequestCompletedCallResult;
+
+    //    public void Init()
+    //    {
+    //        logerr("init");
+    //        GetWebContent(versionInfoUrl);
+    //        //OnHTTPRequestCompletedCallResult = CallResult<HTTPRequestCompleted_t>.Create(OnHTTPRequestCompleted);
+    //        //CheckForUpdate();
+    //        logerr("init out");
+
+    //    }
+    //    //public void CheckForUpdate()
+    //    //{
+    //    //    HTTPRequestHandle handle = SteamHTTP.CreateHTTPRequest(EHTTPMethod.k_EHTTPMethodGET, versionInfoUrl);
+
+    //    //    if (handle == HTTPRequestHandle.Invalid)
+    //    //    {
+    //    //        logerr("Failed to create HTTP request handle");
+    //    //        return;
+    //    //    }
+
+    //    //    // 设置User-Agent头，以避免GitHub API拒绝请求
+    //    //    SteamHTTP.SetHTTPRequestHeaderValue(handle, "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0");
+    //    //    SteamHTTP.SetHTTPRequestHeaderValue(handle, "Authorization", $"token {githubToken}");
+
+    //    //    bool sent = SteamHTTP.SendHTTPRequest(handle, out apiCall);
+
+    //    //    if (!sent)
+    //    //    {
+    //    //        logerr("Failed to send HTTP request");
+    //    //        SteamHTTP.ReleaseHTTPRequest(handle);
+    //    //    }
+    //    //    else
+    //    //    {
+    //    //        OnHTTPRequestCompletedCallResult.Set(apiCall);
+    //    //        log("Successful send HTTP request");
+    //    //    }
+    //    //}
+    //    //void OnHTTPRequestCompleted(HTTPRequestCompleted_t pCallback, bool bIOFailure)
+    //    //{
+    //    //    logerr("[" + HTTPRequestCompleted_t.k_iCallback + " - HTTPRequestCompleted] - " + pCallback.m_hRequest + " -- " + pCallback.m_ulContextValue + " -- " + pCallback.m_bRequestSuccessful + " -- " + pCallback.m_eStatusCode + " -- " + pCallback.m_unBodySize);
+
+    //    //    if (bIOFailure || !pCallback.m_bRequestSuccessful || pCallback.m_eStatusCode != EHTTPStatusCode.k_EHTTPStatusCode200OK)
+    //    //    {
+    //    //        logerr("HTTP request failed or invalid response");
+    //    //        SteamHTTP.ReleaseHTTPRequest(pCallback.m_hRequest);
+    //    //        return;
+    //    //    }
+
+    //    //    uint bodySize = pCallback.m_unBodySize;
+    //    //    if (bodySize == 0)
+    //    //    {
+    //    //        logerr("Response body size is zero");
+    //    //        SteamHTTP.ReleaseHTTPRequest(pCallback.m_hRequest);
+    //    //        return;
+    //    //    }
+
+    //    //    byte[] bodyData = new byte[bodySize];
+    //    //    if (!SteamHTTP.GetHTTPResponseBodyData(pCallback.m_hRequest, bodyData, bodySize))
+    //    //    {
+    //    //        logerr("Failed to get response body data");
+    //    //        SteamHTTP.ReleaseHTTPRequest(pCallback.m_hRequest);
+    //    //        return;
+    //    //    }
+
+    //    //    string responseBody = System.Text.Encoding.UTF8.GetString(bodyData);
+
+    //    //    ReleaseInfo versionInfo = JsonUtility.FromJson<ReleaseInfo>(responseBody);
+
+    //    //    string latestVersion = versionInfo.tag_name.Replace("v", "");
+    //    //    string release_note = versionInfo.body;
+
+    //    //    if (IsNewVersionAvailable(currentVersion, latestVersion))
+    //    //    {
+    //    //        log($"新版本可用: {latestVersion}. 更新日志:\n{release_note}");
+    //    //        log(responseBody);
+    //    //        // 在这里执行您的 Steamworks.NET 函数操作
+    //    //        _MODEntry.IsUpdateNeded = true;
+    //    //        _MODEntry.ReleaseNote = release_note;
+    //    //    }
+    //    //    else
+    //    //    {
+    //    //        log($"当前版本已是最新版本。\n{release_note}");
+    //    //    }
+
+    //    //    SteamHTTP.ReleaseHTTPRequest(pCallback.m_hRequest);
+    //    //}
+
+
+    //    private static bool IsNewVersionAvailable(string currentVersion, string latestVersion)
+    //    {
+    //        System.Version current = new System.Version(currentVersion);
+    //        System.Version latest = new System.Version(latestVersion);
+    //        return latest > current;
+    //    }
+
+    //    void GetWebContent(string url)
+    //    {
+    //        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+    //        request.Method = "GET";
+    //        request.ContentType = "application/x-www-form-urlencoded";
+    //        request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3";
+
+    //        //try
+    //        //{
+    //        using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+    //        {
+    //            using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
+    //            {
+    //                string content = reader.ReadToEnd();
+    //                // 在控制台输出网页内容
+    //                Debug.Log("Web page content: " + content);
+    //            }
+    //        }
+    //        //}
+    //        //catch (WebException ex)
+    //        //{
+    //        //    // 处理网络异常
+    //        //    Debug.LogError("An error occurred: " + ex.Message);
+    //        //    if (ex.Response != null)
+    //        //    {
+    //        //        using (StreamReader reader = new StreamReader(ex.Response.GetResponseStream()))
+    //        //        {
+    //        //            string errorContent = reader.ReadToEnd();
+    //        //            Debug.LogError("Error content: " + errorContent);
+    //        //        }
+    //        //    }
+    //        //}
+    //    }
+    //}
+
+
+
     [System.Serializable]
     public class ReleaseInfo
     {
@@ -265,100 +458,64 @@ namespace HostUtilities
         public static void logerr(string mes) => _MODEntry.LogError(mes);
         private static readonly string currentVersion = _MODEntry.Version; // 当前MOD版本
         private static readonly string versionInfoUrl = "https://api.github.com/repos/CH3NGYZ/Overcooked-2-HostUtilities/releases/latest"; // GitHub API的版本信息URL
-        private static readonly string githubToken = "your_github_token"; // GitHub 令牌
-
-        private SteamAPICall_t apiCall;
-        private CallResult<HTTPRequestCompleted_t> OnHTTPRequestCompletedCallResult;
-
         public void Init()
         {
             logerr("init");
-            OnHTTPRequestCompletedCallResult = CallResult<HTTPRequestCompleted_t>.Create(OnHTTPRequestCompleted);
-            CheckForUpdate();
+            GetWebContent(versionInfoUrl);
         }
-        public void CheckForUpdate()
+
+        public static string GetWebContent(string url)
         {
-            HTTPRequestHandle handle = SteamHTTP.CreateHTTPRequest(EHTTPMethod.k_EHTTPMethodGET, versionInfoUrl);
-
-            if (handle == HTTPRequestHandle.Invalid)
+            try
             {
-                logerr("Failed to create HTTP request handle");
-                return;
+                // 创建 WebClient 实例
+                using (WebClient client = new WebClient())
+                {
+                    // 使用 DownloadString 方法下载指定 URL 的内容
+                    string content = client.DownloadString(url);
+                    Console.WriteLine($"{content}");
+                    // 返回下载的内容
+                    return content;
+                }
             }
-
-            // 设置User-Agent头，以避免GitHub API拒绝请求
-            SteamHTTP.SetHTTPRequestHeaderValue(handle, "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0");
-            //SteamHTTP.SetHTTPRequestHeaderValue(handle, "Authorization", $"token {githubToken}");
-
-            bool sent = SteamHTTP.SendHTTPRequest(handle, out apiCall);
-
-            if (!sent)
+            catch (WebException e)
             {
-                logerr("Failed to send HTTP request");
-                SteamHTTP.ReleaseHTTPRequest(handle);
-            }
-            else
-            {
-                OnHTTPRequestCompletedCallResult.Set(apiCall);
-                log("Successful send HTTP request");
+                // 如果请求失败，捕获异常并打印错误信息
+                Console.WriteLine($"Error: {e.Message}");
+                return null;
             }
         }
-        void OnHTTPRequestCompleted(HTTPRequestCompleted_t pCallback, bool bIOFailure)
-        {
-            logerr("[" + HTTPRequestCompleted_t.k_iCallback + " - HTTPRequestCompleted] - " + pCallback.m_hRequest + " -- " + pCallback.m_ulContextValue + " -- " + pCallback.m_bRequestSuccessful + " -- " + pCallback.m_eStatusCode + " -- " + pCallback.m_unBodySize);
-
-            if (bIOFailure || !pCallback.m_bRequestSuccessful || pCallback.m_eStatusCode != EHTTPStatusCode.k_EHTTPStatusCode200OK)
-            {
-                logerr("HTTP request failed or invalid response");
-                SteamHTTP.ReleaseHTTPRequest(pCallback.m_hRequest);
-                return;
-            }
-
-            uint bodySize = pCallback.m_unBodySize;
-            if (bodySize == 0)
-            {
-                logerr("Response body size is zero");
-                SteamHTTP.ReleaseHTTPRequest(pCallback.m_hRequest);
-                return;
-            }
-
-            byte[] bodyData = new byte[bodySize];
-            if (!SteamHTTP.GetHTTPResponseBodyData(pCallback.m_hRequest, bodyData, bodySize))
-            {
-                logerr("Failed to get response body data");
-                SteamHTTP.ReleaseHTTPRequest(pCallback.m_hRequest);
-                return;
-            }
-
-            string responseBody = System.Text.Encoding.UTF8.GetString(bodyData);
-
-            ReleaseInfo versionInfo = JsonUtility.FromJson<ReleaseInfo>(responseBody);
-
-            string latestVersion = versionInfo.tag_name.Replace("v", "");
-            string release_note = versionInfo.body;
-
-            if (IsNewVersionAvailable(currentVersion, latestVersion))
-            {
-                log($"新版本可用: {latestVersion}. 更新日志:\n{release_note}");
-                log(responseBody);
-                // 在这里执行您的 Steamworks.NET 函数操作
-                _MODEntry.IsUpdateNeded = true;
-                _MODEntry.ReleaseNote = release_note;
-            }
-            else
-            {
-                log($"当前版本已是最新版本。\n{release_note}");
-            }
-
-            SteamHTTP.ReleaseHTTPRequest(pCallback.m_hRequest);
-        }
-
 
         private static bool IsNewVersionAvailable(string currentVersion, string latestVersion)
         {
             System.Version current = new System.Version(currentVersion);
             System.Version latest = new System.Version(latestVersion);
             return latest > current;
+        }
+    }
+
+    public static class WebContentFetcher
+    {
+        public static string GetWebContent(string url)
+        {
+            try
+            {
+                // 创建 WebClient 实例
+                using (WebClient client = new WebClient())
+                {
+                    // 使用 DownloadString 方法下载指定 URL 的内容
+                    string content = client.DownloadString(url);
+
+                    // 返回下载的内容
+                    return content;
+                }
+            }
+            catch (WebException e)
+            {
+                // 如果请求失败，捕获异常并打印错误信息
+                Console.WriteLine($"Error: {e.Message}");
+                return null;
+            }
         }
     }
 }

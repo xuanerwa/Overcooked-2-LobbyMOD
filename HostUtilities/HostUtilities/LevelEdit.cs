@@ -146,19 +146,26 @@ namespace HostUtilities
         [HarmonyPrefix]
         private static bool ServerLobbyFlowController_PickLevel_Prefix(ref ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
         {
-            //AddCleanDishes.plateOrGlassNum = 0;
-            if (_MODEntry.IsSelectedAndPlay)
+            try
             {
-                log("已经选关,不执行原函数");
-                return false;
+                //AddCleanDishes.plateOrGlassNum = 0;
+                if (_MODEntry.IsSelectedAndPlay)
+                {
+                    log("已经选关,不执行原函数");
+                    return false;
+                }
+                if (!kevinEnabled.Value)
+                {
+                    log("街机凯文未启用,执行原函数");
+                    return true;
+                }
+                MServerLobbyFlowController.MPickLevel(__instance, _theme);
             }
-            if (!kevinEnabled.Value)
+            catch (Exception e)
             {
-                log("街机凯文未启用,执行原函数");
-                return true;
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
             }
-            
-            MServerLobbyFlowController.MPickLevel(__instance, _theme);
             return false;
         }
 

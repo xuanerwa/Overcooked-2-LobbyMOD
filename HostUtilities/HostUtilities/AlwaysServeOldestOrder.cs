@@ -4,6 +4,7 @@ using UnityEngine;
 using OrderController;
 using BepInEx.Configuration;
 using System.Reflection;
+using System;
 
 namespace HostUtilities
 {
@@ -39,35 +40,44 @@ namespace HostUtilities
         [HarmonyPostfix]
         private static void FindBestOrderForRecipe(ref AssembledDefinitionNode _order, ref PlatingStepData _plateType, ref OrderID o_orderID, ref float _timePropRemainingPercentage, ref bool __result, ref List<ServerOrderData> ___m_activeOrders)
         {
-            // bool cheatServe = OC2Config.Config.CheatsEnabled;
-            bool cheatServe = false;
-
-            if (!AlwaysServeOldestOrderenabled.Value && !cheatServe && !_MODEntry.IsInParty)
+            try
             {
-                log("AlwaysServeOldestOrder is disabled");
-                return;
-            }
+                // bool cheatServe = OC2Config.Config.CheatsEnabled;
+                bool cheatServe = false;
 
-            if (cheatServe)
-            {
-                __result = true;
-            }
-
-            if (!__result)
-            {
-                return; // we won't do any better if no orders matched
-            }
-
-            o_orderID = new OrderID(0U);
-            _timePropRemainingPercentage = 0f;
-            for (int i = ___m_activeOrders.Count - 1; i >= 0; i--)
-            {
-                ServerOrderData order = ___m_activeOrders[i];
-                if (Matches(order.RecipeListEntry.m_order, _order, _plateType) || cheatServe)
+                if (!AlwaysServeOldestOrderenabled.Value && !cheatServe && !_MODEntry.IsInParty)
                 {
-                    o_orderID = order.ID;
-                    _timePropRemainingPercentage = Mathf.Clamp01(order.Remaining / order.Lifetime);
+                    log("AlwaysServeOldestOrder is disabled");
+                    return;
                 }
+
+                if (cheatServe)
+                {
+                    __result = true;
+                }
+
+                if (!__result)
+                {
+                    return; // we won't do any better if no orders matched
+                }
+
+                o_orderID = new OrderID(0U);
+                _timePropRemainingPercentage = 0f;
+                for (int i = ___m_activeOrders.Count - 1; i >= 0; i--)
+                {
+                    ServerOrderData order = ___m_activeOrders[i];
+                    if (Matches(order.RecipeListEntry.m_order, _order, _plateType) || cheatServe)
+                    {
+                        o_orderID = order.ID;
+                        _timePropRemainingPercentage = Mathf.Clamp01(order.Remaining / order.Lifetime);
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
             }
         }
     }

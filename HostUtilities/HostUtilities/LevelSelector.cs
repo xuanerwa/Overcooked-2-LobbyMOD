@@ -31,7 +31,7 @@ namespace HostUtilities
             _MODEntry.AllHarmony.Add(HarmonyInstance);
             _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
-        
+
         public static void Update()
         {
             Predicate<SceneDirectoryData.SceneDirectoryEntry> matchScene = (SceneDirectoryData.SceneDirectoryEntry entry) =>
@@ -161,38 +161,46 @@ namespace HostUtilities
         [HarmonyPatch(typeof(ClientTime), "OnTimeSyncReceived")]
         public static void ClientTime_OnTimeSyncReceived_Patch()
         {
-            if (!_MODEntry.IsInLobby)
+            try
             {
-                return;
-            }
-            if (DirectoryDict.Count > 1)
-            {
-                return;
-            }
-            DirectoryDict.Clear();
+                if (!_MODEntry.IsInLobby)
+                {
+                    return;
+                }
+                if (DirectoryDict.Count > 1)
+                {
+                    return;
+                }
+                DirectoryDict.Clear();
 
-            List<SceneDirectoryEntry> levelList = GetLevelList();
-            if (levelList.Count == 0)
-            {
-                return;
-            }
-            //log(levelList.Count.ToString());
-            for (int i = 0; i < levelList.Count; i++)
-            {
-                SceneDirectoryEntry sceneDirectoryEntry = levelList[i];
-                DirectoryDict.Add(sceneDirectoryEntry.Label, sceneDirectoryEntry);
-                log($"I: {i + 1} L: {sceneDirectoryEntry.Label} N: {GetLevelName(sceneDirectoryEntry, false)}");
-            }
-            //log("finished");
+                List<SceneDirectoryEntry> levelList = GetLevelList();
+                if (levelList.Count == 0)
+                {
+                    return;
+                }
+                //log(levelList.Count.ToString());
+                for (int i = 0; i < levelList.Count; i++)
+                {
+                    SceneDirectoryEntry sceneDirectoryEntry = levelList[i];
+                    DirectoryDict.Add(sceneDirectoryEntry.Label, sceneDirectoryEntry);
+                    log($"I: {i + 1} L: {sceneDirectoryEntry.Label} N: {GetLevelName(sceneDirectoryEntry, false)}");
+                }
+                //log("finished");
 
-            List<string> strList = new List<string>();
-            foreach (var pair in DirectoryDict)
-            {
-                strList.Add(GetLevelName(DirectoryDict[pair.Key], false));
+                List<string> strList = new List<string>();
+                foreach (var pair in DirectoryDict)
+                {
+                    strList.Add(GetLevelName(DirectoryDict[pair.Key], false));
+                }
+                string[] strArray = strList.ToArray();
+                ValueList = _MODEntry.Instance.Config.Bind<string>("00-选关", "选择关卡", strArray[0], new ConfigDescription("选择关卡", new AcceptableValueList<string>(strArray)));
+                //log(ValueList.Value);
             }
-            string[] strArray = strList.ToArray();
-            ValueList = _MODEntry.Instance.Config.Bind<string>("00-选关", "选择关卡", strArray[0], new ConfigDescription("选择关卡", new AcceptableValueList<string>(strArray)));
-            //log(ValueList.Value);
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+            }
         }
         public static SceneDirectoryData.SceneDirectoryEntry GetSceneDirectoryEntryFromChinese(string label)
         {

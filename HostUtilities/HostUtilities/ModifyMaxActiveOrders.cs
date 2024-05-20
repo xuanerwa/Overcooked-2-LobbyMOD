@@ -30,16 +30,24 @@ namespace HostUtilities
         [HarmonyPatch(typeof(ServerCampaignMode), "BuildOrderConfig")]
         public static void ServerCampaignMode_BuildOrderConfig(ref ServerFixedTimeOrderController.OrdersConfig __result)
         {
-            if (!functionEnabled.Value) { return; }
-            if (!_MODEntry.IsInParty) { return; }
+            try
+            {
+                if (!functionEnabled.Value) { return; }
+                if (!_MODEntry.IsInParty) { return; }
 
-            __result.m_maxActiveOrders = n_maxActiveOrders.Value;
-            __result.m_orderLifetime = n_orderLifetime.Value;
-            __result.m_timeBetweenOrders = n_timeBetweenOrders.Value;
-            log($"__result.m_maxActiveOrders {__result.m_maxActiveOrders}");
-            log($"__result.m_roundData {__result.m_roundData}");
-            log($"__result.m_orderLifetime {__result.m_orderLifetime}");
-            log($"__result.m_timeBetweenOrders {__result.m_timeBetweenOrders}");
+                __result.m_maxActiveOrders = n_maxActiveOrders.Value;
+                __result.m_orderLifetime = n_orderLifetime.Value;
+                __result.m_timeBetweenOrders = n_timeBetweenOrders.Value;
+                log($"__result.m_maxActiveOrders {__result.m_maxActiveOrders}");
+                log($"__result.m_roundData {__result.m_roundData}");
+                log($"__result.m_orderLifetime {__result.m_orderLifetime}");
+                log($"__result.m_timeBetweenOrders {__result.m_timeBetweenOrders}");
+            }
+            catch (System.Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+            }
         }
     }
 }

@@ -401,9 +401,19 @@ namespace HostUtilities
         [HarmonyPrefix]
         public static bool Prefix(ref ClientOrderControllerBase __instance, bool _success, OrderID _orderID)
         {
-            if (!enabled.Value || (!displayhistory.Value && !predict.Value)) return true;
-            if (__instance != null) MClientOrderControllerBase.OnFoodDelivered(__instance, _success, _orderID);
-            return false;
+            try
+            {
+                if (!enabled.Value || (!displayhistory.Value && !predict.Value)) return true;
+                if (__instance != null) MClientOrderControllerBase.OnFoodDelivered(__instance, _success, _orderID);
+                return false;
+            }
+            catch (Exception e)
+            {
+                _MODEntry.LogError(e.Message);
+                _MODEntry.LogError(e.StackTrace);
+                return true;
+            }
+
         }
 
         //[HarmonyPatch(typeof(ServerOrderControllerBase), "AddNewOrder", new Type[] { })]
@@ -422,38 +432,65 @@ namespace HostUtilities
         [HarmonyPrefix]
         public static bool Prefix(ref ClientOrderControllerBase __instance, Serialisable _data)
         {
-            if (!enabled.Value || (!displayhistory.Value && !predict.Value)) return true;
-            if (__instance != null) MClientOrderControllerBase.AddNewOrder(__instance, _data);
-            return false;
+            try
+            {
+                if (!enabled.Value || (!displayhistory.Value && !predict.Value)) return true;
+                if (__instance != null) MClientOrderControllerBase.AddNewOrder(__instance, _data);
+                return false;
+            }
+            catch (Exception e)
+            {
+                _MODEntry.LogError(e.Message);
+                _MODEntry.LogError(e.StackTrace);
+                return true;
+            }
         }
 
         [HarmonyPatch(typeof(LoadingScreenFlow), "NextScene", MethodType.Getter)]
         [HarmonyPrefix]
         public static bool Prefix()
         {
-            if (!enabled.Value) return true;
-            if (recipedisplay != null)
+            try
             {
-                RemoveRecipeDisplay();
-                allorders = 0;
-                noworders = 0;
-                levelorders = 0;
-                deliveredorders = 0;
-                historyrecipecount = 0;
-                changephrase = false;
-                apperancecount.Clear();
-                possibility.Clear();
+                if (!enabled.Value) return true;
+                if (recipedisplay != null)
+                {
+                    RemoveRecipeDisplay();
+                    allorders = 0;
+                    noworders = 0;
+                    levelorders = 0;
+                    deliveredorders = 0;
+                    historyrecipecount = 0;
+                    changephrase = false;
+                    apperancecount.Clear();
+                    possibility.Clear();
+                }
+                return true;
             }
-            return true;
+            catch (Exception e)
+            {
+                _MODEntry.LogError(e.Message);
+                _MODEntry.LogError(e.StackTrace);
+                return true;
+            }
         }
 
         [HarmonyPatch(typeof(ClientDynamicFlowController), "OnDynamicLevelMessage")]
         [HarmonyPrefix]
         public static bool Prefix(ref ClientDynamicFlowController __instance, IOnlineMultiplayerSessionUserId _sessionId, Serialisable _serialisable)
         {
-            if (!enabled.Value || (!displayhistory.Value && !predict.Value)) return true;
-            if (__instance != null) MClientDynamicFlowController.OnDynamicLevelMessage(__instance, _sessionId, _serialisable);
-            return false;
+            try
+            {
+                if (!enabled.Value || (!displayhistory.Value && !predict.Value)) return true;
+                if (__instance != null) MClientDynamicFlowController.OnDynamicLevelMessage(__instance, _sessionId, _serialisable);
+                return false;
+            }
+            catch (Exception e)
+            {
+                _MODEntry.LogError(e.Message);
+                _MODEntry.LogError(e.StackTrace);
+                return true;
+            }
         }
 
         //public class MServerOrderControllerBase

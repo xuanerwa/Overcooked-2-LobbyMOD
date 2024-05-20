@@ -1,5 +1,6 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
+using System;
 using System.Reflection;
 using UnityEngine;
 
@@ -24,18 +25,27 @@ namespace HostUtilities
         [HarmonyPatch(typeof(ServerAttachStation), "CanAttachToSelf")]
         public static bool ServerAttachStation_CanAttachToSelf_Prefix(ref ServerAttachStation __instance, UnityEngine.GameObject _item, PlacementContext _context)
         {
-            if (__instance.name == "WashingPart" && _MODEntry.IsInParty)
+            try
             {
-                return false;
-            }
-            else
-            {
-                if (showAttachSituation.Value)
+                if (__instance.name == "WashingPart" && _MODEntry.IsInParty)
                 {
-                    log($"CanAttachToSelf: InstanceName: 【{__instance.name}】, ObjectName: 【{_item.name}】");
+                    return false;
                 }
-                return true;
+                else
+                {
+                    if (showAttachSituation.Value)
+                    {
+                        log($"CanAttachToSelf: InstanceName: 【{__instance.name}】, ObjectName: 【{_item.name}】");
+                    }
+                    return true;
+                }
             }
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+                return false;
+            } 
         }
     }
 }

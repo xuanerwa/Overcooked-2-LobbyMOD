@@ -1,5 +1,6 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
+using System;
 using System.Reflection;
 namespace HostUtilities
 {
@@ -22,9 +23,17 @@ namespace HostUtilities
         [HarmonyPrefix]
         private static void DeliverCurrentPlate(ref ServerPlateStation __instance, ref ServerPlate ___m_plate, ref IKitchenOrderHandler ___m_orderHandler)
         {
-            if (isDoubleServingBanned.Value && ___m_plate.IsReserved())
+            try
             {
-                skipNext = true;
+                if (isDoubleServingBanned.Value && ___m_plate.IsReserved())
+                {
+                    skipNext = true;
+                }
+            }
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
             }
         }
 
@@ -32,14 +41,23 @@ namespace HostUtilities
         [HarmonyPrefix]
         private static bool FoodDelivered(ref AssembledDefinitionNode _definition, ref PlatingStepData _plateType, ref ServerPlateStation _station)
         {
-            if (skipNext)
+            try
             {
-                skipNext = false;
-                log($"拦截到卡盘子!");
-                return false;
-            }
+                if (skipNext)
+                {
+                    skipNext = false;
+                    log($"拦截到卡盘子!");
+                    return false;
+                }
 
-            return true;
+                return true;
+            }
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+                return true;
+            }
         }
     }
 }

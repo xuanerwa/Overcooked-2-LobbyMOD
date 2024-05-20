@@ -1,5 +1,6 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
+using System;
 using System.Reflection;
 using Team17.Online;
 using UnityEngine;
@@ -242,52 +243,69 @@ namespace HostUtilities
         [HarmonyPrefix]
         private static bool ClientLobbyFlowController_TryJoinGame_Prefix(ClientLobbyFlowController __instance)
         {
-            bool flag = ForceHost.ValueList.Value.Equals("强制主机");
-            if (flag)
+            try
             {
-                log("强制主机已生效");
-                //_MODEntry.ShowWarningDialog("强制主机已生效。");
-                __instance.HostGame();
-                return false;
+                bool flag = ForceHost.ValueList.Value.Equals("强制主机");
+                if (flag)
+                {
+                    log("强制主机已生效");
+                    //_MODEntry.ShowWarningDialog("强制主机已生效。");
+                    __instance.HostGame();
+                    return false;
+                }
+                return true;
             }
-            return true;
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+                return true;
+            }
         }
 
         [HarmonyPatch(typeof(ClientLobbyFlowController), "HostGame")]
         [HarmonyPostfix]
         private static void ClientLobbyFlowController_HostGame_Prefix(ClientLobbyFlowController __instance)
         {
-            if (ServerUserSystem.m_Users.Count > 1) { log("用户数量大于1,不启用强制客机"); return; }
-            bool flag = ForceHost.ValueList.Value.Equals("强制客机");
-            if (flag)
+            try
             {
-                log("强制客机已生效");
-                ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Offline, null, new GenericVoid<IConnectionModeSwitchStatus>(__instance.OnRequestOfflineStateFollowingFailureComplete));
-                IPlayerManager playerManager = GameUtils.RequireManagerInterface<IPlayerManager>();
-                IOnlinePlatformManager onlinePlatformManager = GameUtils.RequireManagerInterface<IOnlinePlatformManager>();
-                IOnlineMultiplayerSessionCoordinator onlineMultiplayerSessionCoordinator = onlinePlatformManager.OnlineMultiplayerSessionCoordinator();
-                if (onlineMultiplayerSessionCoordinator != null)
+                if (ServerUserSystem.m_Users.Count > 1) { log("用户数量大于1,不启用强制客机"); return; }
+                bool flag = ForceHost.ValueList.Value.Equals("强制客机");
+                if (flag)
                 {
-                    //ServerOptions serverOptions = default(ServerOptions);
-                    //serverOptions.gameMode = ((!__instance.m_bIsCoop) ? GameMode.Versus : GameMode.Party);
-                    //if (__instance.m_lobbyInfo.m_visiblity == OnlineMultiplayerSessionVisibility.ePrivate)
-                    //{
-                    //    serverOptions.visibility = OnlineMultiplayerSessionVisibility.eClosed;
-                    //}
-                    //else
-                    //{
-                    //    serverOptions.visibility = __instance.m_lobbyInfo.m_visiblity;
-                    //}
-                    //serverOptions.hostUser = playerManager.GetUser(EngagementSlot.One);
-                    //serverOptions.connectionMode = __instance.m_lobbyInfo.m_connectionMode;
-                    //ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Server, serverOptions, new GenericVoid<IConnectionModeSwitchStatus>(__instance.OnRequestConnectionStateServerComplete));
-                    ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Matchmake, new MatchmakeData
+                    log("强制客机已生效");
+                    ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Offline, null, new GenericVoid<IConnectionModeSwitchStatus>(__instance.OnRequestOfflineStateFollowingFailureComplete));
+                    IPlayerManager playerManager = GameUtils.RequireManagerInterface<IPlayerManager>();
+                    IOnlinePlatformManager onlinePlatformManager = GameUtils.RequireManagerInterface<IOnlinePlatformManager>();
+                    IOnlineMultiplayerSessionCoordinator onlineMultiplayerSessionCoordinator = onlinePlatformManager.OnlineMultiplayerSessionCoordinator();
+                    if (onlineMultiplayerSessionCoordinator != null)
                     {
-                        gameMode = ((!__instance.m_bIsCoop) ? GameMode.Versus : GameMode.Party),
-                        User = playerManager.GetUser(EngagementSlot.One),
-                        connectionMode = __instance.m_lobbyInfo.m_connectionMode
-                    }, new GenericVoid<IConnectionModeSwitchStatus>(__instance.OnRequestConnectionStateJoinComplete));
+                        //ServerOptions serverOptions = default(ServerOptions);
+                        //serverOptions.gameMode = ((!__instance.m_bIsCoop) ? GameMode.Versus : GameMode.Party);
+                        //if (__instance.m_lobbyInfo.m_visiblity == OnlineMultiplayerSessionVisibility.ePrivate)
+                        //{
+                        //    serverOptions.visibility = OnlineMultiplayerSessionVisibility.eClosed;
+                        //}
+                        //else
+                        //{
+                        //    serverOptions.visibility = __instance.m_lobbyInfo.m_visiblity;
+                        //}
+                        //serverOptions.hostUser = playerManager.GetUser(EngagementSlot.One);
+                        //serverOptions.connectionMode = __instance.m_lobbyInfo.m_connectionMode;
+                        //ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Server, serverOptions, new GenericVoid<IConnectionModeSwitchStatus>(__instance.OnRequestConnectionStateServerComplete));
+                        ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Matchmake, new MatchmakeData
+                        {
+                            gameMode = ((!__instance.m_bIsCoop) ? GameMode.Versus : GameMode.Party),
+                            User = playerManager.GetUser(EngagementSlot.One),
+                            connectionMode = __instance.m_lobbyInfo.m_connectionMode
+                        }, new GenericVoid<IConnectionModeSwitchStatus>(__instance.OnRequestConnectionStateJoinComplete));
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
             }
         }
 
