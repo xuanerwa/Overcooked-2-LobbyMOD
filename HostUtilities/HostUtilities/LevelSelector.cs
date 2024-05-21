@@ -60,8 +60,8 @@ namespace HostUtilities
                     _MODEntry.ShowWarningDialog("不在街机大厅，别点啦");
                     return;
                 }
-                log(ValueList.Value);
-                log(GetSceneDirectoryEntryFromChinese(ValueList.Value).Label);
+                //log(ValueList.Value);
+                //log(GetSceneDirectoryEntryFromChinese(ValueList.Value).Label);
 
                 _MODEntry.IsSelectedAndPlay = true;
                 //设定状态倒计时4秒
@@ -208,12 +208,13 @@ namespace HostUtilities
                     DirectoryDict.Add(sceneDirectoryEntry.Label, sceneDirectoryEntry);
                     log($"I: {i + 1} L: {sceneDirectoryEntry.Label} N: {GetLevelName(sceneDirectoryEntry, false)}");
                 }
-                //log("finished");
+                log("finished");
 
                 List<string> strList = new List<string>();
                 foreach (var pair in DirectoryDict)
                 {
-                    strList.Add(GetLevelName(DirectoryDict[pair.Key], false));
+                    string LevelName = GetLevelName(DirectoryDict[pair.Key], false);
+                    strList.Add(LevelName);
                 }
                 string[] strArray = strList.ToArray();
                 ValueList = _MODEntry.Instance.Config.Bind<string>("00-选关", "选择关卡", strArray[0], new ConfigDescription("选择关卡", new AcceptableValueList<string>(strArray)));
@@ -299,7 +300,30 @@ namespace HostUtilities
         public static string GetLevelName(SceneDirectoryData.SceneDirectoryEntry entry, bool withLevelLabel = false)
         {
             LobbyFlowController instance = LobbyFlowController.Instance;
-            return GetLevelName(instance, entry, withLevelLabel);
+            string levelname = GetLevelName(instance, entry, withLevelLabel);
+            //log($"name {levelname} label {entry.Label}");
+            if (levelname.Contains("节庆大餐") && entry.Label.Contains("DLC03"))
+            {
+                levelname = levelname.Replace("节庆大餐", "节庆 - 圣诞");
+                //log("替换冬日");
+            }
+            if (levelname.Contains("节庆大餐") && entry.Label.Contains("DLC09"))
+            {
+                levelname = levelname.Replace("节庆大餐", "节庆 - 冬日");
+                //log("替换圣诞");
+            }
+            if (levelname.Contains("王朝餐厅") && entry.Label.Contains("DLC04"))
+            {
+                levelname = levelname.Replace("王朝餐厅", "王朝 - 新年");
+                //log("替换新年");
+            }
+            if (levelname.Contains("王朝餐厅") && entry.Label.Contains("DLC10"))
+            {
+                levelname = levelname.Replace("王朝餐厅", "王朝 - 春节");
+                //log("替换冬日");
+            }
+
+            return levelname;
         }
 
         // Token: 0x0600006C RID: 108 RVA: 0x0000534C File Offset: 0x0000354C

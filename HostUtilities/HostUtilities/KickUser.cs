@@ -67,11 +67,7 @@ namespace HostUtilities
 
         public static void Update()
         {
-            if (!_MODEntry.IsHost)
-            {
-                _MODEntry.ShowWarningDialog("你不是主机，别点啦");
-                return;
-            }
+            
             if (Input.GetKeyDown(kick2.Value))
             {
                 TryKickUser(1, kick2);
@@ -149,6 +145,11 @@ namespace HostUtilities
 
         public static void TryKickUser(int index, ConfigEntry<KeyCode> kickKey)
         {
+            if (!_MODEntry.IsHost)
+            {
+                _MODEntry.ShowWarningDialog("你不是主机，别点啦");
+                return;
+            }
             if (ServerUserSystem.m_Users.Count > index)
             {
                 User user = ServerUserSystem.m_Users._items[index];
@@ -169,6 +170,11 @@ namespace HostUtilities
         }
         public static void TryKickUserAndBan(int index, ConfigEntry<KeyCode> kickKey)
         {
+            if (!_MODEntry.IsHost)
+            {
+                _MODEntry.ShowWarningDialog("你不是主机，别点啦");
+                return;
+            }
             if (ServerUserSystem.m_Users.Count > index)
             {
                 User user = ServerUserSystem.m_Users._items[index];
