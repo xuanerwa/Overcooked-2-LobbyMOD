@@ -20,6 +20,11 @@ namespace HostUtilities
         {
             if (Input.GetKeyDown(restartLevelKey.Value))
             {
+                if (!_MODEntry.IsHost)
+                {
+                    _MODEntry.ShowWarningDialog("你不是主机，别点啦");
+                    return;
+                }
                 if (!cooling)
                 {
                     log("重启关卡");
@@ -39,11 +44,6 @@ namespace HostUtilities
         }
         public static void RestartLevelMain()
         {
-            if (!_MODEntry.IsHost)
-            {
-                _MODEntry.ShowWarningDialog("你不是主机玩家，别点啦");
-                return;
-            }
             string nextScene = GameUtils.GetGameSession().LevelSettings.SceneDirectoryVarientEntry.SceneName;
             if (!string.IsNullOrEmpty(nextScene))
             {
@@ -58,7 +58,6 @@ namespace HostUtilities
             }
             startTime = System.Environment.TickCount;
             cooling = true;
-
         }
     }
 }

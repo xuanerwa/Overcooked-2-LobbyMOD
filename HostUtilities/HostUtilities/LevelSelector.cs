@@ -36,14 +36,20 @@ namespace HostUtilities
         {
             Predicate<SceneDirectoryData.SceneDirectoryEntry> matchScene = (SceneDirectoryData.SceneDirectoryEntry entry) =>
             {
-                if (entry.Label.Contains("ThroneRoom") || entry.Label.Contains("TutorialLevel") || entry.Label.Contains("DLC07Battlements08"))
+                if (entry.Label.Contains("ThroneRoom") || entry.Label.Contains("TutorialLevel"))
                 {
                     return false;
                 }
-                return true;
+                if (entry.Label.Equals(GetSceneDirectoryEntryFromChinese(ValueList.Value).Label)) { return true; }
+                return false;
             };
             if (Input.GetKeyDown(startSelectedLevel.Value))
             {
+                if (!_MODEntry.IsHost)
+                {
+                    _MODEntry.ShowWarningDialog("你不是主机，别点啦");
+                    return;
+                }
                 if (ValueList == null)
                 {
                     _MODEntry.ShowWarningDialog("请至少以主机身份进入一次街机大厅并等待5秒(可以打开强制主机)");
@@ -52,18 +58,20 @@ namespace HostUtilities
                 if (!_MODEntry.IsInLobby)
                 {
                     _MODEntry.ShowWarningDialog("不在街机大厅，别点啦");
-                    //log("不在街机大厅");
                     return;
                 }
+                log(ValueList.Value);
+                log(GetSceneDirectoryEntryFromChinese(ValueList.Value).Label);
+
                 _MODEntry.IsSelectedAndPlay = true;
                 //设定状态倒计时4秒
-                ServerLobbyFlowController instance = ServerLobbyFlowController.Instance;
-                if (instance != null)
+                ServerLobbyFlowController Instance = ServerLobbyFlowController.Instance;
+                if (Instance != null)
                 {
                     int player_index = 0;
                     while ((long)player_index < (long)((ulong)OnlineMultiplayerConfig.MaxPlayers))
                     {
-                        instance.SelectTheme(SceneDirectoryData.LevelTheme.Random, player_index);
+                        Instance.SelectTheme(SceneDirectoryData.LevelTheme.Random, player_index);
                         LobbyFlowController.LobbyState? serverLobbyState = ServerLobbyFlowController.Instance.m_state;
                         LobbyFlowController.LobbyState lobbyState = LobbyFlowController.LobbyState.LocalThemeSelection;
                         if (serverLobbyState.GetValueOrDefault() == lobbyState & serverLobbyState != null)
@@ -85,30 +93,16 @@ namespace HostUtilities
                     //ServerLobbyFlowController.Instance.ResetTimer(0);
                     //_MODEntry.ShowWarningDialog("4秒后自动开始选择的关卡, 请不要重复点击按键, 点击继续关闭");
                 }
-                log($"ValueList.Value: {ValueList.Value}, instance: {GetSceneDirectoryEntryFromChinese(ValueList.Value).Label}");
-                string[] strList = DirectoryDict.Keys.ToArray();
-                int num = 0;
-                foreach (var pair in DirectoryDict)
-                {
-                    num++;
-                    if (pair.Value == GetSceneDirectoryEntryFromChinese(ValueList.Value))
-                    {
-                        log($"index: {num} Key: {pair.Key}, Value: {pair.Value}, Label: {GetLevelName(pair.Value, false)}");
-                        break;
-                    }
-                }
-                LobbyFlowController m_lobbyFlow = ServerLobbyFlowController.Instance.m_lobbyFlow;
-                SceneDirectoryData[] sceneDirectories = m_lobbyFlow.GetSceneDirectories();
-                bool m_bIsCoop = ServerLobbyFlowController.Instance.m_bIsCoop;
-                GameSession.GameType gameType = (!m_bIsCoop) ? GameSession.GameType.Competitive : GameSession.GameType.Cooperative;
+                FastList<SceneDirectoryData.SceneDirectoryEntry> fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(60);
+                SceneDirectoryData[] sceneDirectories = Instance.m_lobbyFlow.GetSceneDirectories();
                 DLCManager dlcmanager = GameUtils.RequireManager<DLCManager>();
                 List<DLCFrontendData> allDlc = dlcmanager.AllDlc;
+                GameSession.GameType gameType = (!Instance.m_bIsCoop) ? GameSession.GameType.Competitive : GameSession.GameType.Cooperative;
                 int[] array = new int[sceneDirectories.Length];
-                FastList<SceneDirectoryData.SceneDirectoryEntry> fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(60);
                 for (int i = 0; i < sceneDirectories.Length; i++)
                 {
                     DLCFrontendData dlcfrontendData = null;
-                    int dlcidfromSceneDirIndex = m_lobbyFlow.GetDLCIDFromSceneDirIndex(gameType, i);
+                    int dlcidfromSceneDirIndex = Instance.m_lobbyFlow.GetDLCIDFromSceneDirIndex(gameType, i);
                     if (true)
                     {
                         for (int j = 0; j < allDlc.Count; j++)
@@ -127,8 +121,7 @@ namespace HostUtilities
                     }
                     array[i] = fastList.Count;
                 }
-
-
+                int num = UnityEngine.Random.Range(0, fastList.Count);
                 int idx = -1;
                 for (int k = 0; k < array.Length; k++)
                 {
@@ -138,24 +131,54 @@ namespace HostUtilities
                         break;
                     }
                 }
-
-                SceneDirectoryData.SceneDirectoryEntry sceneDirectoryEntry = GetSceneDirectoryEntryFromChinese(ValueList.Value);
-                int dlcidfromSceneDirIndex2 = m_lobbyFlow.GetDLCIDFromSceneDirIndex(gameType, idx);
+                SceneDirectoryData.SceneDirectoryEntry sceneDirectoryEntry = fastList._items[num];
+                int dlcidfromSceneDirIndex2 = -1;
+                try
+                {
+                    dlcidfromSceneDirIndex2 = Instance.m_lobbyFlow.GetDLCIDFromSceneDirIndex(gameType, idx);
+                    log($"dlcidfromSceneDirIndex2: {dlcidfromSceneDirIndex2}");
+                }
+                catch (Exception e)
+                {
+                    log($"An error occurred: \n{e.Message}");
+                    log($"Stack trace: \n{e.StackTrace}");
+                }
                 SceneDirectoryData.PerPlayerCountDirectoryEntry sceneVarient = sceneDirectoryEntry.GetSceneVarient(ServerUserSystem.m_Users.Count);
-                ServerLobbyFlowController.Instance.m_delayedLevelLoad = ServerLobbyFlowController.Instance.StartCoroutine(ServerLobbyFlowController.Instance.DelayedLevelLoad(sceneVarient.SceneName, dlcidfromSceneDirIndex2));
+                if (sceneVarient == null)
+                {
+                    if (!Instance.m_bIsCoop)
+                    {
+                        T17DialogBox dialog = T17DialogBoxManager.GetDialog(false);
+                        dialog.Initialize("Text.Versus.NotEnoughPlayers.Title", "Text.Versus.NotEnoughPlayers.Message", "Text.Button.Confirm", null, null, T17DialogBox.Symbols.Warning, true, true, false);
+                        T17DialogBox t17DialogBox = dialog;
+                        t17DialogBox.OnConfirm = (T17DialogBox.DialogEvent)Delegate.Combine(t17DialogBox.OnConfirm, new T17DialogBox.DialogEvent(delegate ()
+                        {
+                            ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Offline, null, delegate (IConnectionModeSwitchStatus _status)
+                            {
+                                if (_status.GetProgress() == eConnectionModeSwitchProgress.Complete)
+                                {
+                                    ServerGameSetup.Mode = GameMode.OnlineKitchen;
+                                    ServerMessenger.LoadLevel("StartScreen", GameState.MainMenu, true, GameState.NotSet);
+                                }
+                            });
+                        }));
+                        dialog.Show();
+                    }
+                    return;
+                }
+                Instance.m_delayedLevelLoad = Instance.StartCoroutine(Instance.DelayedLevelLoad(sceneVarient.SceneName, dlcidfromSceneDirIndex2));
+                log($"场景名 {sceneVarient.SceneName}  dlcidfromSceneDirIndex2:{dlcidfromSceneDirIndex2}");
                 _MODEntry.IsSelectedAndPlay = false;
-                //AddCleanDishes.plateOrGlassNum = 0;
             }
-
-            //if (Input.GetKeyDown(KeyCode.F5))
-            //{
-            //    foreach (var pair in DirectoryDict)
-            //    {
-            //        log($"Key: {pair.Key}, Value: {pair.Value}");
-            //    }
-            //}
-
         }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(ClientDynamicLandscapeParenting), "Awake")]
+        public static void ClientDynamicLandscapeParenting_Awake_Patch(ClientDynamicLandscapeParenting __instance)
+        {
+            log($"----------------------------------{GameUtils.GetLevelConfig()}");
+        }
+
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ClientTime), "OnTimeSyncReceived")]
@@ -194,7 +217,7 @@ namespace HostUtilities
                 }
                 string[] strArray = strList.ToArray();
                 ValueList = _MODEntry.Instance.Config.Bind<string>("00-选关", "选择关卡", strArray[0], new ConfigDescription("选择关卡", new AcceptableValueList<string>(strArray)));
-                //log(ValueList.Value);
+                log(ValueList.Value);
             }
             catch (Exception e)
             {
@@ -270,7 +293,7 @@ namespace HostUtilities
             }
             list.RemoveAll((SceneDirectoryEntry x) => x.Label.Contains("ThroneRoom"));
             list.RemoveAll((SceneDirectoryEntry x) => x.Label.Contains("Tutorial"));
-            list.RemoveAll((SceneDirectoryEntry x) => x.Label.Contains("DLC07Battlements08"));
+            //list.RemoveAll((SceneDirectoryEntry x) => x.Label.Contains("DLC07Battlements08"));
             return list;
         }
         public static string GetLevelName(SceneDirectoryData.SceneDirectoryEntry entry, bool withLevelLabel = false)

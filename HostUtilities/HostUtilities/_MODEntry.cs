@@ -15,11 +15,11 @@ using System.Threading;
 
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.62")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.64")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.62";
+        public static string Version = "1.0.64";
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
@@ -49,7 +49,7 @@ namespace HostUtilities
                 UI_DisplayModName.Awake();
                 defaultFontSize = Config.Bind<int>("00-UI", "MOD的UI字体大小", 20, new ConfigDescription("MOD的UI字体大小", new AcceptableValueRange<int>(5, 40)));
                 defaultFontColor = Config.Bind<Color>("00-UI", "MOD的UI字体颜色", new Color(1, 1, 1, 1));
-                
+
 
                 modName = "HostUtilities";
                 Instance = this;
@@ -250,7 +250,6 @@ namespace HostUtilities
                     {
                         IsAuthor = true;
                         Recipe.Awake();
-                        ModifySingleplayerChopTimeMultiplier.Awake();
                         ModifyMaxActiveOrders.Awake();
                         FixHeatedPosition.Awake();
                     }
@@ -293,158 +292,6 @@ namespace HostUtilities
         }
     }
 
-
-
-
-    //[System.Serializable]
-    //public class ReleaseInfo
-    //{
-    //    public string tag_name;
-    //    public string body;
-    //}
-    //[Serializable]
-    //public class VersionChecker : MonoBehaviour
-    //{
-    //    public static void log(string mes) => _MODEntry.LogInfo(mes);
-    //    public static void logerr(string mes) => _MODEntry.LogError(mes);
-    //    private static readonly string currentVersion = _MODEntry.Version; // 当前MOD版本
-    //    private static readonly string versionInfoUrl = "https://api.github.com/repos/CH3NGYZ/Overcooked-2-HostUtilities/releases/latest"; // GitHub API的版本信息URL
-    //    //private static readonly string githubToken = "your_github_token"; // GitHub 令牌
-
-    //    //private SteamAPICall_t apiCall;
-    //    //private CallResult<HTTPRequestCompleted_t> OnHTTPRequestCompletedCallResult;
-
-    //    public void Init()
-    //    {
-    //        logerr("init");
-    //        GetWebContent(versionInfoUrl);
-    //        //OnHTTPRequestCompletedCallResult = CallResult<HTTPRequestCompleted_t>.Create(OnHTTPRequestCompleted);
-    //        //CheckForUpdate();
-    //        logerr("init out");
-
-    //    }
-    //    //public void CheckForUpdate()
-    //    //{
-    //    //    HTTPRequestHandle handle = SteamHTTP.CreateHTTPRequest(EHTTPMethod.k_EHTTPMethodGET, versionInfoUrl);
-
-    //    //    if (handle == HTTPRequestHandle.Invalid)
-    //    //    {
-    //    //        logerr("Failed to create HTTP request handle");
-    //    //        return;
-    //    //    }
-
-    //    //    // 设置User-Agent头，以避免GitHub API拒绝请求
-    //    //    SteamHTTP.SetHTTPRequestHeaderValue(handle, "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0");
-    //    //    SteamHTTP.SetHTTPRequestHeaderValue(handle, "Authorization", $"token {githubToken}");
-
-    //    //    bool sent = SteamHTTP.SendHTTPRequest(handle, out apiCall);
-
-    //    //    if (!sent)
-    //    //    {
-    //    //        logerr("Failed to send HTTP request");
-    //    //        SteamHTTP.ReleaseHTTPRequest(handle);
-    //    //    }
-    //    //    else
-    //    //    {
-    //    //        OnHTTPRequestCompletedCallResult.Set(apiCall);
-    //    //        log("Successful send HTTP request");
-    //    //    }
-    //    //}
-    //    //void OnHTTPRequestCompleted(HTTPRequestCompleted_t pCallback, bool bIOFailure)
-    //    //{
-    //    //    logerr("[" + HTTPRequestCompleted_t.k_iCallback + " - HTTPRequestCompleted] - " + pCallback.m_hRequest + " -- " + pCallback.m_ulContextValue + " -- " + pCallback.m_bRequestSuccessful + " -- " + pCallback.m_eStatusCode + " -- " + pCallback.m_unBodySize);
-
-    //    //    if (bIOFailure || !pCallback.m_bRequestSuccessful || pCallback.m_eStatusCode != EHTTPStatusCode.k_EHTTPStatusCode200OK)
-    //    //    {
-    //    //        logerr("HTTP request failed or invalid response");
-    //    //        SteamHTTP.ReleaseHTTPRequest(pCallback.m_hRequest);
-    //    //        return;
-    //    //    }
-
-    //    //    uint bodySize = pCallback.m_unBodySize;
-    //    //    if (bodySize == 0)
-    //    //    {
-    //    //        logerr("Response body size is zero");
-    //    //        SteamHTTP.ReleaseHTTPRequest(pCallback.m_hRequest);
-    //    //        return;
-    //    //    }
-
-    //    //    byte[] bodyData = new byte[bodySize];
-    //    //    if (!SteamHTTP.GetHTTPResponseBodyData(pCallback.m_hRequest, bodyData, bodySize))
-    //    //    {
-    //    //        logerr("Failed to get response body data");
-    //    //        SteamHTTP.ReleaseHTTPRequest(pCallback.m_hRequest);
-    //    //        return;
-    //    //    }
-
-    //    //    string responseBody = System.Text.Encoding.UTF8.GetString(bodyData);
-
-    //    //    ReleaseInfo versionInfo = JsonUtility.FromJson<ReleaseInfo>(responseBody);
-
-    //    //    string latestVersion = versionInfo.tag_name.Replace("v", "");
-    //    //    string release_note = versionInfo.body;
-
-    //    //    if (IsNewVersionAvailable(currentVersion, latestVersion))
-    //    //    {
-    //    //        log($"新版本可用: {latestVersion}. 更新日志:\n{release_note}");
-    //    //        log(responseBody);
-    //    //        // 在这里执行您的 Steamworks.NET 函数操作
-    //    //        _MODEntry.IsUpdateNeded = true;
-    //    //        _MODEntry.ReleaseNote = release_note;
-    //    //    }
-    //    //    else
-    //    //    {
-    //    //        log($"当前版本已是最新版本。\n{release_note}");
-    //    //    }
-
-    //    //    SteamHTTP.ReleaseHTTPRequest(pCallback.m_hRequest);
-    //    //}
-
-
-    //    private static bool IsNewVersionAvailable(string currentVersion, string latestVersion)
-    //    {
-    //        System.Version current = new System.Version(currentVersion);
-    //        System.Version latest = new System.Version(latestVersion);
-    //        return latest > current;
-    //    }
-
-    //    void GetWebContent(string url)
-    //    {
-    //        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-    //        request.Method = "GET";
-    //        request.ContentType = "application/x-www-form-urlencoded";
-    //        request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3";
-
-    //        //try
-    //        //{
-    //        using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-    //        {
-    //            using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
-    //            {
-    //                string content = reader.ReadToEnd();
-    //                // 在控制台输出网页内容
-    //                Debug.Log("Web page content: " + content);
-    //            }
-    //        }
-    //        //}
-    //        //catch (WebException ex)
-    //        //{
-    //        //    // 处理网络异常
-    //        //    Debug.LogError("An error occurred: " + ex.Message);
-    //        //    if (ex.Response != null)
-    //        //    {
-    //        //        using (StreamReader reader = new StreamReader(ex.Response.GetResponseStream()))
-    //        //        {
-    //        //            string errorContent = reader.ReadToEnd();
-    //        //            Debug.LogError("Error content: " + errorContent);
-    //        //        }
-    //        //    }
-    //        //}
-    //    }
-    //}
-
-
-
     [System.Serializable]
     public class ReleaseInfo
     {
@@ -462,10 +309,12 @@ namespace HostUtilities
         {
             logerr("init");
             GetWebContent(versionInfoUrl);
+            logerr("init out");
         }
 
         public static string GetWebContent(string url)
         {
+            //throw new Exception("uihfuhfhsuifhuioshfgiuush");
             try
             {
                 // 创建 WebClient 实例
@@ -473,7 +322,7 @@ namespace HostUtilities
                 {
                     // 使用 DownloadString 方法下载指定 URL 的内容
                     string content = client.DownloadString(url);
-                    Console.WriteLine($"{content}");
+                    _MODEntry.LogInfo($"{content}");
                     // 返回下载的内容
                     return content;
                 }
@@ -481,7 +330,7 @@ namespace HostUtilities
             catch (WebException e)
             {
                 // 如果请求失败，捕获异常并打印错误信息
-                Console.WriteLine($"Error: {e.Message}");
+                _MODEntry.LogError($"Error: {e.Message}");
                 return null;
             }
         }
@@ -513,7 +362,7 @@ namespace HostUtilities
             catch (WebException e)
             {
                 // 如果请求失败，捕获异常并打印错误信息
-                Console.WriteLine($"Error: {e.Message}");
+                _MODEntry.LogError($"Error: {e.Message}");
                 return null;
             }
         }

@@ -67,33 +67,41 @@ namespace HostUtilities
 
         public static void Update()
         {
+            if (!_MODEntry.IsHost)
+            {
+                _MODEntry.ShowWarningDialog("你不是主机，别点啦");
+                return;
+            }
             if (Input.GetKeyDown(kick2.Value))
             {
                 TryKickUser(1, kick2);
+                //log($"按下{kick2.Value}");
             }
+
             else if (Input.GetKeyDown(kick3.Value))
             {
                 TryKickUser(2, kick3);
-
+                //log($"按下{kick3.Value}");
             }
             else if (Input.GetKeyDown(kick4.Value))
             {
                 TryKickUser(3, kick4);
-
+                //log($"按下{kick4.Value}");
             }
             else if (Input.GetKeyDown(kickAndBan2.Value))
             {
                 TryKickUserAndBan(1, kickAndBan2);
-
+                //log($"按下{kickAndBan2.Value}");
             }
             else if (Input.GetKeyDown(kickAndBan3.Value))
             {
                 TryKickUserAndBan(2, kickAndBan3);
-
+                //log($"按下{kickAndBan3.Value}");
             }
             else if (Input.GetKeyDown(kickAndBan4.Value))
             {
                 TryKickUserAndBan(3, kickAndBan4);
+                //log($"按下{kickAndBan4.Value}");
             }
             else if (Input.GetKeyDown(saveAll.Value))
             {
@@ -132,11 +140,8 @@ namespace HostUtilities
             {
                 _MODEntry.LogInfo($"自动移除  主页: {steamCommunityUrl}  昵称: {user.DisplayName}");
                 UI_DisplayKickedUser.add_m_Text($"自动移除  {user.DisplayName}");
-                //SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
                 ServerUserSystem.RemoveUser(user, true);
-                //_MODEntry.ShowWarningDialog($"自动移除黑名单  {user.DisplayName}");
                 return true;
-
             }
 
             return false;
@@ -174,9 +179,7 @@ namespace HostUtilities
                     _MODEntry.LogInfo($"{index + 1} 号移除成功: {user.DisplayName} 并拉黑");
 
                     OnlineUserPlatformId platformID = user.PlatformID;
-                    //SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
                     ServerUserSystem.RemoveUser(user, true);
-
                     string steamIdString = platformID.m_steamId.ToString();
                     string steamCommunityUrl = $"https://steamcommunity.com/profiles/{steamIdString},{user.DisplayName}";
                     banSteamIdList.Add(steamCommunityUrl);

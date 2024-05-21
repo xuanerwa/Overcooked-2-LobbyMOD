@@ -40,6 +40,11 @@ namespace HostUtilities
             //开始随机关卡
             if (Input.GetKeyDown(PlayRandom.Value))
             {
+                if (!_MODEntry.IsHost)
+                {
+                    _MODEntry.ShowWarningDialog("你不是主机，别点啦");
+                    return;
+                }
                 //LobbyManager lobbyManager = new LobbyManager();
                 //ServerLobbyFlowController instance = ServerLobbyFlowController.Instance;
                 //if (instance != null)
@@ -71,6 +76,11 @@ namespace HostUtilities
             //重置街机大厅时间
             else if (Input.GetKeyDown(resetTimer.Value))
             {
+                if (!_MODEntry.IsHost)
+                {
+                    _MODEntry.ShowWarningDialog("你不是主机，别点啦");
+                    return;
+                }
                 log("重置街机大厅时间");
                 MServerLobbyFlowController.ResetServerLobbyTimer(45f);
             }
@@ -151,12 +161,12 @@ namespace HostUtilities
                 //AddCleanDishes.plateOrGlassNum = 0;
                 if (_MODEntry.IsSelectedAndPlay)
                 {
-                    log("已经选关,不执行原函数");
+                    //log("已经选关,不执行原函数");
                     return false;
                 }
                 if (!kevinEnabled.Value)
                 {
-                    log("街机凯文未启用,执行原函数");
+                    log("关卡编辑未启用");
                     return true;
                 }
                 MServerLobbyFlowController.MPickLevel(__instance, _theme);
@@ -362,36 +372,6 @@ namespace HostUtilities
                 array[i] = fastList.Count;
             }
 
-            //FastList<SceneDirectoryData.SceneDirectoryEntry> fastList_filter = new FastList<SceneDirectoryData.SceneDirectoryEntry>(fastList.FindAll(matchScene).ToArray());
-            //for (int kkk = 0; kkk < fastList_filter.Count; kkk++)
-            //{
-            //    string Message = $"filter: index: {kkk}   Theme: {fastList_filter._items[kkk].Theme}   World: {fastList_filter._items[kkk].World}  label:{fastList_filter._items[kkk].Label}  AvailableInLobby:{fastList_filter._items[kkk].AvailableInLobby}  IsHidden:{fastList_filter._items[kkk].IsHidden}";
-            //    if (fastList._items[kkk].AvailableInLobby == false)
-            //    {
-            //        MODEntryPlugin.LogWarning(Message);
-            //    }
-            //    else
-            //    {
-            //        MODEntryPlugin.LogInfo(Message);
-            //    }
-            //}
-
-
-
-
-            //for (int kkk = 0; kkk < fastList.Count; kkk++)
-            //{
-            //    string Message = $"index: {kkk}   Theme: {fastList._items[kkk].Theme}   World: {fastList._items[kkk].World}  label:{fastList._items[kkk].Label}  AvailableInLobby:{fastList._items[kkk].AvailableInLobby}  IsHidden:{fastList._items[kkk].IsHidden}";
-            //    if (fastList._items[kkk].AvailableInLobby == false)
-            //    {
-            //        MODEntryPlugin.LogWarning(Message);
-            //    }
-            //    else
-            //    {
-            //        MODEntryPlugin.LogInfo(Message);
-            //    }
-            //}
-
             if (fastList.Count == 0)
             {
                 _MODEntry.LogInfo($"未匹配到{_theme}里的关卡,随机全部关卡(带凯文)");
@@ -402,8 +382,8 @@ namespace HostUtilities
                     //fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(fastList.FindAll(matchAvailableInLobby).ToArray());
                     array[i] = fastList.Count;
                 }
-
             }
+
             if (sceneDisableConfigEntries["只玩麻3-4"].Value)
             {
                 fastList.Clear();
@@ -414,6 +394,7 @@ namespace HostUtilities
                     array[i] = fastList.Count;
                 }
             }
+
             else if (sceneDisableConfigEntries["只玩海3-4"].Value)
             {
                 fastList.Clear();
@@ -515,8 +496,6 @@ namespace HostUtilities
 
     public class LobbyManager
     {
-        private static readonly AccessTools.FieldRef<ServerLobbyFlowController, LobbyFlowController.LobbyState> m_state_server = AccessTools.FieldRefAccess<ServerLobbyFlowController, LobbyFlowController.LobbyState>("m_state");
-        private static readonly FastInvokeHandler SetStateServer = MethodInvoker.GetHandler(AccessTools.Method(typeof(ServerLobbyFlowController), "SetState", null, null));
         public unsafe LobbyFlowController.LobbyState? ServerLobbyState
         {
             get
@@ -526,21 +505,26 @@ namespace HostUtilities
                 {
                     return null;
                 }
-                return new LobbyFlowController.LobbyState?(LobbyManager.m_state_server.Invoke(instance));
+                return instance.m_state;
             }
         }
 
         public void SetServerLobbyState(LobbyFlowController.LobbyState state)
         {
-            ServerLobbyFlowController instance = ServerLobbyFlowController.Instance;
-            if (instance == null)
+            try
             {
-                return;
+                ServerLobbyFlowController instance = ServerLobbyFlowController.Instance;
+                if (instance == null)
+                {
+                    return;
+                }
+                instance.SetState(state);
             }
-            LobbyManager.SetStateServer.Invoke(instance, new object[]
+            catch (Exception e)
             {
-                state
-            });
+                _MODEntry.LogError(e.Message);
+                _MODEntry.LogError(e.StackTrace);
+            }
         }
     }
 }

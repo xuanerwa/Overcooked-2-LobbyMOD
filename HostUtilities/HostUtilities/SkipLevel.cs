@@ -22,7 +22,11 @@ namespace HostUtilities
         {
             if (Input.GetKeyDown(stopLevel.Value))
             {
-
+                if (!_MODEntry.IsHost)
+                {
+                    _MODEntry.ShowWarningDialog("你不是主机，别点啦");
+                    return;
+                }
                 if (!cooling)
                 {
                     log("跳过关卡");
@@ -40,12 +44,6 @@ namespace HostUtilities
 
         public static void EndLevel()
         {
-            if (!_MODEntry.IsHost)
-            {
-                log("不是主机玩家");
-                return;
-            }
-
             ServerCampaignFlowController flowController = GameObject.FindObjectOfType<ServerCampaignFlowController>();
             ServerHordeFlowController ServerHordeFlowController = GameObject.FindObjectOfType<ServerHordeFlowController>();
             if (flowController == null)

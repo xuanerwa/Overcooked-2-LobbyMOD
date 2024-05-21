@@ -23,7 +23,7 @@ namespace HostUtilities
                 if (LoadingScreenFlow != null)
                 {
                     log("退出战局");
-                    Traverse.Create(LoadingScreenFlow).Method("RequestReturnToStartScreen").GetValue();
+                    LoadingScreenFlow.RequestReturnToStartScreen();
                 }
             }
         }

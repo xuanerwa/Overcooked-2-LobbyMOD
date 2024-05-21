@@ -13,13 +13,18 @@ namespace HostUtilities
 
         public static void Awake()
         {
-            AddDirtyDishesKey = _MODEntry.Instance.Config.Bind("01-按键绑定(仅街机)", "13-增加1个脏盘/杯", KeyCode.Alpha0);
+            AddDirtyDishesKey = _MODEntry.Instance.Config.Bind("01-按键绑定", "13-增加1个脏盘/杯(仅街机)", KeyCode.Alpha0);
         }
 
         public static void Update()
         {
             if (Input.GetKeyDown(AddDirtyDishesKey.Value))
             {
+                if (!_MODEntry.IsHost)
+                {
+                    _MODEntry.ShowWarningDialog("你不是主机，别点啦");
+                    return;
+                }
                 if (!_MODEntry.IsInParty)
                 {
                     _MODEntry.ShowWarningDialog("请在街机中使用此功能。");
