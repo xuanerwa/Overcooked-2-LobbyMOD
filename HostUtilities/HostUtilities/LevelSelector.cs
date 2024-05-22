@@ -34,17 +34,10 @@ namespace HostUtilities
 
         public static void Update()
         {
-            Predicate<SceneDirectoryData.SceneDirectoryEntry> matchScene = (SceneDirectoryData.SceneDirectoryEntry entry) =>
-            {
-                if (entry.Label.Contains("ThroneRoom") || entry.Label.Contains("TutorialLevel"))
-                {
-                    return false;
-                }
-                if (entry.Label.Equals(GetSceneDirectoryEntryFromChinese(ValueList.Value).Label)) { return true; }
-                return false;
-            };
+
             if (Input.GetKeyDown(startSelectedLevel.Value))
             {
+
                 if (!_MODEntry.IsHost)
                 {
                     _MODEntry.ShowWarningDialog("你不是主机，别点啦");
@@ -60,11 +53,19 @@ namespace HostUtilities
                     _MODEntry.ShowWarningDialog("不在街机大厅，别点啦");
                     return;
                 }
+                Predicate<SceneDirectoryData.SceneDirectoryEntry> matchScene = (SceneDirectoryData.SceneDirectoryEntry entry) =>
+                {
+                    if (entry.Label.Contains("ThroneRoom") || entry.Label.Contains("TutorialLevel"))
+                    {
+                        return false;
+                    }
+                    if (entry.Label.Equals(GetSceneDirectoryEntryFromChinese(ValueList.Value).Label)) { return true; }
+                    return false;
+                };
                 //log(ValueList.Value);
                 //log(GetSceneDirectoryEntryFromChinese(ValueList.Value).Label);
 
                 _MODEntry.IsSelectedAndPlay = true;
-                //设定状态倒计时4秒
                 ServerLobbyFlowController Instance = ServerLobbyFlowController.Instance;
                 if (Instance != null)
                 {
@@ -179,6 +180,26 @@ namespace HostUtilities
         //    log($"----------------------------------{GameUtils.GetLevelConfig()}");
         //}
 
+        [HarmonyPatch(typeof(ServerLobbyFlowController), "PickLevel")]
+        [HarmonyPrefix]
+        private static bool ServerLobbyFlowController_PickLevel_Prefix(ref ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
+        {
+            try
+            {
+                if (_MODEntry.IsSelectedAndPlay)
+                {
+                    log("已经开始指定关卡,不执行原开始关卡函数");
+                    return false;
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                _MODEntry.LogError($"An error occurred: \n{e.Message}");
+                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+                return true;
+            }
+        }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ClientTime), "OnTimeSyncReceived")]
