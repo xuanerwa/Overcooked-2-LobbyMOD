@@ -13,11 +13,11 @@ using UnityEngine.Networking;
 using System.Diagnostics;
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.68")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.69")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.68";
+        public static string Version = "1.0.69";
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
@@ -32,41 +32,39 @@ namespace HostUtilities
         public static ConfigEntry<int> defaultFontSize;
         public static ConfigEntry<Color> defaultFontColor;
         public static bool IsSelectedAndPlay = false;
-
-        //当前玩家的steamid
-        public static CSteamID CurrentSteamID;
         public static bool IsAuthor = false;
+        public static CSteamID CurrentSteamID;
 
-        //自动更新相关
-        public static bool IsUpdateNeded = false;
-        public static string ReleaseNote = "";
         public void Awake()
         {
             try
             {
-                UI_DisplayModName.Awake();
                 defaultFontSize = Config.Bind<int>("00-UI", "MOD的UI字体大小", 20, new ConfigDescription("MOD的UI字体大小", new AcceptableValueRange<int>(5, 40)));
                 defaultFontColor = Config.Bind<Color>("00-UI", "MOD的UI字体颜色", new Color(1, 1, 1, 1));
 
-
                 modName = "HostUtilities";
                 Instance = this;
-                SkipLevel.Awake();
-                KickUser.Awake();
-                //LevelEdit.Awake();
-                //UI_DisplayModsOnResultsScreen.Awake();
-                QuitInLoadingScreen.Awake();
-                UI_DisplayKickedUser.Awake();
-                ReplaceOneShotAudio.Awake();
-                ForceHost.Awake();
-                UI_DisplayLatency.Awake();
-                FixDoubleServing.Awake();
-                RestartLevel.Awake();
-                ChangeDisplayName.Awake();
+                //不需要Update的类
                 AlwaysServeOldestOrder.Awake();
-                LevelSelector.Awake();
-                AddDirtyDishes.Awake();
+                ChangeDisplayName.Awake();
+                FixDoubleServing.Awake();
                 FixBrokenWashingStation.Awake();
+                ReplaceOneShotAudio.Awake();
+
+
+                //需要Update的类
+                AddDirtyDishes.Awake();
+                ForceHost.Awake();
+                KickUser.Awake();
+                LevelEdit.Awake();
+                LevelSelector.Awake();
+                QuitInLoadingScreen.Awake();
+                RestartLevel.Awake();
+                SkipLevel.Awake();
+                UI_DisplayModName.Awake();
+                UI_DisplayModsOnResultsScreen.Awake();
+                UI_DisplayKickedUser.Awake();
+                UI_DisplayLatency.Awake();
 
                 HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
                 AllHarmony.Add(HarmonyInstance);
@@ -107,22 +105,18 @@ namespace HostUtilities
         {
             try
             {
-                UI_DisplayModName.Update();
-                SkipLevel.Update();
+                AddDirtyDishes.Update();
+                ForceHost.Update();
                 KickUser.Update();
-                //LevelEdit.Update();
-                //UI_DisplayModsOnResultsScreen.Update();
+                LevelEdit.Update();
+                LevelSelector.Update();
                 QuitInLoadingScreen.Update();
+                RestartLevel.Update();
+                SkipLevel.Update();
                 UI_DisplayKickedUser.Update();
                 UI_DisplayLatency.Update();
-                ForceHost.Update();
-                RestartLevel.Update();
-                LevelSelector.Update();
-                AddDirtyDishes.Update();
-                if (IsAuthor)
-                {
-                    //Recipe.Update();
-                }
+                UI_DisplayModsOnResultsScreen.Update();
+                UI_DisplayModName.Update();
             }
             catch (Exception e)
             {
@@ -136,13 +130,9 @@ namespace HostUtilities
             try
             {
                 UI_DisplayModName.OnGUI();
-                //UI_DisplayModsOnResultsScreen.OnGUI();
+                UI_DisplayModsOnResultsScreen.OnGUI();
                 UI_DisplayKickedUser.OnGUI();
                 UI_DisplayLatency.OnGUI();
-                if (IsAuthor)
-                {
-                    //Recipe.OnGUI();
-                }
             }
             catch (Exception e)
             {
