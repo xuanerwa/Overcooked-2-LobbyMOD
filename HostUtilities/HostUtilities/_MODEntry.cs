@@ -8,20 +8,16 @@ using System.Collections.Generic;
 using System.Reflection;
 using Team17.Online;
 using UnityEngine;
-using System.Net;
 using System.IO;
-using System.Text;
-using System.Threading;
 using UnityEngine.Networking;
-using System.Security.Policy;
-
+using System.Diagnostics;
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.67")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.68")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.67";
+        public static string Version = "1.0.68";
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
@@ -271,7 +267,6 @@ namespace HostUtilities
             }
         }
 
-        //进入主界面后，自动检查更新
         [HarmonyPostfix]
         [HarmonyPatch(typeof(MetaGameProgress), "ByteLoad")]
         public static void MetaGameProgressByteLoadPatch(MetaGameProgress __instance)
@@ -311,6 +306,7 @@ namespace HostUtilities
             {
                 request.SetRequestHeader("User-Agent", "request");
                 yield return request.SendWebRequest();
+
                 //Dictionary<string, string> responseHeaders = request.GetResponseHeaders();
                 //_MODEntry.LogInfo("All Response Headers:");
                 //foreach (var header in responseHeaders)
@@ -320,7 +316,7 @@ namespace HostUtilities
 
                 if (request.responseCode == 200)
                 {
-                    //_MODEntry.LogInfo("Response: " + request.downloadHandler.text);
+                    _MODEntry.LogInfo("Response: " + request.downloadHandler.text);
                     ReleaseInfo versionInfo = JsonUtility.FromJson<ReleaseInfo>(request.downloadHandler.text);
                     string latestVersion = versionInfo.tag_name.Replace("v", "");
                     string releaseNote = versionInfo.body;
@@ -328,7 +324,75 @@ namespace HostUtilities
                     _MODEntry.LogInfo($"release {releaseNote}");
                     if (IsNewVersionAvailable(_MODEntry.Version, latestVersion))
                     {
-                        _MODEntry.ShowWarningDialog($"街机主机MOD有更新! 请打开安装器进行更新! 最新版更新日志: {releaseNote}");
+                        string ignoreVersion;
+                        string ignoreFilePath = "ignoreVersion.txt";
+
+                        if (File.Exists(ignoreFilePath))
+                        {
+                            try
+                            {
+                                string fileContent = File.ReadAllText(ignoreFilePath);
+                                ignoreVersion = fileContent.Replace(" ", "").Replace("\n", "").Replace("\r", "");
+                            }
+                            catch (Exception e)
+                            {
+                                _MODEntry.LogError($"An error occurred while reading the file: {e.Message}");
+                                ignoreVersion = null;
+                            }
+                        }
+                        else
+                        {
+                            ignoreVersion = null;
+                        }
+
+
+                        if (ignoreVersion != null && ignoreVersion == latestVersion)
+                        {
+                            UI_DisplayModName.cornerMessage += $"Ignored Upd v{latestVersion}";
+                            yield break;
+                        }
+
+                        T17DialogBox dialog = T17DialogBoxManager.GetDialog(false);
+                        if (dialog != null)
+                        {
+                            dialog.Initialize("街机MOD有更新!", $"更新日志:{releaseNote}".Replace("\n\n", "\n").Replace("\"", "\'"), "Text.Button.Okay", "Text.Button.Discard", "Text.Button.Cancel", T17DialogBox.Symbols.Warning, false, false, false);
+                            dialog.Show();
+                            dialog.OnConfirm += () =>
+                            {
+                                if (File.Exists("厨房MOD安装器.exe"))
+                                {
+                                    Process.Start("厨房MOD安装器.exe");
+                                }
+                                else
+                                {
+                                    _MODEntry.ShowWarningDialog("厨房MOD安装器.exe 不存在, 请手动从厨房根目录打开更新.");
+                                    _MODEntry.LogError("厨房MOD安装器.exe 不存在, 请手动从厨房根目录打开更新.");
+                                    UI_DisplayModName.cornerMessage += $"Installer NotExist Upd v{latestVersion}";
+                                }
+                            };
+                            dialog.OnCancel += () =>
+                            {
+                                _MODEntry.LogError("Cancel");
+                                UI_DisplayModName.cornerMessage += $"Cancel Upd v{latestVersion}";
+                            };
+                            dialog.OnDecline += () =>
+                            {
+                                _MODEntry.LogError("Decline");
+                                try
+                                {
+                                    UI_DisplayModName.cornerMessage += $"Ignored Upd v{latestVersion}";
+                                    File.WriteAllText(ignoreFilePath, latestVersion);
+                                }
+                                catch (Exception e)
+                                {
+                                    _MODEntry.LogError($"An error occurred while writing the file: {e.Message}");
+                                }
+                            };
+                        }
+                    }
+                    else
+                    {
+                        UI_DisplayModName.cornerMessage += "Latest";
                     }
                 }
                 else if (request.responseCode == 403)
@@ -340,11 +404,13 @@ namespace HostUtilities
                         DateTime utcPlus8Time = dateTime.ToUniversalTime().AddHours(8);
                         string formattedDateTime = utcPlus8Time.ToString("yyyy/MM/dd hh:mm:ss tt");
                         _MODEntry.LogError($"请求更新API访问达到限制, 恢复时间: {formattedDateTime}");
+                        UI_DisplayModName.cornerMessage += $"Forbidden {formattedDateTime}";
                     }
                 }
                 else
                 {
                     _MODEntry.LogError($"未知错误 code:{request.responseCode}, mess:{request.error}");
+                    UI_DisplayModName.cornerMessage += $"Failed {request.error}";
                 }
             }
         }

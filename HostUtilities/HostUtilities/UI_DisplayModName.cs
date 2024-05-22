@@ -13,6 +13,7 @@ namespace HostUtilities
 {
     public class UI_DisplayModName
     {
+        public static string cornerMessage = $"Host Utilities v{_MODEntry.Version} ";
         public static Harmony HarmonyInstance { get; set; }
         private static MyOnScreenDebugDisplay onScreenDebugDisplay;
         private static NetworkStateDebugDisplay NetworkDebugUI = null;
@@ -89,7 +90,7 @@ namespace HostUtilities
             {
                 m_GUIStyle.alignment = TextAnchor.LowerLeft;
                 m_GUIStyle.fontSize = Mathf.RoundToInt(25f * _MODEntry.dpiScaleFactor);
-                this.m_GUIStyle.normal.textColor = new Color(0, 0, 0, 0.1f);
+                this.m_GUIStyle.normal.textColor = new Color(145 / 255f, 195 / 255f, 228 / 255f);
                 m_GUIStyle.richText = false;
             }
 
@@ -122,7 +123,7 @@ namespace HostUtilities
 
             public override void OnDraw(ref Rect rect, GUIStyle style)
             {
-                DrawText(ref rect, style, $"主机实用工具 V{_MODEntry.Version}");
+                DrawText(ref rect, style, cornerMessage);
             }
         }
     }

@@ -169,7 +169,6 @@ namespace HostUtilities
                 }
                 Instance.m_delayedLevelLoad = Instance.StartCoroutine(Instance.DelayedLevelLoad(sceneVarient.SceneName, dlcidfromSceneDirIndex2));
                 log($"场景名 {sceneVarient.SceneName}  dlcidfromSceneDirIndex2:{dlcidfromSceneDirIndex2}");
-                _MODEntry.IsSelectedAndPlay = false;
             }
         }
 
@@ -189,6 +188,7 @@ namespace HostUtilities
                 if (_MODEntry.IsSelectedAndPlay)
                 {
                     log("已经开始指定关卡,不执行原开始关卡函数");
+                    _MODEntry.IsSelectedAndPlay = false;
                     return false;
                 }
                 return true;
