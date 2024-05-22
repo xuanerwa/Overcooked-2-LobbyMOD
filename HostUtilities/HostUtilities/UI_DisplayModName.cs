@@ -101,6 +101,7 @@ namespace HostUtilities
 
             public void OnGUI()
             {
+                m_GUIStyle.fontSize = Mathf.RoundToInt(25f * _MODEntry.dpiScaleFactor);
                 Rect rect = new Rect(10f, Screen.height - m_GUIStyle.fontSize, 0f, m_GUIStyle.fontSize);
                 for (int i = 0; i < m_Displays.Count; i++)
                     m_Displays[i].OnDraw(ref rect, m_GUIStyle);

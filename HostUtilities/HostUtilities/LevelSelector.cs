@@ -172,12 +172,12 @@ namespace HostUtilities
             }
         }
 
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(ClientDynamicLandscapeParenting), "Awake")]
-        public static void ClientDynamicLandscapeParenting_Awake_Patch(ClientDynamicLandscapeParenting __instance)
-        {
-            log($"----------------------------------{GameUtils.GetLevelConfig()}");
-        }
+        //[HarmonyPrefix]
+        //[HarmonyPatch(typeof(ClientDynamicLandscapeParenting), "Awake")]
+        //public static void ClientDynamicLandscapeParenting_Awake_Patch(ClientDynamicLandscapeParenting __instance)
+        //{
+        //    log($"----------------------------------{GameUtils.GetLevelConfig()}");
+        //}
 
 
         [HarmonyPostfix]

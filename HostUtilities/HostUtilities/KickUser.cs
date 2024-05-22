@@ -310,27 +310,18 @@ namespace HostUtilities
                         {
                             string personaName = SteamFriends.GetFriendPersonaName(csteamID.Value);
                             string nickname = SteamFriends.GetPlayerNickname(csteamID.Value);
-                            // 将好友信息存储到字典中
                             steamIDDictionary[csteamID.Value] = new SteamUserInfo(personaName, nickname);
                         };
                         string steamIdString = csteamID.ToString();
                         string steamCommunityUrl = $"steam主页链接: https://steamcommunity.com/profiles/{steamIdString}";
 
-                        //if (steamIdString == "76561198415369188")
-                        //{
-                        //    if (_MODEntry.IsInParty)
-                        //    {
-                        //        ServerUserSystem.RemoveUser(user, true);
-                        //    }
-                        //}
-
                         DateTime currentTime = DateTime.Now;
                         string formattedTime = currentTime.ToString("yyyy-MM-dd HH:mm:ss");
                         string[] autoSavedSteamIdList = new string[]
                         {
-                    $"------------{formattedTime}-----------",
-                    $"steam显示昵称: {user.DisplayName}",steamCommunityUrl,
-                    "---------------------------------------------"
+                            $"------------{formattedTime}-----------",
+                            $"游戏昵称: {user.DisplayName}",steamCommunityUrl,
+                            "---------------------------------------------"
                         };
                         SaveAutoSavedSteamIdList(autoSavedSteamIdList);
                     }

@@ -12,14 +12,16 @@ using System.Net;
 using System.IO;
 using System.Text;
 using System.Threading;
- 
+using UnityEngine.Networking;
+using System.Security.Policy;
+
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.64")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.66")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.64";
+        public static string Version = "1.0.66";
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
@@ -53,10 +55,10 @@ namespace HostUtilities
 
                 modName = "HostUtilities";
                 Instance = this;
-                UI_DisplayModsOnResultsScreen.Awake();
                 SkipLevel.Awake();
                 KickUser.Awake();
-                LevelEdit.Awake();
+                //LevelEdit.Awake();
+                //UI_DisplayModsOnResultsScreen.Awake();
                 QuitInLoadingScreen.Awake();
                 UI_DisplayKickedUser.Awake();
                 ReplaceOneShotAudio.Awake();
@@ -110,10 +112,10 @@ namespace HostUtilities
             try
             {
                 UI_DisplayModName.Update();
-                UI_DisplayModsOnResultsScreen.Update();
                 SkipLevel.Update();
                 KickUser.Update();
-                LevelEdit.Update();
+                //LevelEdit.Update();
+                //UI_DisplayModsOnResultsScreen.Update();
                 QuitInLoadingScreen.Update();
                 UI_DisplayKickedUser.Update();
                 UI_DisplayLatency.Update();
@@ -123,7 +125,7 @@ namespace HostUtilities
                 AddDirtyDishes.Update();
                 if (IsAuthor)
                 {
-                    Recipe.Update();
+                    //Recipe.Update();
                 }
             }
             catch (Exception e)
@@ -138,12 +140,12 @@ namespace HostUtilities
             try
             {
                 UI_DisplayModName.OnGUI();
-                UI_DisplayModsOnResultsScreen.OnGUI();
+                //UI_DisplayModsOnResultsScreen.OnGUI();
                 UI_DisplayKickedUser.OnGUI();
                 UI_DisplayLatency.OnGUI();
                 if (IsAuthor)
                 {
-                    Recipe.OnGUI();
+                    //Recipe.OnGUI();
                 }
             }
             catch (Exception e)
@@ -216,20 +218,18 @@ namespace HostUtilities
             {
                 return true;
             }
-
             IOnlineMultiplayerSessionCoordinator coordinator = onlinePlatformManager.OnlineMultiplayerSessionCoordinator();
             if (coordinator == null)
             {
                 return true;
             }
-
             if (coordinator.IsIdle())
             {
                 return true;
             }
-
             return coordinator.IsHost();
         }
+
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ClientTime), "OnTimeSyncReceived")]
@@ -241,7 +241,6 @@ namespace HostUtilities
                 isInLobby();
                 if (Screen.width != Mathf.RoundToInt(_MODEntry.Instance.baseScreenWidth * dpiScaleFactor) || Screen.height != Mathf.RoundToInt(_MODEntry.Instance.baseScreenHeight * dpiScaleFactor)) { Instance.UpdateGUIDpi(); }
                 //LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
-
                 if (CurrentSteamID == null || CurrentSteamID.m_SteamID == 0)
                 {
                     CurrentSteamID = SteamUser.GetSteamID();
@@ -249,12 +248,10 @@ namespace HostUtilities
                     if (_MODEntry.CurrentSteamID.m_SteamID.Equals(76561199191224186) && !IsAuthor)
                     {
                         IsAuthor = true;
-                        Recipe.Awake();
+                        //Recipe.Awake();
                         ModifyMaxActiveOrders.Awake();
                         FixHeatedPosition.Awake();
                     }
-                    VersionChecker versionChecker = new VersionChecker();
-                    versionChecker.Init();
                 }
             }
             catch (Exception e)
@@ -262,14 +259,8 @@ namespace HostUtilities
                 LogError($"An error occurred: \n{e.Message}");
                 LogError($"Stack trace: \n{e.StackTrace}");
             }
-
         }
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(ClientTime), "OnTimeSyncReceived")]
-        public static void ClientTime_OnTimeSyncReceived_Patch2()
-        {
 
-        }
         public static void ShowWarningDialog(string message)
         {
             T17DialogBox dialog = T17DialogBoxManager.GetDialog(false);
@@ -285,54 +276,82 @@ namespace HostUtilities
         [HarmonyPatch(typeof(MetaGameProgress), "ByteLoad")]
         public static void MetaGameProgressByteLoadPatch(MetaGameProgress __instance)
         {
-            if (IsUpdateNeded)
-            {
-                ShowWarningDialog("HostUtilities有新版本可用\n" + ReleaseNote + "\n请使用MOD安装器下载更新");
-            }
+            GameObject versionCheckObject = new GameObject("VersionCheck");
+            versionCheckObject.AddComponent<VersionCheckClass>();
         }
     }
 
-    [System.Serializable]
-    public class ReleaseInfo
+    public class VersionCheckClass : MonoBehaviour
     {
-        public string tag_name;
-        public string body;
-    }
-    [Serializable]
-    public class VersionChecker : MonoBehaviour
-    {
-        public static void log(string mes) => _MODEntry.LogInfo(mes);
-        public static void logerr(string mes) => _MODEntry.LogError(mes);
-        private static readonly string currentVersion = _MODEntry.Version; // 当前MOD版本
-        private static readonly string versionInfoUrl = "https://api.github.com/repos/CH3NGYZ/Overcooked-2-HostUtilities/releases/latest"; // GitHub API的版本信息URL
-        public void Init()
-        {
-            logerr("init");
-            GetWebContent(versionInfoUrl);
-            logerr("init out");
-        }
+        public static VersionCheckClass Instance;
 
-        public static string GetWebContent(string url)
+        public void Awake()
         {
-            //throw new Exception("uihfuhfhsuifhuioshfgiuush");
+            Instance = this;
+        }
+        public void Start()
+        {
             try
             {
-                // 创建 WebClient 实例
-                using (WebClient client = new WebClient())
+                //_MODEntry.LogError("startCoroutine");
+                string versionInfoUrl = "https://api.github.com/repos/CH3NGYZ/Overcooked-2-HostUtilities/releases/latest";
+                StartCoroutine(SendWebRequest(versionInfoUrl));
+                //_MODEntry.LogError("stopCoroutine");
+            }
+            catch (Exception e)
+            {
+                _MODEntry.LogError(e.Message);
+                _MODEntry.LogError(e.StackTrace);
+            }
+        }
+
+        private IEnumerator SendWebRequest(string url)
+        {
+            using (UnityWebRequest request = UnityWebRequest.Get(url))
+            {
+                request.SetRequestHeader("User-Agent", "request");
+                yield return request.SendWebRequest();
+                //Dictionary<string, string> responseHeaders = request.GetResponseHeaders();
+                //_MODEntry.LogInfo("All Response Headers:");
+                //foreach (var header in responseHeaders)
+                //{
+                //    _MODEntry.LogInfo($"{header.Key}: {header.Value}");
+                //}
+
+                if (request.responseCode == 200)
                 {
-                    // 使用 DownloadString 方法下载指定 URL 的内容
-                    string content = client.DownloadString(url);
-                    _MODEntry.LogInfo($"{content}");
-                    // 返回下载的内容
-                    return content;
+                    //_MODEntry.LogInfo("Response: " + request.downloadHandler.text);
+                    ReleaseInfo versionInfo = JsonUtility.FromJson<ReleaseInfo>(request.downloadHandler.text);
+                    string latestVersion = versionInfo.tag_name.Replace("v", "");
+                    string releaseNote = versionInfo.body;
+                    _MODEntry.LogInfo($"version {latestVersion}");
+                    _MODEntry.LogInfo($"release {releaseNote}");
+                    if (IsNewVersionAvailable(_MODEntry.Version, latestVersion))
+                    {
+                        _MODEntry.ShowWarningDialog($"街机主机MOD有更新! 请打开安装器进行更新! 最新版更新日志: {releaseNote}");
+                    }
+                }
+                else if (request.responseCode == 403)
+                {
+                    string ts = request.GetResponseHeader("X-RateLimit-Reset");
+                    if (long.TryParse(ts, out long number))
+                    {
+                        DateTime dateTime = UnixTimeStampToDateTime(number);
+                        DateTime utcPlus8Time = dateTime.ToUniversalTime().AddHours(8);
+                        string formattedDateTime = utcPlus8Time.ToString("yyyy/MM/dd hh:mm:ss tt");
+                        _MODEntry.LogError($"请求更新API访问达到限制, 恢复时间: {formattedDateTime}");
+                    }
+                }
+                else
+                {
+                    _MODEntry.LogError($"未知错误 code:{request.responseCode}, mess:{request.error}");
                 }
             }
-            catch (WebException e)
-            {
-                // 如果请求失败，捕获异常并打印错误信息
-                _MODEntry.LogError($"Error: {e.Message}");
-                return null;
-            }
+        }
+        public static DateTime UnixTimeStampToDateTime(long unixTimeStamp)
+        {
+            DateTime unixStartTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            return unixStartTime.AddSeconds(unixTimeStamp);
         }
 
         private static bool IsNewVersionAvailable(string currentVersion, string latestVersion)
@@ -341,30 +360,13 @@ namespace HostUtilities
             System.Version latest = new System.Version(latestVersion);
             return latest > current;
         }
-    }
 
-    public static class WebContentFetcher
-    {
-        public static string GetWebContent(string url)
+        [System.Serializable]
+        public class ReleaseInfo
         {
-            try
-            {
-                // 创建 WebClient 实例
-                using (WebClient client = new WebClient())
-                {
-                    // 使用 DownloadString 方法下载指定 URL 的内容
-                    string content = client.DownloadString(url);
-
-                    // 返回下载的内容
-                    return content;
-                }
-            }
-            catch (WebException e)
-            {
-                // 如果请求失败，捕获异常并打印错误信息
-                _MODEntry.LogError($"Error: {e.Message}");
-                return null;
-            }
+            public string tag_name;
+            public string body;
         }
     }
+
 }
