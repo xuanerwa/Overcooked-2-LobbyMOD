@@ -175,6 +175,11 @@ namespace HostUtilities
         {
             try
             {
+                if (LevelEdit.doOrigin)
+                {
+                    LevelEdit.doOrigin = false;
+                    return true;
+                }
                 if (_MODEntry.IsSelectedAndPlay)
                 {
                     log("开始指定关卡, 不执行关卡编辑逻辑");

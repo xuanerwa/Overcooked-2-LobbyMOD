@@ -24,6 +24,8 @@ namespace HostUtilities
         private static bool onlyKevin;
         private static bool notKevin;
 
+        public static bool doOrigin = false;
+
 
         public static void Awake()
         {
@@ -191,6 +193,7 @@ namespace HostUtilities
             else
             {
                 log($"开始关卡编辑逻辑, 但已选择具体主题, 使用原逻辑");
+                LevelEdit.doOrigin = true;
                 __instance.PickLevel(_theme);
             }
         }
