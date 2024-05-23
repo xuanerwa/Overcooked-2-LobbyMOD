@@ -3,8 +3,11 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using Team17.Online;
 using UnityEngine;
+using static ClientPortalMapNode;
 
 
 namespace HostUtilities
@@ -12,14 +15,14 @@ namespace HostUtilities
     public class LevelEdit
     {
         public static Harmony HarmonyInstance { get; set; }
-        public static void log(string mes) => _MODEntry.LogInfo(mes);
-        public static ConfigEntry<KeyCode> resetTimer;
-        public static ConfigEntry<KeyCode> PlayRandom;
+        private static void log(string mes) => _MODEntry.LogInfo(mes);
+        private static ConfigEntry<KeyCode> resetTimer;
+        private static ConfigEntry<KeyCode> PlayRandom;
         public static ConfigEntry<bool> kevinEnabled;
-        public static bool onlyKevin;
-        public static bool notKevin;
-        public static bool onlyCarnival3_4;
-        public static bool onlyBeach3_4;
+        private static bool onlyKevin_;
+        private static bool notKevin_;
+        private static bool onlyKevin;
+        private static bool notKevin;
 
 
         public static void Awake()
@@ -29,15 +32,14 @@ namespace HostUtilities
 
             PlayRandom = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "08-大厅计时器归零", KeyCode.Alpha6, "4秒后直接开始随机关卡");
             resetTimer = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "09-大厅计时器45秒", KeyCode.Alpha7, "重置街机大厅时间为45秒");
-            kevinEnabled = _MODEntry.Instance.Config.Bind<bool>("02-修改关卡", "02区域总开关(以下四个选项互斥)", true);
+            kevinEnabled = _MODEntry.Instance.Config.Bind<bool>("02-修改关卡", "00-开启关卡自定义功能", false);
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             _MODEntry.AllHarmony.Add(HarmonyInstance);
             _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
         }
+
         public static void Update()
         {
-            //街机凯文
-            //开始随机关卡
             if (Input.GetKeyDown(PlayRandom.Value))
             {
                 if (!_MODEntry.IsHost)
@@ -45,35 +47,8 @@ namespace HostUtilities
                     _MODEntry.ShowWarningDialog("你不是主机，别点啦");
                     return;
                 }
-                //LobbyManager lobbyManager = new LobbyManager();
-                //ServerLobbyFlowController instance = ServerLobbyFlowController.Instance;
-                //if (instance != null)
-                //{
-                //    int num = 0;
-                //    while ((long)num < (long)(ulong)OnlineMultiplayerConfig.MaxPlayers)
-                //    {
-                //        instance.SelectTheme(SceneDirectoryData.LevelTheme.Random, num);
-                //        LobbyFlowController.LobbyState? serverLobbyState = lobbyManager.ServerLobbyState;
-                //        LobbyFlowController.LobbyState lobbyState = LobbyFlowController.LobbyState.LocalThemeSelection;
-                //        if (serverLobbyState.GetValueOrDefault() == lobbyState & serverLobbyState != null)
-                //        {
-                //            lobbyManager.SetServerLobbyState(LobbyFlowController.LobbyState.LocalThemeSelected);
-                //        }
-                //        else
-                //        {
-                //            serverLobbyState = lobbyManager.ServerLobbyState;
-                //            lobbyState = LobbyFlowController.LobbyState.OnlineThemeSelection;
-                //            if (serverLobbyState.GetValueOrDefault() == lobbyState & serverLobbyState != null)
-                //            {
-                //                lobbyManager.SetServerLobbyState(LobbyFlowController.LobbyState.OnlineThemeSelected);
-                //            }
-                //        }
-                //        num++;
-                //    }
-                //}
-                MServerLobbyFlowController.ResetServerLobbyTimer(0f);
+                MServerLobbyFlowController.ResetServerLobbyTimer(0.1f);
             }
-            //重置街机大厅时间
             else if (Input.GetKeyDown(resetTimer.Value))
             {
                 if (!_MODEntry.IsHost)
@@ -84,54 +59,39 @@ namespace HostUtilities
                 log("重置街机大厅时间");
                 MServerLobbyFlowController.ResetServerLobbyTimer(45f);
             }
+            EnsureMutuallyExclusiveOptions();
+        }
 
 
-            bool onlyKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value;
-            bool notKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value;
-            bool onlyCarnival3_4_ = MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value;
-            bool onlyBeach3_4_ = MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value;
+        static void EnsureMutuallyExclusiveOptions()
+        {
+            // 读取当前的选项值
+            bool currentOnlyKevin = MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value;
+            bool currentNotKevin = MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value;
 
-            //凯文,麻,海 选项4选1
-            //任意两个为true
-            if ((onlyKevin_ && notKevin_) || (onlyKevin_ && onlyCarnival3_4_) || (onlyKevin_ && onlyBeach3_4_) || (notKevin_ && onlyCarnival3_4_) || (notKevin_ && onlyBeach3_4_) || (onlyCarnival3_4_ && onlyBeach3_4_))
+            // 凯文2选1逻辑
+            if (currentOnlyKevin && currentNotKevin)
             {
-                //谁和之前不一样
-                if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value != onlyCarnival3_4)
-                {
-                    //不一样的为true, 其他的为false
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value = true;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value = false;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value = false;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value = false;
-                }
-                else if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value != onlyBeach3_4)
-                {
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value = true;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value = false;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value = false;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value = false;
-
-                }
-                else if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value != onlyKevin)
+                // 检查并设置互斥逻辑
+                if (currentOnlyKevin != onlyKevin_)
                 {
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value = true;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value = false;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value = false;
                     MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value = false;
                 }
-                else if (MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value != notKevin)
+                else if (currentNotKevin != notKevin_)
                 {
                     MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value = true;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value = false;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value = false;
                     MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value = false;
                 }
             }
-            //保存现在的状态供下次使用
-            onlyKevin = MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value;
-            notKevin = MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value;
-            onlyCarnival3_4 = MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value;
-            onlyBeach3_4 = MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value;
+
+            // 更新缓存的值
+            onlyKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value;
+            notKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value;
+
+            // 更新全局变量
+            onlyKevin = onlyKevin_;
+            notKevin = notKevin_;
         }
 
         [HarmonyPostfix]
@@ -150,50 +110,16 @@ namespace HostUtilities
                 MServerLobbyFlowController.sceneDisableConfigEntries["07-关闭咸咸马戏团凯文"].Value = false;
             }
         }
-
-        //选关patch
-        [HarmonyPatch(typeof(ServerLobbyFlowController), "PickLevel")]
-        [HarmonyPrefix]
-        private static bool ServerLobbyFlowController_PickLevel_Prefix(ref ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
-        {
-            try
-            {
-                //AddCleanDishes.plateOrGlassNum = 0;
-                if (_MODEntry.IsSelectedAndPlay)
-                {
-                    //log("已经选关,不执行原函数");
-                    return false;
-                }
-                if (!kevinEnabled.Value)
-                {
-                    log("关卡编辑未启用");
-                    return true;
-                }
-                MServerLobbyFlowController.MPickLevel(__instance, _theme);
-            }
-            catch (Exception e)
-            {
-                _MODEntry.LogError($"An error occurred: \n{e.Message}");
-                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
-            }
-            return false;
-        }
-
-
-
-
-        private static readonly AccessTools.FieldRef<ServerLobbyFlowController, bool> m_bIsCoop_server = AccessTools.FieldRefAccess<ServerLobbyFlowController, bool>("m_bIsCoop");
-
     }
 
     public class MServerLobbyFlowController
     {
+        private static void log(string mes) => _MODEntry.LogInfo(mes);
         public static Dictionary<string, ConfigEntry<bool>> sceneDisableConfigEntries = new Dictionary<string, ConfigEntry<bool>>();
         public static Dictionary<string, bool> alreadyPlayedSet = new Dictionary<string, bool>();
+
         public static void CreateConfigEntries()
         {
-            CreateConfigEntry("02-修改关卡", "只玩麻3-4", false);
-            CreateConfigEntry("02-修改关卡", "只玩海3-4", false);
             CreateConfigEntry("02-修改关卡", "不玩凯文和小节关", true, "此选项打开时,02-禁用主题(凯文)下的所有开关,会被自动关闭.");
             CreateConfigEntry("02-修改关卡", "只玩凯文和小节关", false, "此选项打开时,02-禁用主题(非凯文)下的所有选项会失效,因为不玩普通关卡了.");
             CreateConfigEntry("02-禁用主题(凯文)", "01-关闭小节关");
@@ -253,47 +179,40 @@ namespace HostUtilities
             ServerLobbyFlowController.Instance.PickLevel(SceneDirectoryData.LevelTheme.Random);
         }
 
+
         public static void MPickLevel(ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
         {
-            _MODEntry.LogInfo($"街机凯文已启用, 选择的世界是{_theme}");
-            //Traverse Tvinstance = Traverse.Create(__instance);
-            Predicate<SceneDirectoryData.SceneDirectoryEntry> matchOnlyCarnival3_4 = (SceneDirectoryData.SceneDirectoryEntry entry) =>
+            if (_theme.Equals(SceneDirectoryData.LevelTheme.Random))
             {
-                return (entry.Label.Contains("DLC08Level12"));
-            };
-            Predicate<SceneDirectoryData.SceneDirectoryEntry> matchOnlyBeach3_4 = (SceneDirectoryData.SceneDirectoryEntry entry) =>
+                log($"开始关卡编辑逻辑, 选择的世界是{_theme}");
+                PickRandomWithEdit(__instance);
+                return;
+            }
+            else
             {
-                return (entry.Label.Contains("DLC02Level12"));
-            };
-            Predicate<SceneDirectoryData.SceneDirectoryEntry> matchScene = (SceneDirectoryData.SceneDirectoryEntry entry) =>
-            {
-                if (entry.Label.Contains("ThroneRoom") || entry.Label.Contains("TutorialLevel"))
-                {
-                    return false;
-                }
+                log($"开始关卡编辑逻辑, 但已选择具体主题, 使用原逻辑");
+                __instance.PickLevel(_theme);
+            }
+        }
 
-                if (entry.Theme == _theme || _theme == SceneDirectoryData.LevelTheme.Random)
-                {
-                    return true;
-                }
-                return false;
-            };
-            Predicate<SceneDirectoryData.SceneDirectoryEntry> matchAvailableInLobby = (SceneDirectoryData.SceneDirectoryEntry entry) =>
-            {
-                return entry.AvailableInLobby;
-            };
-            Predicate<SceneDirectoryData.SceneDirectoryEntry> matchOnlyKevin = (SceneDirectoryData.SceneDirectoryEntry entry) =>
-            {
-                return !entry.AvailableInLobby;
-            };
-            Predicate<SceneDirectoryData.SceneDirectoryEntry> match = (SceneDirectoryData.SceneDirectoryEntry entry) =>
+        private static void PickRandomWithEdit(ServerLobbyFlowController __instance)
+        {
+            Predicate<SceneDirectoryData.SceneDirectoryEntry> matchEdit = (SceneDirectoryData.SceneDirectoryEntry entry) =>
             {
 
                 if (entry.Label.Contains("ThroneRoom") || entry.Label.Contains("TutorialLevel"))
                 {
                     return false;
                 }
-
+                bool condition90 = true;
+                if (sceneDisableConfigEntries["不玩凯文和小节关"].Value == true)
+                {
+                    condition90 = entry.AvailableInLobby;
+                }
+                if (sceneDisableConfigEntries["只玩凯文和小节关"].Value == true)
+                {
+                    condition90 = !entry.AvailableInLobby;
+                }
                 bool condition1 = !sceneDisableConfigEntries["01-关闭世界1"].Value || !(entry.World == SceneDirectoryData.World.One && entry.AvailableInLobby);
                 bool condition2 = !sceneDisableConfigEntries["02-关闭世界2"].Value || !(entry.World == SceneDirectoryData.World.Two && entry.AvailableInLobby);
                 bool condition3 = !sceneDisableConfigEntries["03-关闭世界3"].Value || !(entry.World == SceneDirectoryData.World.Three && entry.AvailableInLobby);
@@ -325,25 +244,23 @@ namespace HostUtilities
                 bool shouldIncludeEntry = condition1 && condition2 && condition3 && condition4 && condition5 &&
                       condition6 && condition7 && condition8 && condition9 && condition10 && condition11 && condition12 &&
                       condition13 && condition14 && condition15 && condition16 && condition17 && condition18 && condition19 && condition20 &&
-                      condition21 && condition22 && condition23 && condition24 && condition25 && condition26 && condition27 && condition28;
+                      condition21 && condition22 && condition23 && condition24 && condition25 && condition26 && condition27 && condition28 &&
+                      condition90;
 
                 return shouldIncludeEntry;
             };
-            FastList<SceneDirectoryData.SceneDirectoryEntry> fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(60);
-            //LobbyFlowController m_lobbyFlow = Tvinstance.Field("m_lobbyFlow").GetValue<LobbyFlowController>();
-            LobbyFlowController m_lobbyFlow = ServerLobbyFlowController.Instance.m_lobbyFlow;
-            SceneDirectoryData[] sceneDirectories = m_lobbyFlow.GetSceneDirectories();
 
+            FastList<SceneDirectoryData.SceneDirectoryEntry> fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(60);
+            SceneDirectoryData[] sceneDirectories = __instance.m_lobbyFlow.GetSceneDirectories();
             DLCManager dlcmanager = GameUtils.RequireManager<DLCManager>();
             List<DLCFrontendData> allDlc = dlcmanager.AllDlc;
-            bool m_bIsCoop = ServerLobbyFlowController.Instance.m_bIsCoop;
-            GameSession.GameType gameType = (!m_bIsCoop) ? GameSession.GameType.Competitive : GameSession.GameType.Cooperative;
+            GameSession.GameType gameType = (!__instance.m_bIsCoop) ? GameSession.GameType.Competitive : GameSession.GameType.Cooperative;
             int[] array = new int[sceneDirectories.Length];
             for (int i = 0; i < sceneDirectories.Length; i++)
             {
                 DLCFrontendData dlcfrontendData = null;
-                int dlcidfromSceneDirIndex = m_lobbyFlow.GetDLCIDFromSceneDirIndex(gameType, i);
-                if (_theme == SceneDirectoryData.LevelTheme.Random)
+                int dlcidfromSceneDirIndex = __instance.m_lobbyFlow.GetDLCIDFromSceneDirIndex(gameType, i);
+                if (true)
                 {
                     for (int j = 0; j < allDlc.Count; j++)
                     {
@@ -357,104 +274,49 @@ namespace HostUtilities
                 }
                 if (dlcfrontendData == null || dlcmanager.IsDLCAvailable(dlcfrontendData))
                 {
-                    fastList.AddRange(sceneDirectories[i].Scenes.FindAll(match));
-                    fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(fastList.FindAll(matchScene).ToArray());
-                    if (sceneDisableConfigEntries["不玩凯文和小节关"].Value)
-                    {
-                        fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(fastList.FindAll(matchAvailableInLobby).ToArray());
-                    }
-                    else if (sceneDisableConfigEntries["只玩凯文和小节关"].Value)
-                    {
-                        fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(fastList.FindAll(matchOnlyKevin).ToArray());
-                    }
+                    fastList.AddRange(sceneDirectories[i].Scenes.FindAll(matchEdit));
                 }
-
                 array[i] = fastList.Count;
             }
+            log($"fastList.Count {fastList.Count}");
 
             if (fastList.Count == 0)
             {
-                _MODEntry.LogInfo($"未匹配到{_theme}里的关卡,随机全部关卡(带凯文)");
-                for (int i = 0; i < sceneDirectories.Length; i++)
-                {
-                    //Predicate<SceneDirectoryData.SceneDirectoryEntry> Random = (SceneDirectoryData.SceneDirectoryEntry entry) => !entry.Label.Contains("TutorialLevel") && !entry.Label.Contains("ThroneRoom");
-                    fastList.AddRange(sceneDirectories[i].Scenes.FindAll(matchAvailableInLobby));
-                    //fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(fastList.FindAll(matchAvailableInLobby).ToArray());
-                    array[i] = fastList.Count;
-                }
-            }
-
-            if (sceneDisableConfigEntries["只玩麻3-4"].Value)
-            {
-                fastList.Clear();
-                _MODEntry.LogInfo("只玩麻3-4");
-                for (int i = 0; i < sceneDirectories.Length; i++)
-                {
-                    fastList.AddRange(sceneDirectories[i].Scenes.FindAll(matchOnlyCarnival3_4));
-                    array[i] = fastList.Count;
-                }
-            }
-
-            else if (sceneDisableConfigEntries["只玩海3-4"].Value)
-            {
-                fastList.Clear();
-                _MODEntry.LogInfo("只玩海3-4");
-                for (int i = 0; i < sceneDirectories.Length; i++)
-                {
-                    fastList.AddRange(sceneDirectories[i].Scenes.FindAll(matchOnlyBeach3_4));
-                    array[i] = fastList.Count;
-                }
+                log("没有符合条件的关卡");
+                sceneDisableConfigEntries["01-关闭世界1"].Value = false;
+                sceneDisableConfigEntries["02-关闭世界2"].Value = false;
+                sceneDisableConfigEntries["03-关闭世界3"].Value = false;
+                sceneDisableConfigEntries["04-关闭世界4"].Value = false;
+                sceneDisableConfigEntries["05-关闭世界5"].Value = false;
+                sceneDisableConfigEntries["06-关闭世界6"].Value = false;
+                sceneDisableConfigEntries["07-关闭节庆大餐"].Value = false;
+                sceneDisableConfigEntries["07-关闭节庆大餐"].Value = false;
+                sceneDisableConfigEntries["08-关闭王朝餐厅"].Value = false;
+                sceneDisableConfigEntries["08-关闭王朝餐厅"].Value = false;
+                sceneDisableConfigEntries["09-关闭桃子游行"].Value = false;
+                sceneDisableConfigEntries["10-关闭幸运灯笼"].Value = false;
+                sceneDisableConfigEntries["11-关闭海滩"].Value = false;
+                sceneDisableConfigEntries["12-关闭烧烤度假村"].Value = false;
+                sceneDisableConfigEntries["13-关闭完美露营地"].Value = false;
+                sceneDisableConfigEntries["14-关闭美味树屋"].Value = false;
+                sceneDisableConfigEntries["15-关闭恐怖地宫"].Value = false;
+                sceneDisableConfigEntries["16-关闭惊悚庭院"].Value = false;
+                sceneDisableConfigEntries["17-关闭凶残城垛"].Value = false;
+                sceneDisableConfigEntries["18-关闭翻滚帐篷"].Value = false;
+                sceneDisableConfigEntries["19-关闭咸咸马戏团"].Value = false;
+                sceneDisableConfigEntries["01-关闭小节关"].Value = false;
+                sceneDisableConfigEntries["02-关闭主线凯文"].Value = false;
+                sceneDisableConfigEntries["03-关闭海滩凯文"].Value = false;
+                sceneDisableConfigEntries["04-关闭完美露营地凯文"].Value = false;
+                sceneDisableConfigEntries["05-关闭恐怖地宫凯文"].Value = false;
+                sceneDisableConfigEntries["06-关闭翻滚帐篷凯文"].Value = false;
+                sceneDisableConfigEntries["07-关闭咸咸马戏团凯文"].Value = false;
+                _MODEntry.ShowWarningDialog("没有符合的关卡, 已重置关卡编辑的开关, 请重新选择!");
+                __instance.PickLevel(SceneDirectoryData.LevelTheme.Random);
+                return;
             }
 
             int num = UnityEngine.Random.Range(0, fastList.Count);
-            for (int kkk = 0; kkk < fastList.Count; kkk++)
-            {
-                string Message = $"Filter: index: {kkk}   Theme: {fastList._items[kkk].Theme}   World: {fastList._items[kkk].World}  label:{fastList._items[kkk].Label}  AvailableInLobby:{fastList._items[kkk].AvailableInLobby}  IsHidden:{fastList._items[kkk].IsHidden}";
-                if (fastList._items[kkk].AvailableInLobby == false)
-                {
-                    _MODEntry.LogWarning(Message);
-                }
-                else
-                {
-                    _MODEntry.LogInfo(Message);
-                }
-            }
-            if (sceneDisableConfigEntries["街机关卡不重复"].Value && !(sceneDisableConfigEntries["只玩麻3-4"].Value || sceneDisableConfigEntries["只玩海3-4"].Value))
-            {
-                int count = 0;
-                for (int k = 0; k < fastList.Count; k++)
-                {
-                    if (!alreadyPlayedSet.ContainsKey(fastList._items[k].Label))
-                        alreadyPlayedSet.Add(fastList._items[k].Label, false);
-                    if (alreadyPlayedSet[fastList._items[k].Label])
-                        count++;
-                }
-                if (count == fastList.Count)
-                    for (int k = 0; k < fastList.Count; k++)
-                        alreadyPlayedSet[fastList._items[k].Label] = false;
-                if (count >= 128)
-                {
-                    for (int k = 0; k < fastList.Count; k++)
-                    {
-                        if (!alreadyPlayedSet[fastList._items[k].Label])
-                        {
-                            num = k;
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    while (alreadyPlayedSet[fastList._items[num].Label])
-                    {
-                        _MODEntry.LogInfo($"alreadyPlayed:{fastList._items[num].Label}");
-                        num = UnityEngine.Random.Range(0, fastList.Count);
-                    }
-                }
-            }
-            alreadyPlayedSet[fastList._items[num].Label] = true;
-            _MODEntry.LogInfo($"Picked: index: {num}   Theme: {fastList._items[num].Theme}   World: {fastList._items[num].World}  label:{fastList._items[num].Label}  AvailableInLobby:{fastList._items[num].AvailableInLobby}  IsHidden:{fastList._items[num].IsHidden}");
-
             int idx = -1;
             for (int k = 0; k < array.Length; k++)
             {
@@ -465,12 +327,18 @@ namespace HostUtilities
                 }
             }
 
+            for (int i = 0; i < fastList.Count; i++)
+            {
+                log($"index {i}  name {LevelSelector.GetLevelName(fastList._items[i])}");
+            }
+            log($"num {num}  idx {idx} name {LevelSelector.GetLevelName(fastList._items[num])}");
+
             SceneDirectoryData.SceneDirectoryEntry sceneDirectoryEntry = fastList._items[num];
-            int dlcidfromSceneDirIndex2 = m_lobbyFlow.GetDLCIDFromSceneDirIndex(gameType, idx);
+            int dlcidfromSceneDirIndex2 = __instance.m_lobbyFlow.GetDLCIDFromSceneDirIndex(gameType, idx);
             SceneDirectoryData.PerPlayerCountDirectoryEntry sceneVarient = sceneDirectoryEntry.GetSceneVarient(ServerUserSystem.m_Users.Count);
             if (sceneVarient == null)
             {
-                if (!m_bIsCoop)
+                if (!__instance.m_bIsCoop)
                 {
                     T17DialogBox dialog = T17DialogBoxManager.GetDialog(false);
                     dialog.Initialize("Text.Versus.NotEnoughPlayers.Title", "Text.Versus.NotEnoughPlayers.Message", "Text.Button.Confirm", null, null, T17DialogBox.Symbols.Warning, true, true, false);
@@ -490,41 +358,7 @@ namespace HostUtilities
                 }
                 return;
             }
-            ServerLobbyFlowController.Instance.m_delayedLevelLoad = ServerLobbyFlowController.Instance.StartCoroutine(ServerLobbyFlowController.Instance.DelayedLevelLoad(sceneVarient.SceneName, dlcidfromSceneDirIndex2));
-        }
-    }
-
-    public class LobbyManager
-    {
-        public unsafe LobbyFlowController.LobbyState? ServerLobbyState
-        {
-            get
-            {
-                ServerLobbyFlowController instance = ServerLobbyFlowController.Instance;
-                if (instance == null)
-                {
-                    return null;
-                }
-                return instance.m_state;
-            }
-        }
-
-        public void SetServerLobbyState(LobbyFlowController.LobbyState state)
-        {
-            try
-            {
-                ServerLobbyFlowController instance = ServerLobbyFlowController.Instance;
-                if (instance == null)
-                {
-                    return;
-                }
-                instance.SetState(state);
-            }
-            catch (Exception e)
-            {
-                _MODEntry.LogError(e.Message);
-                _MODEntry.LogError(e.StackTrace);
-            }
+            __instance.m_delayedLevelLoad = __instance.StartCoroutine(__instance.DelayedLevelLoad(sceneVarient.SceneName, dlcidfromSceneDirIndex2));
         }
     }
 }

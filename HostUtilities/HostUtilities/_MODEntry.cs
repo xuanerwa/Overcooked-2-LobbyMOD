@@ -13,11 +13,11 @@ using UnityEngine.Networking;
 using System.Diagnostics;
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.69")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.70")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.69";
+        public static string Version = "1.0.70";
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
@@ -234,7 +234,6 @@ namespace HostUtilities
                     if (_MODEntry.CurrentSteamID.m_SteamID.Equals(76561199191224186) && !IsAuthor)
                     {
                         IsAuthor = true;
-                        //Recipe.Awake();
                         ModifyMaxActiveOrders.Awake();
                         FixHeatedPosition.Awake();
                     }

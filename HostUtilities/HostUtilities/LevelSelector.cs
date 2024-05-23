@@ -26,7 +26,7 @@ namespace HostUtilities
 
         public static void Awake()
         {
-            startSelectedLevel = _MODEntry.Instance.Config.Bind<KeyCode>("00-选关", "00-4秒后开始选定关卡", KeyCode.F5, "开始玩已选的关卡");
+            startSelectedLevel = _MODEntry.Instance.Config.Bind<KeyCode>("02-选择关卡", "01-点击立即开始", KeyCode.F5);
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             _MODEntry.AllHarmony.Add(HarmonyInstance);
             _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
@@ -90,9 +90,6 @@ namespace HostUtilities
                         }
                         player_index++;
                     }
-
-                    //ServerLobbyFlowController.Instance.ResetTimer(0);
-                    //_MODEntry.ShowWarningDialog("4秒后自动开始选择的关卡, 请不要重复点击按键, 点击继续关闭");
                 }
                 FastList<SceneDirectoryData.SceneDirectoryEntry> fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(60);
                 SceneDirectoryData[] sceneDirectories = Instance.m_lobbyFlow.GetSceneDirectories();
@@ -172,13 +169,6 @@ namespace HostUtilities
             }
         }
 
-        //[HarmonyPrefix]
-        //[HarmonyPatch(typeof(ClientDynamicLandscapeParenting), "Awake")]
-        //public static void ClientDynamicLandscapeParenting_Awake_Patch(ClientDynamicLandscapeParenting __instance)
-        //{
-        //    log($"----------------------------------{GameUtils.GetLevelConfig()}");
-        //}
-
         [HarmonyPatch(typeof(ServerLobbyFlowController), "PickLevel")]
         [HarmonyPrefix]
         private static bool ServerLobbyFlowController_PickLevel_Prefix(ref ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
@@ -187,10 +177,17 @@ namespace HostUtilities
             {
                 if (_MODEntry.IsSelectedAndPlay)
                 {
-                    log("已经开始指定关卡,不执行原开始关卡函数");
+                    log("开始指定关卡, 不执行关卡编辑逻辑");
                     _MODEntry.IsSelectedAndPlay = false;
                     return false;
                 }
+                if (LevelEdit.kevinEnabled.Value)
+                {
+                    log("开始关卡编辑逻辑, 不执行原函数");
+                    MServerLobbyFlowController.MPickLevel(__instance, _theme);
+                    return false;
+                }
+                log("没选关, 编辑也没开, 执行原函数.");
                 return true;
             }
             catch (Exception e)
@@ -238,7 +235,7 @@ namespace HostUtilities
                     strList.Add(LevelName);
                 }
                 string[] strArray = strList.ToArray();
-                ValueList = _MODEntry.Instance.Config.Bind<string>("00-选关", "选择关卡", strArray[0], new ConfigDescription("选择关卡", new AcceptableValueList<string>(strArray)));
+                ValueList = _MODEntry.Instance.Config.Bind<string>("02-选择关卡", "00-请先选择关卡", strArray[0], new ConfigDescription("选择关卡", new AcceptableValueList<string>(strArray)));
                 log(ValueList.Value);
             }
             catch (Exception e)
