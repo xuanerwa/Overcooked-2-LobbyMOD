@@ -8,16 +8,18 @@ using System.Collections.Generic;
 using System.Reflection;
 using Team17.Online;
 using UnityEngine;
-using System.IO;
 using UnityEngine.Networking;
-using System.Diagnostics;
+using SimpleJSON;
+using Version = System.Version;
+using UnityEngine.UI;
+
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.72")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.73")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.72";
+        public static string Version = "1.0.73";
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
@@ -251,7 +253,6 @@ namespace HostUtilities
             T17DialogBox dialog = T17DialogBoxManager.GetDialog(false);
             if (dialog != null)
             {
-                dialog.Initialize("Text.Warning", "\"" + message.Replace("\n\n", "\n") + "\"", "Text.Button.Continue", string.Empty, string.Empty, T17DialogBox.Symbols.Warning, true, true, false);
                 dialog.Show();
             }
         }
@@ -267,20 +268,21 @@ namespace HostUtilities
 
     public class VersionCheckClass : MonoBehaviour
     {
+        public static void log(string mes) => _MODEntry.LogInfo(mes);
         public static VersionCheckClass Instance;
+        private string githubtoken = string.Empty;
 
         public void Awake()
         {
             Instance = this;
         }
+
         public void Start()
         {
             try
             {
-                //_MODEntry.LogError("startCoroutine");
-                string versionInfoUrl = "https://api.github.com/repos/CH3NGYZ/Overcooked-2-HostUtilities/releases/latest";
+                string versionInfoUrl = "https://api.github.com/repos/CH3NGYZ/Overcooked-2-HostUtilities/releases?per_page=30";
                 StartCoroutine(SendWebRequest(versionInfoUrl));
-                //_MODEntry.LogError("stopCoroutine");
             }
             catch (Exception e)
             {
@@ -294,94 +296,79 @@ namespace HostUtilities
             using (UnityWebRequest request = UnityWebRequest.Get(url))
             {
                 request.SetRequestHeader("User-Agent", "request");
-                yield return request.SendWebRequest();
+                request.SetRequestHeader("accept", "application/vnd.github+json");
 
-                //Dictionary<string, string> responseHeaders = request.GetResponseHeaders();
-                //_MODEntry.LogInfo("All Response Headers:");
-                //foreach (var header in responseHeaders)
-                //{
-                //    _MODEntry.LogInfo($"{header.Key}: {header.Value}");
-                //}
+                if (githubtoken != string.Empty)
+                {
+                    request.SetRequestHeader("Authorization", $"token {githubtoken}");
+                }
+
+                yield return request.SendWebRequest();
 
                 if (request.responseCode == 200)
                 {
-                    _MODEntry.LogInfo("Response: " + request.downloadHandler.text);
-                    ReleaseInfo versionInfo = JsonUtility.FromJson<ReleaseInfo>(request.downloadHandler.text);
-                    string latestVersion = versionInfo.tag_name.Replace("v", "");
-                    string releaseNote = versionInfo.body;
-                    _MODEntry.LogInfo($"version {latestVersion}");
-                    _MODEntry.LogInfo($"release {releaseNote}");
-                    if (IsNewVersionAvailable(_MODEntry.Version, latestVersion))
+                    JSONNode jsonArray = JSON.Parse(request.downloadHandler.text);
+                    Dictionary<Version, string> versionBodyDict = new Dictionary<Version, string>();
+                    foreach (JSONNode node in jsonArray)
                     {
-                        string ignoreVersion;
-                        string ignoreFilePath = "ignoreVersion.txt";
+                        string tagName = node["tag_name"].Value;
+                        if (tagName == "BepInEx") continue;
+                        string body = node["body"].Value;
+                        tagName = tagName.Replace("v", "");
+                        Version version = new Version(tagName);
+                        versionBodyDict.Add(version, body);
+                    }
 
-                        if (File.Exists(ignoreFilePath))
+                    //读取当前版本号以及最新版本号
+                    Version latestVersion = new Version("1.0.0");
+                    foreach (var entry in versionBodyDict)
+                    {
+                        log(entry.Key.ToString());
+                        latestVersion = entry.Key;
+                        break;
+                    }
+                    Version currentVersion = new Version(_MODEntry.Version);
+                    log(currentVersion.ToString());
+                    log(latestVersion.ToString());
+
+                    // 输出从当前版本到最新版本之间的所有更新
+                    bool isUpdateAvailable = false;
+                    string updateLog = "";
+                    for (Version ver = currentVersion; ver < latestVersion; ver = new Version(ver.Major, ver.Minor, ver.Build + 1))
+                    {
+                        if (versionBodyDict.ContainsKey(ver))
                         {
-                            try
-                            {
-                                string fileContent = File.ReadAllText(ignoreFilePath);
-                                ignoreVersion = fileContent.Replace(" ", "").Replace("\n", "").Replace("\r", "");
-                            }
-                            catch (Exception e)
-                            {
-                                _MODEntry.LogError($"An error occurred while reading the file: {e.Message}");
-                                ignoreVersion = null;
-                            }
+                            isUpdateAvailable = true;
+                            updateLog += versionBodyDict[ver]+"更多版本间更新内容, 请打开安装器查看";
+                            break;
                         }
-                        else
-                        {
-                            ignoreVersion = null;
-                        }
+                    }
 
-
-                        if (ignoreVersion != null && ignoreVersion == latestVersion)
-                        {
-                            UI_DisplayModName.cornerMessage += $"Ignored Upd v{latestVersion}";
-                            yield break;
-                        }
-
+                    if (isUpdateAvailable)
+                    {
                         T17DialogBox dialog = T17DialogBoxManager.GetDialog(false);
                         if (dialog != null)
                         {
-                            dialog.Initialize("街机MOD有更新!", $"更新日志:{releaseNote}".Replace("\n\n", "\n").Replace("\"", "\'"), "Text.Button.Okay", "Text.Button.Discard", "Text.Button.Cancel", T17DialogBox.Symbols.Warning, false, false, false);
-                            dialog.Show();
+                            dialog.Initialize($"街机MOD有更新! {currentVersion} to {latestVersion} ", updateLog.EndsWith("\n") ? updateLog.Substring(0, updateLog.Length - 1) : updateLog, "Text.Button.Okay", string.Empty, "Text.Button.Cancel", T17DialogBox.Symbols.Warning, false, false, false);
+                            dialog.SetButtonText(dialog.m_ConfirmButton, "更新");
+                            dialog.SetButtonText(dialog.m_CancelButton, "取消");
                             dialog.OnConfirm += () =>
                             {
-                                if (File.Exists("厨房MOD安装器.exe"))
-                                {
-                                    Process.Start("厨房MOD安装器.exe");
-                                }
-                                else
-                                {
-                                    _MODEntry.ShowWarningDialog("厨房MOD安装器.exe 不存在, 请手动从厨房根目录打开更新.");
-                                    _MODEntry.LogError("厨房MOD安装器.exe 不存在, 请手动从厨房根目录打开更新.");
-                                    UI_DisplayModName.cornerMessage += $"Installer NotExist Upd v{latestVersion}";
-                                }
+                                _MODEntry.ShowWarningDialog("您必须手动打开安装器来更新街机MOD!");
+                                Application.Quit();
                             };
                             dialog.OnCancel += () =>
                             {
-                                _MODEntry.LogError("Cancel");
-                                UI_DisplayModName.cornerMessage += $"Cancel Upd v{latestVersion}";
+                                UI_DisplayModName.cornerMessage += $"Cancel Upd {latestVersion}";
                             };
-                            dialog.OnDecline += () =>
-                            {
-                                _MODEntry.LogError("Decline");
-                                try
-                                {
-                                    UI_DisplayModName.cornerMessage += $"Ignored Upd v{latestVersion}";
-                                    File.WriteAllText(ignoreFilePath, latestVersion);
-                                }
-                                catch (Exception e)
-                                {
-                                    _MODEntry.LogError($"An error occurred while writing the file: {e.Message}");
-                                }
-                            };
+                            dialog.Show();
                         }
+                        Debug.Log("Update Log from " + currentVersion + " to " + latestVersion + ":");
+                        Debug.Log(updateLog);
                     }
                     else
                     {
-                        UI_DisplayModName.cornerMessage += "Latest";
+                        Debug.Log("No updates available.");
                     }
                 }
                 else if (request.responseCode == 403)
@@ -401,7 +388,10 @@ namespace HostUtilities
                     _MODEntry.LogError($"未知错误 code:{request.responseCode}, mess:{request.error}");
                     UI_DisplayModName.cornerMessage += $"Failed {request.error}";
                 }
+                log("state 5 End");
             }
+            log("state 6 End");
+
         }
         public static DateTime UnixTimeStampToDateTime(long unixTimeStamp)
         {
@@ -415,13 +405,5 @@ namespace HostUtilities
             System.Version latest = new System.Version(latestVersion);
             return latest > current;
         }
-
-        [System.Serializable]
-        public class ReleaseInfo
-        {
-            public string tag_name;
-            public string body;
-        }
     }
-
 }

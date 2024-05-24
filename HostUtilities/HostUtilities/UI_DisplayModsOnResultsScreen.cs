@@ -145,30 +145,6 @@ namespace HostUtilities
                         modsDisplay.m_Text += "\n不玩凯文和小节关";
                         shouldNtDisplayKevinState = false; //不输出凯文状态
                     }
-                    if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩麻3-4"].Value)
-                    {
-                        modsDisplay.m_Text += "\n------以下为自定义特殊关卡:";
-                        modsDisplay.m_Text += "\n只玩麻3-4";
-                        modsDisplay.m_Text += "\n请不要一直在街机内选麻3-4!" +
-                            "\n此功能只是给豪车一个麻团的机会," +
-                            "\n不是让你在街机练习!" +
-                            "\n考虑一下别人的感受!" +
-                            "\n想练习去steam群组叫车好吧?";
-                        shouldNtDisplayKevinState = false; //只玩麻, 则不输出凯文状态
-                        shouldNtDisplayNormalState = false; //也不输出普通状态
-                    }
-                    if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩海3-4"].Value)
-                    {
-                        modsDisplay.m_Text += "\n------以下为自定义特殊关卡:";
-                        modsDisplay.m_Text += "\n只玩海3-4";
-                        modsDisplay.m_Text += "\n请不要一直在街机内选海3-4!" +
-                            "\n此功能只是给豪车一个打海的机会," +
-                            "\n不是让你在街机练习!" +
-                            "\n考虑一下别人的感受!" +
-                            "\n想练习去steam群组叫车好吧?";
-                        shouldNtDisplayKevinState = false; //只玩海, 则不输出凯文状态
-                        shouldNtDisplayNormalState = false; //也不输出普通状态
-                    }
                     if (shouldNtDisplayKevinState)
                     {
 
