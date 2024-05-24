@@ -31,13 +31,9 @@ jobs:
           git clone https://github.com/CH3NGYZ/Overcooked-2-HostUtilities-ResourceFiles.git
           mkdir -p CHA\Audio
       
-          Copy-Item -Path "$Env:GITHUB_WORKSPACE\HostUtilities\HostUtilities\bin\Release\HostUtilities.dll" -Destination Overcooked-2-HostUtilities-ResourceFiles -Force
-          Copy-Item -Path "$Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\HostUtilities.dll" -Destination CHA -Force
-          Copy-Item -Path "$Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\ConfigurationManager.dll" -Destination CHA -Force
-          Copy-Item -Path "$Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\ConfigurationManager.xml" -Destination CHA -Force
-          Copy-Item -Path "$Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\ConfigurationManagerAttributes.cs" -Destination CHA -Force
-          Copy-Item -Path "$Env:GITHUB_WORKSPACE\Overcooked-2-HostUtilities-ResourceFiles\Audio\*" -Destination CHA\Audio -Force
-      
+          Copy-Item -Path "HostUtilities\HostUtilities\bin\Release\HostUtilities.dll" -Destination Overcooked-2-HostUtilities-ResourceFiles -Force
+          Copy-Item -Path "Overcooked-2-HostUtilities-ResourceFiles\*" -Destination CHA -Force
+          Copy-Item -Path "Overcooked-2-HostUtilities-ResourceFiles\Audio\*" -Destination CHA\Audio -Force
           Compress-Archive -Path "$Env:GITHUB_WORKSPACE\CHA" -DestinationPath "$Env:GITHUB_WORKSPACE\CHA.zip"
 
       - name: Show CHA Folder
