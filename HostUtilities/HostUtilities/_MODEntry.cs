@@ -15,11 +15,11 @@ using UnityEngine.UI;
 
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.73")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.74")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.73";
+        public static string Version = "1.0.74";
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
