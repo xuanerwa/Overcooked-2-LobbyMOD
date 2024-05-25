@@ -15,11 +15,11 @@ using UnityEngine.UI;
 
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.74")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.75")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.74";
+        public static string Version = "1.0.75";
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
@@ -253,6 +253,7 @@ namespace HostUtilities
             T17DialogBox dialog = T17DialogBoxManager.GetDialog(false);
             if (dialog != null)
             {
+                dialog.Initialize("Text.Warning", "\"" + message.Replace("\n\n", "\n") + "\"", "Text.Button.Continue", string.Empty, string.Empty, T17DialogBox.Symbols.Warning, true, true, false);
                 dialog.Show();
             }
         }
@@ -363,12 +364,13 @@ namespace HostUtilities
                             };
                             dialog.Show();
                         }
-                        Debug.Log("Update Log from " + currentVersion + " to " + latestVersion + ":");
-                        Debug.Log(updateLog);
+                        _MODEntry.LogInfo("Update Log from " + currentVersion + " to " + latestVersion + ":");
+                        _MODEntry.LogInfo(updateLog);
                     }
                     else
                     {
-                        Debug.Log("No updates available.");
+                        UI_DisplayModName.cornerMessage += "Latest";
+                        _MODEntry.LogInfo("No updates available.");
                     }
                 }
                 else if (request.responseCode == 403)
