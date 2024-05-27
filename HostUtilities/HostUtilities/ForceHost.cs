@@ -3,7 +3,6 @@ using HarmonyLib;
 using System;
 using System.Reflection;
 using Team17.Online;
-using UnityEngine;
 
 namespace HostUtilities
 {
@@ -19,7 +18,7 @@ namespace HostUtilities
         };
         public static void Awake()
         {
-            ValueList = _MODEntry.Instance.Config.Bind<string>("00-功能开关", "切换默认主机/客机角色:", strList[0], new ConfigDescription("选择状态", new AcceptableValueList<string>(strList)));
+            ValueList = _MODEntry.Instance.Config.Bind<string>("01-功能开关", "00-切换默认主机/客机角色:", strList[0], new ConfigDescription("选择状态", new AcceptableValueList<string>(strList)));
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             _MODEntry.AllHarmony.Add(HarmonyInstance);
             _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);

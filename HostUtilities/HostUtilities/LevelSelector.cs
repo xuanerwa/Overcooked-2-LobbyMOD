@@ -4,14 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.RegularExpressions;
 using Team17.Online;
 using UnityEngine;
-using UnityEngine.UI;
-using static DataStore;
-using static GameSession;
 using static SceneDirectoryData;
 
 namespace HostUtilities
@@ -26,7 +20,7 @@ namespace HostUtilities
 
         public static void Awake()
         {
-            startSelectedLevel = _MODEntry.Instance.Config.Bind<KeyCode>("02-选择关卡", "01-点击立即开始", KeyCode.F5);
+            startSelectedLevel = _MODEntry.Instance.Config.Bind<KeyCode>("03-选择关卡", "01-点击立即开始", KeyCode.F5);
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             _MODEntry.AllHarmony.Add(HarmonyInstance);
             _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
@@ -165,7 +159,7 @@ namespace HostUtilities
                     return;
                 }
                 Instance.m_delayedLevelLoad = Instance.StartCoroutine(Instance.DelayedLevelLoad(sceneVarient.SceneName, dlcidfromSceneDirIndex2));
-                log($"场景名 {sceneVarient.SceneName}  dlcidfromSceneDirIndex2:{dlcidfromSceneDirIndex2}");
+                log($"picked {sceneVarient.SceneName}  dlcidfromSceneDirIndex2:{dlcidfromSceneDirIndex2}");
             }
         }
 
@@ -240,7 +234,7 @@ namespace HostUtilities
                     strList.Add(LevelName);
                 }
                 string[] strArray = strList.ToArray();
-                ValueList = _MODEntry.Instance.Config.Bind<string>("02-选择关卡", "00-请先选择关卡", strArray[0], new ConfigDescription("选择关卡", new AcceptableValueList<string>(strArray)));
+                ValueList = _MODEntry.Instance.Config.Bind<string>("03-选择关卡", "00-请先选择关卡", strArray[0], new ConfigDescription("选择关卡", new AcceptableValueList<string>(strArray)));
                 log(ValueList.Value);
             }
             catch (Exception e)

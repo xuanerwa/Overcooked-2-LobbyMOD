@@ -11,15 +11,14 @@ using UnityEngine;
 using UnityEngine.Networking;
 using SimpleJSON;
 using Version = System.Version;
-using UnityEngine.UI;
 
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.75")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.76")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.75";
+        public static string Version = "1.0.76";
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
@@ -83,25 +82,6 @@ namespace HostUtilities
             }
         }
 
-        private void OnDestroy()
-        {
-            try
-            {
-                Instance = null;
-                for (int i = 0; i < AllHarmony.Count; i++)
-                {
-                    AllHarmony[i].UnpatchAll();
-                    LogWarning($"Unpatched {AllHarmonyName[i]}!");
-                }
-                AllHarmony.Clear();
-                AllHarmonyName.Clear();
-            }
-            catch (Exception e)
-            {
-                LogError($"An error occurred: \n{e.Message}");
-                LogError($"Stack trace: \n{e.StackTrace}");
-            }
-        }
 
         public void Update()
         {
@@ -119,6 +99,27 @@ namespace HostUtilities
                 UI_DisplayLatency.Update();
                 UI_DisplayModsOnResultsScreen.Update();
                 UI_DisplayModName.Update();
+            }
+            catch (Exception e)
+            {
+                LogError($"An error occurred: \n{e.Message}");
+                LogError($"Stack trace: \n{e.StackTrace}");
+            }
+        }
+
+
+        private void OnDestroy()
+        {
+            try
+            {
+                Instance = null;
+                for (int i = 0; i < AllHarmony.Count; i++)
+                {
+                    AllHarmony[i].UnpatchAll();
+                    LogWarning($"Unpatched {AllHarmonyName[i]}!");
+                }
+                AllHarmony.Clear();
+                AllHarmonyName.Clear();
             }
             catch (Exception e)
             {
@@ -324,13 +325,13 @@ namespace HostUtilities
                     Version latestVersion = new Version("1.0.0");
                     foreach (var entry in versionBodyDict)
                     {
-                        log(entry.Key.ToString());
+                        //log(entry.Key.ToString());
                         latestVersion = entry.Key;
                         break;
                     }
                     Version currentVersion = new Version(_MODEntry.Version);
-                    log(currentVersion.ToString());
-                    log(latestVersion.ToString());
+                    //log(currentVersion.ToString());
+                    //log(latestVersion.ToString());
 
                     // 输出从当前版本到最新版本之间的所有更新
                     bool isUpdateAvailable = false;
@@ -356,16 +357,18 @@ namespace HostUtilities
                             dialog.OnConfirm += () =>
                             {
                                 _MODEntry.ShowWarningDialog("您必须手动打开安装器来更新街机MOD!");
+                                _MODEntry.LogInfo($"Will Upd {latestVersion}");
                                 Application.Quit();
                             };
                             dialog.OnCancel += () =>
                             {
                                 UI_DisplayModName.cornerMessage += $"Cancel Upd {latestVersion}";
+                                _MODEntry.LogInfo($"Cancel Upd {latestVersion}");
                             };
                             dialog.Show();
                         }
                         _MODEntry.LogInfo("Update Log from " + currentVersion + " to " + latestVersion + ":");
-                        _MODEntry.LogInfo(updateLog);
+                        _MODEntry.LogError(updateLog);
                     }
                     else
                     {
@@ -390,10 +393,7 @@ namespace HostUtilities
                     _MODEntry.LogError($"未知错误 code:{request.responseCode}, mess:{request.error}");
                     UI_DisplayModName.cornerMessage += $"Failed {request.error}";
                 }
-                log("state 5 End");
             }
-            log("state 6 End");
-
         }
         public static DateTime UnixTimeStampToDateTime(long unixTimeStamp)
         {

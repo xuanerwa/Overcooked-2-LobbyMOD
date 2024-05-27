@@ -13,7 +13,7 @@ namespace HostUtilities
 
         public static void Awake()
         {
-            restartLevelKey = _MODEntry.Instance.Config.Bind("01-按键绑定", "12-一键重开", KeyCode.F11, "跳过关卡");
+            restartLevelKey = _MODEntry.Instance.Config.Bind("02-按键绑定", "12-一键重开", KeyCode.F11, "跳过关卡");
         }
 
         public static void Update()

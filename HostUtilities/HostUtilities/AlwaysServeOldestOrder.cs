@@ -15,7 +15,7 @@ namespace HostUtilities
         public static void log(string mes) => _MODEntry.LogInfo(mes);
         public static void Awake()
         {
-            AlwaysServeOldestOrderenabled = _MODEntry.Instance.Config.Bind<bool>("00-功能开关", "总是优先服务最左侧的订单(仅街机)", true);
+            AlwaysServeOldestOrderenabled = _MODEntry.Instance.Config.Bind<bool>("01-功能开关", "02-总是优先服务最左侧的订单(仅街机)", true);
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             _MODEntry.AllHarmony.Add(HarmonyInstance);
             _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);

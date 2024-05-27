@@ -18,7 +18,7 @@ namespace HostUtilities
         public static void Awake()
         {
             audioPackList = GetAudioPackList();
-            audioPackSelected = _MODEntry.Instance.Config.Bind<string>("00-功能开关", "选择语音包", audioPackList[0], new ConfigDescription("选择语音包", new AcceptableValueList<string>(audioPackList)));
+            audioPackSelected = _MODEntry.Instance.Config.Bind<string>("01-功能开关", "05-选择语音包", audioPackList[0], new ConfigDescription("选择语音包", new AcceptableValueList<string>(audioPackList)));
 
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             _MODEntry.AllHarmony.Add(HarmonyInstance);

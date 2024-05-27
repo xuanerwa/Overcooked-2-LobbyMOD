@@ -12,7 +12,7 @@ namespace HostUtilities
 
         public static void Awake()
         {
-            quitKey = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "11-加载界面卡死退出", KeyCode.Backspace);
+            quitKey = _MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "11-加载界面卡死退出", KeyCode.Backspace);
         }
         public static void Update()
         {

@@ -133,16 +133,16 @@ namespace HostUtilities
                     bool shouldNtDisplayKevinState = true;
                     bool shouldNtDisplayNormalState = true;
                     modsDisplay.m_Text = $"自定义关卡:";
-                    if (MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value)
+                    if (MServerLobbyFlowController.sceneDisableConfigEntries["02-只玩凯文和小节关"].Value)
                     {
                         modsDisplay.m_Text += "\n------以下为自定义特殊关卡:";
-                        modsDisplay.m_Text += "\n只玩凯文和小节关";
+                        modsDisplay.m_Text += "\n02-只玩凯文和小节关";
                         shouldNtDisplayNormalState = false; //不输出普通状态
                     }
-                    if (MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value)
+                    if (MServerLobbyFlowController.sceneDisableConfigEntries["01-不玩凯文和小节关"].Value)
                     {
                         modsDisplay.m_Text += "\n------以下为自定义特殊关卡:";
-                        modsDisplay.m_Text += "\n不玩凯文和小节关";
+                        modsDisplay.m_Text += "\n01-不玩凯文和小节关";
                         shouldNtDisplayKevinState = false; //不输出凯文状态
                     }
                     if (shouldNtDisplayKevinState)

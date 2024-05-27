@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using BepInEx.Configuration;
 using GameModes.Horde;
-using HarmonyLib;
 
 
 namespace HostUtilities
@@ -15,7 +14,7 @@ namespace HostUtilities
 
         public static void Awake()
         {
-            stopLevel = _MODEntry.Instance.Config.Bind("01-按键绑定", "10-直接跳过关卡", KeyCode.Delete, "跳过关卡");
+            stopLevel = _MODEntry.Instance.Config.Bind("02-按键绑定", "10-直接跳过关卡", KeyCode.Delete, "跳过关卡");
         }
 
         public static void Update()

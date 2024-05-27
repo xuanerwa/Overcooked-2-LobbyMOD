@@ -13,7 +13,7 @@ namespace HostUtilities
 
         public static void Awake()
         {
-            AddDirtyDishesKey = _MODEntry.Instance.Config.Bind("01-按键绑定", "13-增加1个脏盘/杯(仅街机)", KeyCode.Alpha0);
+            AddDirtyDishesKey = _MODEntry.Instance.Config.Bind("02-按键绑定", "13-增加1个脏盘/杯(仅街机)", KeyCode.Alpha0);
         }
 
         public static void Update()
@@ -43,7 +43,7 @@ namespace HostUtilities
                 GameObject DirtyMugStackObject = GameObject.Find("DirtyMugStack");
                 if (DirtyPlateStackObject != null)
                 {
-                    //盘子
+                    // 盘子
                     // 获取 DirtyPlateStackObject 对象上的 ServerDirtyPlateStack 组件
                     ServerDirtyPlateStack serverDirtyPlateStack = DirtyPlateStackObject.GetComponent<ServerDirtyPlateStack>();
                     if (serverDirtyPlateStack != null)

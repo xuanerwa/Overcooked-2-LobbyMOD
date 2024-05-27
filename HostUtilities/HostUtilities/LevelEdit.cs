@@ -3,11 +3,8 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using Team17.Online;
 using UnityEngine;
-using static ClientPortalMapNode;
 
 
 namespace HostUtilities
@@ -21,8 +18,7 @@ namespace HostUtilities
         public static ConfigEntry<bool> kevinEnabled;
         private static bool onlyKevin_;
         private static bool notKevin_;
-        private static bool onlyKevin;
-        private static bool notKevin;
+
 
         public static bool doOrigin = false;
 
@@ -32,9 +28,9 @@ namespace HostUtilities
             MServerLobbyFlowController.CreateConfigEntries();
 
 
-            PlayRandom = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "08-大厅计时器归零", KeyCode.Alpha6, "4秒后直接开始随机关卡");
-            resetTimer = _MODEntry.Instance.Config.Bind<KeyCode>("01-按键绑定", "09-大厅计时器45秒", KeyCode.Alpha7, "重置街机大厅时间为45秒");
-            kevinEnabled = _MODEntry.Instance.Config.Bind<bool>("02-修改关卡", "00-开启关卡自定义功能", false);
+            PlayRandom = _MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "08-大厅计时器归零", KeyCode.Alpha6, "4秒后直接开始随机关卡");
+            resetTimer = _MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "09-大厅计时器45秒", KeyCode.Alpha7, "重置街机大厅时间为45秒");
+            kevinEnabled = _MODEntry.Instance.Config.Bind<bool>("04-修改关卡", "00-开启关卡自定义功能", false);
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             _MODEntry.AllHarmony.Add(HarmonyInstance);
             _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
@@ -68,8 +64,8 @@ namespace HostUtilities
         static void EnsureMutuallyExclusiveOptions()
         {
             // 读取当前的选项值
-            bool currentOnlyKevin = MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value;
-            bool currentNotKevin = MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value;
+            bool currentOnlyKevin = MServerLobbyFlowController.sceneDisableConfigEntries["02-只玩凯文和小节关"].Value;
+            bool currentNotKevin = MServerLobbyFlowController.sceneDisableConfigEntries["01-不玩凯文和小节关"].Value;
 
             // 凯文2选1逻辑
             if (currentOnlyKevin && currentNotKevin)
@@ -77,32 +73,28 @@ namespace HostUtilities
                 // 检查并设置互斥逻辑
                 if (currentOnlyKevin != onlyKevin_)
                 {
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value = true;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value = false;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["02-只玩凯文和小节关"].Value = true;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["01-不玩凯文和小节关"].Value = false;
                 }
                 else if (currentNotKevin != notKevin_)
                 {
-                    MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value = true;
-                    MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value = false;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["01-不玩凯文和小节关"].Value = true;
+                    MServerLobbyFlowController.sceneDisableConfigEntries["02-只玩凯文和小节关"].Value = false;
                 }
             }
 
             // 更新缓存的值
-            onlyKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["只玩凯文和小节关"].Value;
-            notKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value;
-
-            // 更新全局变量
-            onlyKevin = onlyKevin_;
-            notKevin = notKevin_;
+            onlyKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["02-只玩凯文和小节关"].Value;
+            notKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["01-不玩凯文和小节关"].Value;
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ClientTime), "OnTimeSyncReceived")]
         public static void ClientTime_OnTimeSyncReceived_Patch()
         {
-            if (MServerLobbyFlowController.sceneDisableConfigEntries["不玩凯文和小节关"].Value == true)
+            if (MServerLobbyFlowController.sceneDisableConfigEntries["01-不玩凯文和小节关"].Value == true)
             {
-                //不玩凯文时以下所有选项自动关闭
+                //01-不玩凯文时以下所有选项自动关闭
                 MServerLobbyFlowController.sceneDisableConfigEntries["01-关闭小节关"].Value = false;
                 MServerLobbyFlowController.sceneDisableConfigEntries["02-关闭主线凯文"].Value = false;
                 MServerLobbyFlowController.sceneDisableConfigEntries["03-关闭海滩凯文"].Value = false;
@@ -122,36 +114,36 @@ namespace HostUtilities
 
         public static void CreateConfigEntries()
         {
-            CreateConfigEntry("02-修改关卡", "不玩凯文和小节关", true, "此选项打开时,02-禁用主题(凯文)下的所有开关,会被自动关闭.");
-            CreateConfigEntry("02-修改关卡", "只玩凯文和小节关", false, "此选项打开时,02-禁用主题(非凯文)下的所有选项会失效,因为不玩普通关卡了.");
-            CreateConfigEntry("02-禁用主题(凯文)", "01-关闭小节关");
-            CreateConfigEntry("02-禁用主题(凯文)", "02-关闭主线凯文");
-            CreateConfigEntry("02-禁用主题(凯文)", "03-关闭海滩凯文");
-            CreateConfigEntry("02-禁用主题(凯文)", "04-关闭完美露营地凯文");
-            CreateConfigEntry("02-禁用主题(凯文)", "05-关闭恐怖地宫凯文");
-            CreateConfigEntry("02-禁用主题(凯文)", "06-关闭翻滚帐篷凯文");
-            CreateConfigEntry("02-禁用主题(凯文)", "07-关闭咸咸马戏团凯文");
-            CreateConfigEntry("02-禁用主题(非凯文)", "01-关闭世界1");
-            CreateConfigEntry("02-禁用主题(非凯文)", "02-关闭世界2");
-            CreateConfigEntry("02-禁用主题(非凯文)", "03-关闭世界3");
-            CreateConfigEntry("02-禁用主题(非凯文)", "04-关闭世界4");
-            CreateConfigEntry("02-禁用主题(非凯文)", "05-关闭世界5");
-            CreateConfigEntry("02-禁用主题(非凯文)", "06-关闭世界6");
-            CreateConfigEntry("02-禁用主题(非凯文)", "07-关闭节庆大餐");
-            CreateConfigEntry("02-禁用主题(非凯文)", "08-关闭王朝餐厅");
-            CreateConfigEntry("02-禁用主题(非凯文)", "09-关闭桃子游行", true);
-            CreateConfigEntry("02-禁用主题(非凯文)", "10-关闭幸运灯笼", true);
-            CreateConfigEntry("02-禁用主题(非凯文)", "11-关闭海滩");
-            CreateConfigEntry("02-禁用主题(非凯文)", "12-关闭烧烤度假村");
-            CreateConfigEntry("02-禁用主题(非凯文)", "13-关闭完美露营地");
-            CreateConfigEntry("02-禁用主题(非凯文)", "14-关闭美味树屋");
-            CreateConfigEntry("02-禁用主题(非凯文)", "15-关闭恐怖地宫");
-            CreateConfigEntry("02-禁用主题(非凯文)", "16-关闭惊悚庭院");
-            CreateConfigEntry("02-禁用主题(非凯文)", "17-关闭凶残城垛", true);
-            CreateConfigEntry("02-禁用主题(非凯文)", "18-关闭翻滚帐篷");
-            CreateConfigEntry("02-禁用主题(非凯文)", "19-关闭咸咸马戏团");
+            CreateConfigEntry("04-修改关卡", "01-不玩凯文和小节关", true, "此选项打开时,04-禁用主题(凯文)下的所有开关,会被自动关闭.");
+            CreateConfigEntry("04-修改关卡", "02-只玩凯文和小节关", false, "此选项打开时,04-禁用主题(非凯文)下的所有选项会失效,因为不玩普通关卡了.");
+            CreateConfigEntry("04-禁用主题(凯文)", "01-关闭小节关");
+            CreateConfigEntry("04-禁用主题(凯文)", "02-关闭主线凯文");
+            CreateConfigEntry("04-禁用主题(凯文)", "03-关闭海滩凯文");
+            CreateConfigEntry("04-禁用主题(凯文)", "04-关闭完美露营地凯文");
+            CreateConfigEntry("04-禁用主题(凯文)", "05-关闭恐怖地宫凯文");
+            CreateConfigEntry("04-禁用主题(凯文)", "06-关闭翻滚帐篷凯文");
+            CreateConfigEntry("04-禁用主题(凯文)", "07-关闭咸咸马戏团凯文");
+            CreateConfigEntry("04-禁用主题(非凯文)", "01-关闭世界1");
+            CreateConfigEntry("04-禁用主题(非凯文)", "02-关闭世界2");
+            CreateConfigEntry("04-禁用主题(非凯文)", "03-关闭世界3");
+            CreateConfigEntry("04-禁用主题(非凯文)", "04-关闭世界4");
+            CreateConfigEntry("04-禁用主题(非凯文)", "05-关闭世界5");
+            CreateConfigEntry("04-禁用主题(非凯文)", "06-关闭世界6");
+            CreateConfigEntry("04-禁用主题(非凯文)", "07-关闭节庆大餐");
+            CreateConfigEntry("04-禁用主题(非凯文)", "08-关闭王朝餐厅");
+            CreateConfigEntry("04-禁用主题(非凯文)", "09-关闭桃子游行", true);
+            CreateConfigEntry("04-禁用主题(非凯文)", "10-关闭幸运灯笼", true);
+            CreateConfigEntry("04-禁用主题(非凯文)", "11-关闭海滩");
+            CreateConfigEntry("04-禁用主题(非凯文)", "12-关闭烧烤度假村");
+            CreateConfigEntry("04-禁用主题(非凯文)", "13-关闭完美露营地");
+            CreateConfigEntry("04-禁用主题(非凯文)", "14-关闭美味树屋");
+            CreateConfigEntry("04-禁用主题(非凯文)", "15-关闭恐怖地宫");
+            CreateConfigEntry("04-禁用主题(非凯文)", "16-关闭惊悚庭院");
+            CreateConfigEntry("04-禁用主题(非凯文)", "17-关闭凶残城垛", true);
+            CreateConfigEntry("04-禁用主题(非凯文)", "18-关闭翻滚帐篷");
+            CreateConfigEntry("04-禁用主题(非凯文)", "19-关闭咸咸马戏团");
 
-            CreateConfigEntry("00-功能开关", "街机关卡不重复", true);
+            CreateConfigEntry("01-功能开关", "03-街机关卡不重复", true);
         }
         private static ConfigEntry<bool> configEntry;
         private static void CreateConfigEntry(string cls, string key)
@@ -208,11 +200,11 @@ namespace HostUtilities
                     return false;
                 }
                 bool condition90 = true;
-                if (sceneDisableConfigEntries["不玩凯文和小节关"].Value == true)
+                if (sceneDisableConfigEntries["01-不玩凯文和小节关"].Value == true)
                 {
                     condition90 = entry.AvailableInLobby;
                 }
-                if (sceneDisableConfigEntries["只玩凯文和小节关"].Value == true)
+                if (sceneDisableConfigEntries["02-只玩凯文和小节关"].Value == true)
                 {
                     condition90 = !entry.AvailableInLobby;
                 }
