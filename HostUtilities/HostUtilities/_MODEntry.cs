@@ -11,14 +11,15 @@ using UnityEngine;
 using UnityEngine.Networking;
 using SimpleJSON;
 using Version = System.Version;
+using System.Runtime.ConstrainedExecution;
 
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.76")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.77")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.76";
+        public static string Version = "1.0.77";
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
@@ -266,6 +267,34 @@ namespace HostUtilities
             GameObject versionCheckObject = new GameObject("VersionCheck");
             versionCheckObject.AddComponent<VersionCheckClass>();
         }
+
+        private static DateTime lastCheckTime = DateTime.Now;
+        private static bool skipFirstCheck = false;
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(StartScreenFlow), "Awake")]
+        public static void StartScreenFlow_Awake_Postfix()
+        {
+            DateTime currentTime = DateTime.Now;
+            if (currentTime.Subtract(lastCheckTime).TotalSeconds > 600 && skipFirstCheck)
+            {
+                lastCheckTime = currentTime;
+                LogInfo($"Start Version Check. Now Time {currentTime}");
+                GameObject versionCheckObject = new GameObject("VersionCheck");
+                versionCheckObject.AddComponent<VersionCheckClass>();
+            }
+            else
+            {
+                if (skipFirstCheck)
+                {
+                    LogError($"Skip Version Check. Last Check Time: {lastCheckTime}");
+                }
+                else
+                {
+                    LogInfo($"First Time Skip Version Check.");
+                }
+                skipFirstCheck = true;
+            }
+        }
     }
 
     public class VersionCheckClass : MonoBehaviour
@@ -284,6 +313,7 @@ namespace HostUtilities
             try
             {
                 string versionInfoUrl = "https://api.github.com/repos/CH3NGYZ/Overcooked-2-HostUtilities/releases?per_page=30";
+                UI_DisplayModName.cornerMessage = $"Host Utilities v{_MODEntry.Version} ";
                 StartCoroutine(SendWebRequest(versionInfoUrl));
             }
             catch (Exception e)
@@ -335,30 +365,34 @@ namespace HostUtilities
 
                     // 输出从当前版本到最新版本之间的所有更新
                     bool isUpdateAvailable = false;
-                    string updateLog = "";
-                    for (Version ver = currentVersion; ver < latestVersion; ver = new Version(ver.Major, ver.Minor, ver.Build + 1))
+                    string updateLog = $"最新版本更新内容: ";
+                    for (Version ver = latestVersion; ver > currentVersion; ver = new Version(ver.Major, ver.Minor, ver.Build - 1))
                     {
                         if (versionBodyDict.ContainsKey(ver))
                         {
                             isUpdateAvailable = true;
-                            updateLog += versionBodyDict[ver]+"更多版本间更新内容, 请打开安装器查看";
+                            updateLog += versionBodyDict[ver] + "更多更新内容, 请打开安装器查看";
                             break;
                         }
                     }
+
 
                     if (isUpdateAvailable)
                     {
                         T17DialogBox dialog = T17DialogBoxManager.GetDialog(false);
                         if (dialog != null)
                         {
-                            dialog.Initialize($"街机MOD有更新! {currentVersion} to {latestVersion} ", updateLog.EndsWith("\n") ? updateLog.Substring(0, updateLog.Length - 1) : updateLog, "Text.Button.Okay", string.Empty, "Text.Button.Cancel", T17DialogBox.Symbols.Warning, false, false, false);
-                            dialog.SetButtonText(dialog.m_ConfirmButton, "更新");
-                            dialog.SetButtonText(dialog.m_CancelButton, "取消");
+                            dialog.Initialize($"MOD更新{currentVersion.Build}到{latestVersion.Build}", updateLog.EndsWith("\n") ? updateLog.Substring(0, updateLog.Length - 1) : updateLog, "Text.Button.Okay", string.Empty, "Text.Button.Cancel", T17DialogBox.Symbols.Spinner, false, false, false);
                             dialog.OnConfirm += () =>
                             {
-                                _MODEntry.ShowWarningDialog("您必须手动打开安装器来更新街机MOD!");
-                                _MODEntry.LogInfo($"Will Upd {latestVersion}");
-                                Application.Quit();
+                                T17DialogBox upddialog = T17DialogBoxManager.GetDialog(false);
+                                upddialog.Initialize($"您必须手动打开安装器", $"以从v{currentVersion}更新到v{latestVersion}", "Text.Button.Okay", string.Empty, string.Empty, T17DialogBox.Symbols.Warning, false, false, false);
+                                upddialog.OnConfirm += () =>
+                                {
+                                    _MODEntry.LogInfo($"Will Upd {latestVersion}");
+                                    Application.Quit();
+                                };
+                                upddialog.Show();
                             };
                             dialog.OnCancel += () =>
                             {
@@ -394,6 +428,8 @@ namespace HostUtilities
                     UI_DisplayModName.cornerMessage += $"Failed {request.error}";
                 }
             }
+            GameObject versionCheckObject = GameObject.Find("VersionCheck");
+            Destroy(versionCheckObject);
         }
         public static DateTime UnixTimeStampToDateTime(long unixTimeStamp)
         {
