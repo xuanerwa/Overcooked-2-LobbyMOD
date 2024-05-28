@@ -11,15 +11,14 @@ using UnityEngine;
 using UnityEngine.Networking;
 using SimpleJSON;
 using Version = System.Version;
-using System.Runtime.ConstrainedExecution;
 
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.77")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.78")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.77";
+        public static string Version = "1.0.78";
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
@@ -46,7 +45,7 @@ namespace HostUtilities
 
                 modName = "HostUtilities";
                 Instance = this;
-                //不需要Update的类
+                //不需要Update
                 AlwaysServeOldestOrder.Awake();
                 ChangeDisplayName.Awake();
                 FixDoubleServing.Awake();
@@ -54,7 +53,7 @@ namespace HostUtilities
                 ReplaceOneShotAudio.Awake();
 
 
-                //需要Update的类
+                //需要Update
                 AddDirtyDishes.Awake();
                 ForceHost.Awake();
                 KickUser.Awake();
@@ -62,6 +61,7 @@ namespace HostUtilities
                 LevelSelector.Awake();
                 QuitInLoadingScreen.Awake();
                 RestartLevel.Awake();
+                ScaleObject.Awake();
                 SkipLevel.Awake();
                 UI_DisplayModName.Awake();
                 UI_DisplayModsOnResultsScreen.Awake();
@@ -95,6 +95,7 @@ namespace HostUtilities
                 LevelSelector.Update();
                 QuitInLoadingScreen.Update();
                 RestartLevel.Update();
+                ScaleObject.Update();
                 SkipLevel.Update();
                 UI_DisplayKickedUser.Update();
                 UI_DisplayLatency.Update();
@@ -437,11 +438,5 @@ namespace HostUtilities
             return unixStartTime.AddSeconds(unixTimeStamp);
         }
 
-        private static bool IsNewVersionAvailable(string currentVersion, string latestVersion)
-        {
-            System.Version current = new System.Version(currentVersion);
-            System.Version latest = new System.Version(latestVersion);
-            return latest > current;
-        }
     }
 }
