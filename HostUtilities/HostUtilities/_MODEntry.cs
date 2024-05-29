@@ -14,11 +14,11 @@ using Version = System.Version;
 
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.78")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.79")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.78";
+        public static string Version = "1.0.79";
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
@@ -28,8 +28,8 @@ namespace HostUtilities
         public static bool IsHost = false;
         public static bool IsInParty = false;
         public static float dpiScaleFactor = 1f;
-        private float baseScreenWidth = 1920f;
-        private float baseScreenHeight = 1080f;
+        private readonly float baseScreenWidth = 1920f;
+        private readonly float baseScreenHeight = 1080f;
         public static ConfigEntry<int> defaultFontSize;
         public static ConfigEntry<Color> defaultFontColor;
         public static bool IsSelectedAndPlay = false;
@@ -46,10 +46,10 @@ namespace HostUtilities
                 modName = "HostUtilities";
                 Instance = this;
                 //不需要Update
-                AlwaysServeOldestOrder.Awake();
                 ChangeDisplayName.Awake();
                 FixDoubleServing.Awake();
                 FixBrokenWashingStation.Awake();
+                ModifyScoreScreenTimeout.Awake();
                 ReplaceOneShotAudio.Awake();
 
 
@@ -313,7 +313,7 @@ namespace HostUtilities
         {
             try
             {
-                string versionInfoUrl = "https://api.github.com/repos/CH3NGYZ/Overcooked-2-HostUtilities/releases?per_page=30";
+                string versionInfoUrl = "https://api.github.com/repos/CH3NGYZ/Overcooked-2-HostUtilities/releases?per_page=100";
                 UI_DisplayModName.cornerMessage = $"Host Utilities v{_MODEntry.Version} ";
                 StartCoroutine(SendWebRequest(versionInfoUrl));
             }
@@ -345,7 +345,7 @@ namespace HostUtilities
                     foreach (JSONNode node in jsonArray)
                     {
                         string tagName = node["tag_name"].Value;
-                        if (tagName == "BepInEx") continue;
+                        if (tagName.Contains("BepInEx")) continue;
                         string body = node["body"].Value;
                         tagName = tagName.Replace("v", "");
                         Version version = new Version(tagName);

@@ -12,8 +12,8 @@ namespace HostUtilities
 
         public static void Awake()
         {
-            zoomOutKey = _MODEntry.Instance.Config.Bind("02-按键绑定", "14-放大手上拿的物体", KeyCode.Equals);
-            magnifyKey = _MODEntry.Instance.Config.Bind("02-按键绑定", "15-缩小手上拿的物体", KeyCode.Minus);
+            zoomOutKey = _MODEntry.Instance.Config.Bind("02-按键绑定", "14-放大手上拿的物体", KeyCode.Equals, "退格左边的 +/= 键");
+            magnifyKey = _MODEntry.Instance.Config.Bind("02-按键绑定", "15-缩小手上拿的物体", KeyCode.Minus, "Alpha0右边的-/_键");
         }
 
         public static void Update()
