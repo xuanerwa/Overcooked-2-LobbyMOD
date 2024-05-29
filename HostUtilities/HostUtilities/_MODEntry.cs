@@ -14,11 +14,11 @@ using Version = System.Version;
 
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.79")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.80")]
     [BepInProcess("Overcooked2.exe")]
     public class _MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.79";
+        public static string Version = "1.0.80";
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> AllHarmonyName = new List<string>();
         public static List<Harmony> AllHarmony = new List<Harmony>();
@@ -221,7 +221,7 @@ namespace HostUtilities
             return coordinator.IsHost();
         }
 
-
+        private static int canChangePosition = 0;
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ClientTime), "OnTimeSyncReceived")]
         public static void ClientTime_OnTimeSyncReceived_Patch()
@@ -232,6 +232,16 @@ namespace HostUtilities
                 isInLobby();
                 if (Screen.width != Mathf.RoundToInt(_MODEntry.Instance.baseScreenWidth * dpiScaleFactor) || Screen.height != Mathf.RoundToInt(_MODEntry.Instance.baseScreenHeight * dpiScaleFactor)) { Instance.UpdateGUIDpi(); }
                 //LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
+                if (canChangePosition > 5)
+                {
+                    UI_DisplayModName.SetRandomPosition();
+                    canChangePosition = 0;
+                }
+                else
+                {
+                    canChangePosition += 1;
+                }
+
                 if (CurrentSteamID == null || CurrentSteamID.m_SteamID == 0)
                 {
                     CurrentSteamID = SteamUser.GetSteamID();
@@ -336,107 +346,147 @@ namespace HostUtilities
                     request.SetRequestHeader("Authorization", $"token {githubtoken}");
                 }
 
+                // 设置请求超时时间为10秒
+                request.timeout = 10;
                 yield return request.SendWebRequest();
 
                 if (request.responseCode == 200)
                 {
-                    JSONNode jsonArray = JSON.Parse(request.downloadHandler.text);
-                    Dictionary<Version, string> versionBodyDict = new Dictionary<Version, string>();
-                    foreach (JSONNode node in jsonArray)
-                    {
-                        string tagName = node["tag_name"].Value;
-                        if (tagName.Contains("BepInEx")) continue;
-                        string body = node["body"].Value;
-                        tagName = tagName.Replace("v", "");
-                        Version version = new Version(tagName);
-                        versionBodyDict.Add(version, body);
-                    }
-
-                    //读取当前版本号以及最新版本号
-                    Version latestVersion = new Version("1.0.0");
-                    foreach (var entry in versionBodyDict)
-                    {
-                        //log(entry.Key.ToString());
-                        latestVersion = entry.Key;
-                        break;
-                    }
-                    Version currentVersion = new Version(_MODEntry.Version);
-                    //log(currentVersion.ToString());
-                    //log(latestVersion.ToString());
-
-                    // 输出从当前版本到最新版本之间的所有更新
-                    bool isUpdateAvailable = false;
-                    string updateLog = $"最新版本更新内容: ";
-                    for (Version ver = latestVersion; ver > currentVersion; ver = new Version(ver.Major, ver.Minor, ver.Build - 1))
-                    {
-                        if (versionBodyDict.ContainsKey(ver))
-                        {
-                            isUpdateAvailable = true;
-                            updateLog += versionBodyDict[ver] + "更多更新内容, 请打开安装器查看";
-                            break;
-                        }
-                    }
-
-
-                    if (isUpdateAvailable)
-                    {
-                        T17DialogBox dialog = T17DialogBoxManager.GetDialog(false);
-                        if (dialog != null)
-                        {
-                            dialog.Initialize($"MOD更新{currentVersion.Build}到{latestVersion.Build}", updateLog.EndsWith("\n") ? updateLog.Substring(0, updateLog.Length - 1) : updateLog, "Text.Button.Okay", string.Empty, "Text.Button.Cancel", T17DialogBox.Symbols.Spinner, false, false, false);
-                            dialog.OnConfirm += () =>
-                            {
-                                T17DialogBox upddialog = T17DialogBoxManager.GetDialog(false);
-                                upddialog.Initialize($"您必须手动打开安装器", $"以从v{currentVersion}更新到v{latestVersion}", "Text.Button.Okay", string.Empty, string.Empty, T17DialogBox.Symbols.Warning, false, false, false);
-                                upddialog.OnConfirm += () =>
-                                {
-                                    _MODEntry.LogInfo($"Will Upd {latestVersion}");
-                                    Application.Quit();
-                                };
-                                upddialog.Show();
-                            };
-                            dialog.OnCancel += () =>
-                            {
-                                UI_DisplayModName.cornerMessage += $"Cancel Upd {latestVersion}";
-                                _MODEntry.LogInfo($"Cancel Upd {latestVersion}");
-                            };
-                            dialog.Show();
-                        }
-                        _MODEntry.LogInfo("Update Log from " + currentVersion + " to " + latestVersion + ":");
-                        _MODEntry.LogError(updateLog);
-                    }
-                    else
-                    {
-                        UI_DisplayModName.cornerMessage += "Latest";
-                        _MODEntry.LogInfo("No updates available.");
-                    }
+                    HandleWebResponse(request);
                 }
                 else if (request.responseCode == 403)
                 {
-                    string ts = request.GetResponseHeader("X-RateLimit-Reset");
-                    if (long.TryParse(ts, out long number))
-                    {
-                        DateTime dateTime = UnixTimeStampToDateTime(number);
-                        DateTime utcPlus8Time = dateTime.ToUniversalTime().AddHours(8);
-                        string formattedDateTime = utcPlus8Time.ToString("yyyy/MM/dd hh:mm:ss tt");
-                        _MODEntry.LogError($"请求更新API访问达到限制, 恢复时间: {formattedDateTime}");
-                        UI_DisplayModName.cornerMessage += $"Forbidden {formattedDateTime}";
-                    }
+                    HandleRateLimit(request);
                 }
                 else
                 {
-                    _MODEntry.LogError($"未知错误 code:{request.responseCode}, mess:{request.error}");
-                    UI_DisplayModName.cornerMessage += $"Failed {request.error}";
+                    _MODEntry.LogError($"主 URL 请求失败: {request.error}");
+                    UI_DisplayModName.cornerMessage = $"Host Utilities v{_MODEntry.Version} AFailed {request.error}";
+                    // 请求超时，使用备用 URL 重新请求一次
+                    _MODEntry.LogError("请求超时，尝试使用备用 URL");
+                    using (UnityWebRequest backupRequest = UnityWebRequest.Get("https://github-api.azhe.chat/repos/CH3NGYZ/Overcooked-2-HostUtilities/releases?per_page=100"))
+                    {
+                        backupRequest.SetRequestHeader("User-Agent", "request");
+                        backupRequest.SetRequestHeader("accept", "application/vnd.github+json");
+
+                        if (githubtoken != string.Empty)
+                        {
+                            backupRequest.SetRequestHeader("Authorization", $"token {githubtoken}");
+                        }
+
+                        backupRequest.timeout = 10;
+
+                        yield return backupRequest.SendWebRequest();
+
+                        if (backupRequest.responseCode == 200)
+                        {
+                            HandleWebResponse(backupRequest);
+                        }
+                        else if (backupRequest.responseCode == 403)
+                        {
+                            HandleRateLimit(backupRequest);
+                        }
+                        else
+                        {
+                            _MODEntry.LogError($"备用 URL 请求失败: {backupRequest.error}");
+                            UI_DisplayModName.cornerMessage = $"Host Utilities v{_MODEntry.Version} BFailed {backupRequest.error}";
+                        }
+                    }
                 }
             }
             GameObject versionCheckObject = GameObject.Find("VersionCheck");
             Destroy(versionCheckObject);
         }
-        public static DateTime UnixTimeStampToDateTime(long unixTimeStamp)
+
+        private void HandleWebResponse(UnityWebRequest request)
         {
-            DateTime unixStartTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            return unixStartTime.AddSeconds(unixTimeStamp);
+            JSONNode jsonArray = JSON.Parse(request.downloadHandler.text);
+            Dictionary<Version, string> versionBodyDict = new Dictionary<Version, string>();
+            foreach (JSONNode node in jsonArray)
+            {
+                string tagName = node["tag_name"].Value;
+                if (tagName.Contains("BepInEx")) continue;
+                string body = node["body"].Value;
+                tagName = tagName.Replace("v", "");
+                Version version = new Version(tagName);
+                versionBodyDict.Add(version, body);
+            }
+
+            //读取当前版本号以及最新版本号
+            Version latestVersion = new Version("1.0.0");
+            foreach (var entry in versionBodyDict)
+            {
+                latestVersion = entry.Key;
+                break;
+            }
+            Version currentVersion = new Version(_MODEntry.Version);
+
+            // 输出从当前版本到最新版本之间的所有更新
+            bool isUpdateAvailable = false;
+            string updateLog = $"最新版本更新内容: ";
+            for (Version ver = latestVersion; ver > currentVersion; ver = new Version(ver.Major, ver.Minor, ver.Build - 1))
+            {
+                if (versionBodyDict.ContainsKey(ver))
+                {
+                    isUpdateAvailable = true;
+                    updateLog += versionBodyDict[ver] + "更多更新内容, 请打开安装器查看";
+                    break;
+                }
+            }
+
+            if (isUpdateAvailable)
+            {
+                T17DialogBox dialog = T17DialogBoxManager.GetDialog(false);
+                if (dialog != null)
+                {
+                    dialog.Initialize($"MOD更新{currentVersion.Build}到{latestVersion.Build}", updateLog.EndsWith("\n") ? updateLog.Substring(0, updateLog.Length - 1) : updateLog, "Text.Button.Okay", string.Empty, "Text.Button.Cancel", T17DialogBox.Symbols.Spinner, false, false, false);
+                    dialog.OnConfirm += () =>
+                    {
+                        T17DialogBox upddialog = T17DialogBoxManager.GetDialog(false);
+                        upddialog.Initialize($"您必须手动打开安装器", $"以从v{currentVersion}更新到v{latestVersion}", "Text.Button.Okay", string.Empty, string.Empty, T17DialogBox.Symbols.Warning, false, false, false);
+                        upddialog.OnConfirm += () =>
+                        {
+                            _MODEntry.LogInfo($"Will Upd {latestVersion}");
+                            Application.Quit();
+                        };
+                        upddialog.Show();
+                    };
+                    dialog.OnCancel += () =>
+                    {
+                        UI_DisplayModName.cornerMessage = $"Host Utilities v{_MODEntry.Version} Cancel Update {latestVersion}";
+                        _MODEntry.LogInfo($"Cancel Update {latestVersion}");
+                    };
+                    dialog.Show();
+                }
+                _MODEntry.LogInfo("Update Log from " + currentVersion + " to " + latestVersion + ":");
+                _MODEntry.LogError(updateLog);
+            }
+            else
+            {
+                UI_DisplayModName.cornerMessage = $"Host Utilities v{_MODEntry.Version} Latest";
+                _MODEntry.LogInfo("无可用更新.");
+            }
         }
 
+        private void HandleRateLimit(UnityWebRequest request)
+        {
+            string ts = request.GetResponseHeader("X-RateLimit-Reset");
+            if (long.TryParse(ts, out long number))
+            {
+                DateTime dateTime = UnixTimeStampToDateTime(number);
+                DateTime utcPlus8Time = dateTime.ToUniversalTime().AddHours(8);
+                string formattedDateTime = utcPlus8Time.ToString("yyyy/MM/dd hh:mm:ss tt");
+                _MODEntry.LogError($"请求更新API访问达到限制, 恢复时间: {formattedDateTime}");
+                UI_DisplayModName.cornerMessage += $"Forbidden {formattedDateTime}";
+            }
+        }
+
+        private DateTime UnixTimeStampToDateTime(long unixTimeStamp)
+        {
+            // Unix timestamp is seconds past epoch
+            System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
+            return dtDateTime;
+        }
     }
 }
