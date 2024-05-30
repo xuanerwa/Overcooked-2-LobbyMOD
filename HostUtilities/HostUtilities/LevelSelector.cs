@@ -12,7 +12,9 @@ namespace HostUtilities
 {
     public class LevelSelector : MonoBehaviour
     {
-        public static void log(string mes) => _MODEntry.LogInfo(mes);
+        public static void Log(string mes) => MODEntry.LogInfo(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogE(string mes) => MODEntry.LogError(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
         public static Dictionary<string, SceneDirectoryEntry> DirectoryDict = new Dictionary<string, SceneDirectoryEntry>();
         public static ConfigEntry<string> ValueList = null;
         public static Harmony HarmonyInstance { get; set; }
@@ -20,10 +22,9 @@ namespace HostUtilities
 
         public static void Awake()
         {
-            startSelectedLevel = _MODEntry.Instance.Config.Bind<KeyCode>("03-选择关卡", "01-点击立即开始", KeyCode.F5);
+            startSelectedLevel = MODEntry.Instance.Config.Bind<KeyCode>("03-选择关卡", "01-点击立即开始", KeyCode.F5);
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            _MODEntry.AllHarmony.Add(HarmonyInstance);
-            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            MODEntry.AllHarmony[MethodBase.GetCurrentMethod().DeclaringType.Name] = HarmonyInstance;
         }
 
         public static void Update()
@@ -32,19 +33,19 @@ namespace HostUtilities
             if (Input.GetKeyDown(startSelectedLevel.Value))
             {
 
-                if (!_MODEntry.IsHost)
+                if (!MODEntry.isHost)
                 {
-                    _MODEntry.ShowWarningDialog("你不是主机，别点啦");
+                    MODEntry.ShowWarningDialog("你不是主机，别点啦");
                     return;
                 }
                 if (ValueList == null)
                 {
-                    _MODEntry.ShowWarningDialog("请至少以主机身份进入一次街机大厅并等待5秒(可以打开强制主机)");
+                    MODEntry.ShowWarningDialog("请至少以主机身份进入一次街机大厅并等待5秒(可以打开强制主机)");
                     return;
                 }
-                if (!_MODEntry.IsInLobby)
+                if (!MODEntry.isInLobby)
                 {
-                    _MODEntry.ShowWarningDialog("不在街机大厅，别点啦");
+                    MODEntry.ShowWarningDialog("不在街机大厅，别点啦");
                     return;
                 }
                 Predicate<SceneDirectoryData.SceneDirectoryEntry> matchScene = (SceneDirectoryData.SceneDirectoryEntry entry) =>
@@ -56,10 +57,10 @@ namespace HostUtilities
                     if (entry.Label.Equals(GetSceneDirectoryEntryFromChinese(ValueList.Value).Label)) { return true; }
                     return false;
                 };
-                //log(ValueList.Value);
-                //log(GetSceneDirectoryEntryFromChinese(ValueList.Value).Label);
+                //Log(ValueList.Value);
+                //Log(GetSceneDirectoryEntryFromChinese(ValueList.Value).Label);
 
-                _MODEntry.IsSelectedAndPlay = true;
+                MODEntry.isSelectedAndPlay = true;
                 ServerLobbyFlowController Instance = ServerLobbyFlowController.Instance;
                 if (Instance != null)
                 {
@@ -128,12 +129,12 @@ namespace HostUtilities
                 try
                 {
                     dlcidfromSceneDirIndex2 = Instance.m_lobbyFlow.GetDLCIDFromSceneDirIndex(gameType, idx);
-                    log($"dlcidfromSceneDirIndex2: {dlcidfromSceneDirIndex2}");
+                    Log($"dlcidfromSceneDirIndex2: {dlcidfromSceneDirIndex2}");
                 }
                 catch (Exception e)
                 {
-                    log($"An error occurred: \n{e.Message}");
-                    log($"Stack trace: \n{e.StackTrace}");
+                    Log($"An error occurred: \n{e.Message}");
+                    Log($"Stack trace: \n{e.StackTrace}");
                 }
                 SceneDirectoryData.PerPlayerCountDirectoryEntry sceneVarient = sceneDirectoryEntry.GetSceneVarient(ServerUserSystem.m_Users.Count);
                 if (sceneVarient == null)
@@ -159,7 +160,7 @@ namespace HostUtilities
                     return;
                 }
                 Instance.m_delayedLevelLoad = Instance.StartCoroutine(Instance.DelayedLevelLoad(sceneVarient.SceneName, dlcidfromSceneDirIndex2));
-                log($"picked {sceneVarient.SceneName}  dlcidfromSceneDirIndex2:{dlcidfromSceneDirIndex2}");
+                Log($"picked {sceneVarient.SceneName}  dlcidfromSceneDirIndex2:{dlcidfromSceneDirIndex2}");
             }
         }
 
@@ -174,25 +175,25 @@ namespace HostUtilities
                     LevelEdit.doOrigin = false;
                     return true;
                 }
-                if (_MODEntry.IsSelectedAndPlay)
+                if (MODEntry.isSelectedAndPlay)
                 {
-                    log("开始指定关卡, 不执行关卡编辑逻辑");
-                    _MODEntry.IsSelectedAndPlay = false;
+                    Log("开始指定关卡, 不执行关卡编辑逻辑");
+                    MODEntry.isSelectedAndPlay = false;
                     return false;
                 }
                 if (LevelEdit.kevinEnabled.Value)
                 {
-                    log("开始关卡编辑逻辑, 不执行原函数");
+                    Log("开始关卡编辑逻辑, 不执行原函数");
                     MServerLobbyFlowController.MPickLevel(__instance, _theme);
                     return false;
                 }
-                log("没选关, 编辑也没开, 执行原函数.");
+                Log("没选关, 编辑也没开, 执行原函数.");
                 return true;
             }
             catch (Exception e)
             {
-                _MODEntry.LogError($"An error occurred: \n{e.Message}");
-                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+                LogE($"An error occurred: \n{e.Message}");
+                LogE($"Stack trace: \n{e.StackTrace}");
                 return true;
             }
         }
@@ -203,7 +204,7 @@ namespace HostUtilities
         {
             try
             {
-                if (!_MODEntry.IsInLobby)
+                if (!MODEntry.isInLobby)
                 {
                     return;
                 }
@@ -218,14 +219,14 @@ namespace HostUtilities
                 {
                     return;
                 }
-                //log(levelList.Count.ToString());
+                //Log(levelList.Count.ToString());
                 for (int i = 0; i < levelList.Count; i++)
                 {
                     SceneDirectoryEntry sceneDirectoryEntry = levelList[i];
                     DirectoryDict.Add(sceneDirectoryEntry.Label, sceneDirectoryEntry);
-                    log($"I: {i + 1} L: {sceneDirectoryEntry.Label} N: {GetLevelName(sceneDirectoryEntry, false)}");
+                    Log($"I: {i + 1} L: {sceneDirectoryEntry.Label} N: {GetLevelName(sceneDirectoryEntry, false)}");
                 }
-                log("finished");
+                Log("finished");
 
                 List<string> strList = new List<string>();
                 foreach (var pair in DirectoryDict)
@@ -234,13 +235,13 @@ namespace HostUtilities
                     strList.Add(LevelName);
                 }
                 string[] strArray = strList.ToArray();
-                ValueList = _MODEntry.Instance.Config.Bind<string>("03-选择关卡", "00-请先选择关卡", strArray[0], new ConfigDescription("选择关卡", new AcceptableValueList<string>(strArray)));
-                log(ValueList.Value);
+                ValueList = MODEntry.Instance.Config.Bind<string>("03-选择关卡", "00-请先选择关卡", strArray[0], new ConfigDescription("选择关卡", new AcceptableValueList<string>(strArray)));
+                Log(ValueList.Value);
             }
             catch (Exception e)
             {
-                _MODEntry.LogError($"An error occurred: \n{e.Message}");
-                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+                LogE($"An error occurred: \n{e.Message}");
+                LogE($"Stack trace: \n{e.StackTrace}");
             }
         }
         public static SceneDirectoryData.SceneDirectoryEntry GetSceneDirectoryEntryFromChinese(string label)
@@ -318,26 +319,26 @@ namespace HostUtilities
         {
             LobbyFlowController instance = LobbyFlowController.Instance;
             string levelname = GetLevelName(instance, entry, withLevelLabel);
-            //log($"name {levelname} label {entry.Label}");
+            //Log($"name {levelname} label {entry.Label}");
             if (levelname.Contains("节庆大餐") && entry.Label.Contains("DLC03"))
             {
                 levelname = levelname.Replace("节庆大餐", "节庆 - 圣诞");
-                //log("替换冬日");
+                //Log("替换冬日");
             }
             if (levelname.Contains("节庆大餐") && entry.Label.Contains("DLC09"))
             {
                 levelname = levelname.Replace("节庆大餐", "节庆 - 冬日");
-                //log("替换圣诞");
+                //Log("替换圣诞");
             }
             if (levelname.Contains("王朝餐厅") && entry.Label.Contains("DLC04"))
             {
                 levelname = levelname.Replace("王朝餐厅", "王朝 - 新年");
-                //log("替换新年");
+                //Log("替换新年");
             }
             if (levelname.Contains("王朝餐厅") && entry.Label.Contains("DLC10"))
             {
                 levelname = levelname.Replace("王朝餐厅", "王朝 - 春节");
-                //log("替换冬日");
+                //Log("替换冬日");
             }
 
             return levelname;

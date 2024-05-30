@@ -1,43 +1,46 @@
 ﻿using BepInEx.Configuration;
 using InControl;
+using System.Reflection;
 using UnityEngine;
 
 namespace HostUtilities
 {
     public class RestartLevel
     {
-        public static void log(string mes) => _MODEntry.LogInfo(mes);
+        public static void Log(string mes) => MODEntry.LogInfo(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogE(string mes) => MODEntry.LogError(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
         public static ConfigEntry<KeyCode> restartLevelKey;
         public static int startTime;
         public static bool cooling = false;
 
         public static void Awake()
         {
-            restartLevelKey = _MODEntry.Instance.Config.Bind("02-按键绑定", "12-一键重开", KeyCode.F11, "跳过关卡");
+            restartLevelKey = MODEntry.Instance.Config.Bind("02-按键绑定", "12-一键重开", KeyCode.F11, "跳过关卡");
         }
 
         public static void Update()
         {
             if (Input.GetKeyDown(restartLevelKey.Value))
             {
-                if (!_MODEntry.IsHost)
+                if (!MODEntry.isHost)
                 {
-                    _MODEntry.ShowWarningDialog("你不是主机，别点啦");
+                    MODEntry.ShowWarningDialog("你不是主机，别点啦");
                     return;
                 }
                 if (!cooling)
                 {
-                    log("重启关卡");
+                    Log("重启关卡");
                     RestartLevelMain();
                 }
                 else
                 {
-                    log("重启关卡冷静期");
+                    Log("重启关卡冷静期");
                 }
                 if (System.Environment.TickCount - startTime > 8000)
                 {
                     cooling = false;
-                    log("重启关卡");
+                    Log("重启关卡");
                     RestartLevelMain();
                 }
             }

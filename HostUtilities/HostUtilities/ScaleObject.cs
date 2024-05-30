@@ -1,19 +1,22 @@
 ﻿using BepInEx.Configuration;
+using System.Reflection;
 using UnityEngine;
 
 namespace HostUtilities
 {
     public class ScaleObject
     {
-        public static void log(string mes) => _MODEntry.LogInfo(mes);
+        public static void Log(string mes) => MODEntry.LogInfo(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogE(string mes) => MODEntry.LogError(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
         public static ConfigEntry<KeyCode> zoomOutKey;
         public static ConfigEntry<KeyCode> magnifyKey;
         public static GameObject parentObject = null;
 
         public static void Awake()
         {
-            zoomOutKey = _MODEntry.Instance.Config.Bind("02-按键绑定", "14-放大手上拿的物体", KeyCode.Equals, "退格左边的 +/= 键");
-            magnifyKey = _MODEntry.Instance.Config.Bind("02-按键绑定", "15-缩小手上拿的物体", KeyCode.Minus, "Alpha0右边的-/_键");
+            zoomOutKey = MODEntry.Instance.Config.Bind("02-按键绑定", "14-放大手上拿的物体", KeyCode.Equals, "退格左边的 +/= 键");
+            magnifyKey = MODEntry.Instance.Config.Bind("02-按键绑定", "15-缩小手上拿的物体", KeyCode.Minus, "Alpha0右边的-/_键");
         }
 
         public static void Update()

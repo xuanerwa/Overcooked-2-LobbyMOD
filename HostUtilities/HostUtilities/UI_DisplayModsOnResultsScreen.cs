@@ -10,6 +10,10 @@ namespace HostUtilities
 {
     public class UI_DisplayModsOnResultsScreen
     {
+        public static void Log(string mes) => MODEntry.LogInfo(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogE(string mes) => MODEntry.LogError(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+
         public static Harmony HarmonyInstance { get; set; }
         private static MyOnScreenDebugDisplay onScreenDebugDisplay;
         private static ModsDisplay modsDisplay = null;
@@ -18,7 +22,7 @@ namespace HostUtilities
 
         public static void Awake()
         {
-            isshow = _MODEntry.Instance.Config.Bind<bool>("00-UI", "05-关卡结束时显示自定义关卡状态", true);
+            isshow = MODEntry.Instance.Config.Bind<bool>("00-UI", "05-关卡结束时显示自定义关卡状态", true);
             /* Setup */
             onScreenDebugDisplay = new MyOnScreenDebugDisplay();
             onScreenDebugDisplay.Awake();
@@ -26,8 +30,7 @@ namespace HostUtilities
             onScreenDebugDisplay.AddDisplay(modsDisplay);
             /* Inject Mod */
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            _MODEntry.AllHarmony.Add(HarmonyInstance);
-            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            MODEntry.AllHarmony[MethodBase.GetCurrentMethod().DeclaringType.Name] = HarmonyInstance;
         }
 
         public static void Update()
@@ -65,8 +68,8 @@ namespace HostUtilities
                 this.m_Displays = new List<DebugDisplay>();
                 this.m_GUIStyle = new GUIStyle();
                 this.m_GUIStyle.alignment = TextAnchor.UpperRight;
-                this.m_GUIStyle.fontSize = _MODEntry.defaultFontSize.Value;
-                this.m_GUIStyle.normal.textColor = _MODEntry.defaultFontColor.Value;
+                this.m_GUIStyle.fontSize = MODEntry.defaultFontSize.Value;
+                this.m_GUIStyle.normal.textColor = MODEntry.defaultFontColor.Value;
 
             }
 
@@ -80,8 +83,8 @@ namespace HostUtilities
 
             public void OnGUI()
             {
-                m_GUIStyle.fontSize = Mathf.RoundToInt(_MODEntry.defaultFontSize.Value * _MODEntry.dpiScaleFactor);
-                this.m_GUIStyle.normal.textColor = _MODEntry.defaultFontColor.Value;
+                m_GUIStyle.fontSize = Mathf.RoundToInt(MODEntry.defaultFontSize.Value * MODEntry.dpiScaleFactor);
+                this.m_GUIStyle.normal.textColor = MODEntry.defaultFontColor.Value;
                 Rect rect = new Rect(0f, (float)Screen.height * 0.14f, (float)Screen.width * 0.99f, (float)this.m_GUIStyle.fontSize);
                 for (int i = 0; i < this.m_Displays.Count; i++)
                 {
@@ -125,7 +128,7 @@ namespace HostUtilities
         private static void OnOutro()
         {
             //客机不显示自定义状态, 因为不生效
-            if (isshow.Value && _MODEntry.IsHost)
+            if (isshow.Value && MODEntry.isHost)
             {
 
                 if (LevelEdit.kevinEnabled.Value)

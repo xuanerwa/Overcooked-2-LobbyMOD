@@ -14,34 +14,33 @@ using Version = System.Version;
 
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.80")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.yc阿哲 Q群860480677 点击下方“‧‧‧”展开", "1.0.81")]
     [BepInProcess("Overcooked2.exe")]
-    public class _MODEntry : BaseUnityPlugin
+    public class MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.80";
+        public static string Version = "1.0.81";
         public static Harmony HarmonyInstance { get; set; }
-        public static List<string> AllHarmonyName = new List<string>();
-        public static List<Harmony> AllHarmony = new List<Harmony>();
+        public static Dictionary<string, Harmony> AllHarmony = new Dictionary<string, Harmony>();
         public static string modName;
-        public static _MODEntry Instance;
-        public static bool IsInLobby = false;
-        public static bool IsHost = false;
-        public static bool IsInParty = false;
+        public static MODEntry Instance;
+        public static bool isInLobby = false;
+        public static bool isHost = false;
+        public static bool isInParty = false;
         public static float dpiScaleFactor = 1f;
         private readonly float baseScreenWidth = 1920f;
         private readonly float baseScreenHeight = 1080f;
         public static ConfigEntry<int> defaultFontSize;
         public static ConfigEntry<Color> defaultFontColor;
-        public static bool IsSelectedAndPlay = false;
-        public static bool IsAuthor = false;
+        public static bool isSelectedAndPlay = false;
+        public static bool isAuthor = false;
         public static CSteamID CurrentSteamID;
 
         public void Awake()
         {
             try
             {
-                defaultFontSize = Config.Bind<int>("00-UI", "MOD的UI字体大小", 20, new ConfigDescription("MOD的UI字体大小", new AcceptableValueRange<int>(5, 40)));
-                defaultFontColor = Config.Bind<Color>("00-UI", "MOD的UI字体颜色", new Color(1, 1, 1, 1));
+                defaultFontSize = Config.Bind("00-UI", "MOD的UI字体大小", 20, new ConfigDescription("MOD的UI字体大小", new AcceptableValueRange<int>(5, 40)));
+                defaultFontColor = Config.Bind("00-UI", "MOD的UI字体颜色", new Color(1, 1, 1, 1));
 
                 modName = "HostUtilities";
                 Instance = this;
@@ -49,7 +48,7 @@ namespace HostUtilities
                 ChangeDisplayName.Awake();
                 FixDoubleServing.Awake();
                 FixBrokenWashingStation.Awake();
-                ModifyScoreScreenTimeout.Awake();
+                //ModifyScoreScreenTimeout.Awake();
                 ReplaceOneShotAudio.Awake();
 
 
@@ -69,11 +68,10 @@ namespace HostUtilities
                 UI_DisplayLatency.Awake();
 
                 HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-                AllHarmony.Add(HarmonyInstance);
-                AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
-                foreach (string harmony in AllHarmonyName)
+                AllHarmony[MethodBase.GetCurrentMethod().DeclaringType.Name] = HarmonyInstance;
+                foreach (var items in AllHarmony)
                 {
-                    LogError($"Patched {harmony}!");
+                    LogError($"Patched {items.Key}!");
                 }
             }
             catch (Exception e)
@@ -115,13 +113,12 @@ namespace HostUtilities
             try
             {
                 Instance = null;
-                for (int i = 0; i < AllHarmony.Count; i++)
+                foreach (var items in AllHarmony)
                 {
-                    AllHarmony[i].UnpatchAll();
-                    LogWarning($"Unpatched {AllHarmonyName[i]}!");
+                    AllHarmony[items.Key].UnpatchSelf();
+                    LogError($"UnPatched {items.Key}!");
                 }
                 AllHarmony.Clear();
-                AllHarmonyName.Clear();
             }
             catch (Exception e)
             {
@@ -147,26 +144,25 @@ namespace HostUtilities
         }
 
 
-        public static bool isInLobby()
+        public static bool IsInLobby()
         {
             ServerLobbyFlowController instance = ServerLobbyFlowController.Instance;
             ClientLobbyFlowController instance2 = ClientLobbyFlowController.Instance;
             bool flag = false;
             flag |= (instance2 != null && (LobbyFlowController.LobbyState.OnlineThemeSelection.Equals(instance2.m_state) || LobbyFlowController.LobbyState.LocalThemeSelection.Equals(instance2.m_state)));
             flag |= (instance != null && (LobbyFlowController.LobbyState.OnlineThemeSelection.Equals(instance.m_state) || LobbyFlowController.LobbyState.LocalThemeSelection.Equals(instance.m_state)));
-            bool flag2 = flag && instance != null;
-            if (flag != IsInLobby)
+            if (flag != isInLobby)
             {
                 if (!flag)
                 {
-                    IsInLobby = false;
+                    isInLobby = false;
                     LogInfo("Exit Lobby");
                     return false;
                 }
                 else
                 {
-                    IsInLobby = true;
-                    IsInParty = true;
+                    isInLobby = true;
+                    isInParty = true;
                     LogInfo("Enter Lobby");
                     return true;
                 }
@@ -180,8 +176,13 @@ namespace HostUtilities
             dpiScaleFactor = Mathf.Min(ratioWidth, ratioHeight);
         }
         public static void LogWarning(string message) => BepInEx.Logging.Logger.CreateLogSource(modName).LogWarning(message);
+        public static void LogWarning(string className, string message) => BepInEx.Logging.Logger.CreateLogSource(modName).LogWarning($"[{className}] " + message);
         public static void LogInfo(string message) => BepInEx.Logging.Logger.CreateLogSource(modName).LogInfo(message);
+        public static void LogInfo(string className, string message) => BepInEx.Logging.Logger.CreateLogSource(modName).LogInfo($"[{className}] " + message);
+
         public static void LogError(string message) => BepInEx.Logging.Logger.CreateLogSource(modName).LogError(message);
+        public static void LogError(string className, string message) => BepInEx.Logging.Logger.CreateLogSource(modName).LogError($"[{className}] " + message);
+
         public static void LogHarmony(string classname, MethodBase methodBase) => BepInEx.Logging.Logger.CreateLogSource(modName).LogError($"{classname}: {methodBase.Name}");
 
         [HarmonyPatch(typeof(DisconnectionHandler), "HandleKickMessage")]
@@ -198,11 +199,11 @@ namespace HostUtilities
         [HarmonyPostfix]
         public static void ExitFromParty()
         {
-            IsInParty = false;
+            isInParty = false;
         }
 
 
-        public static bool isHost()
+        public static bool IsHost()
         {
             IOnlinePlatformManager onlinePlatformManager = GameUtils.RequireManagerInterface<IOnlinePlatformManager>();
             if (onlinePlatformManager == null)
@@ -228,10 +229,10 @@ namespace HostUtilities
         {
             try
             {
-                IsHost = isHost();
-                isInLobby();
-                if (Screen.width != Mathf.RoundToInt(_MODEntry.Instance.baseScreenWidth * dpiScaleFactor) || Screen.height != Mathf.RoundToInt(_MODEntry.Instance.baseScreenHeight * dpiScaleFactor)) { Instance.UpdateGUIDpi(); }
-                //LogInfo($"IsHost  {IsHost}  IsInParty  {IsInParty}");
+                isHost = IsHost();
+                IsInLobby();
+                if (Screen.width != Mathf.RoundToInt(MODEntry.Instance.baseScreenWidth * dpiScaleFactor) || Screen.height != Mathf.RoundToInt(MODEntry.Instance.baseScreenHeight * dpiScaleFactor)) { Instance.UpdateGUIDpi(); }
+                //LogInfo($"isHost  {isHost}  isInParty  {isInParty}");
                 if (canChangePosition > 5)
                 {
                     UI_DisplayModName.SetRandomPosition();
@@ -246,9 +247,9 @@ namespace HostUtilities
                 {
                     CurrentSteamID = SteamUser.GetSteamID();
                     LogError("CurrentSteamID: " + CurrentSteamID.m_SteamID);
-                    if (_MODEntry.CurrentSteamID.m_SteamID.Equals(76561199191224186) && !IsAuthor)
+                    if (MODEntry.CurrentSteamID.m_SteamID.Equals(76561199191224186) && !isAuthor)
                     {
-                        IsAuthor = true;
+                        isAuthor = true;
                         ModifyMaxActiveOrders.Awake();
                         FixHeatedPosition.Awake();
                     }
@@ -310,7 +311,10 @@ namespace HostUtilities
 
     public class VersionCheckClass : MonoBehaviour
     {
-        public static void log(string mes) => _MODEntry.LogInfo(mes);
+        public static void Log(string mes) => MODEntry.LogInfo(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogE(string mes) => MODEntry.LogError(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+
         public static VersionCheckClass Instance;
         private string githubtoken = string.Empty;
 
@@ -324,13 +328,13 @@ namespace HostUtilities
             try
             {
                 string versionInfoUrl = "https://api.github.com/repos/CH3NGYZ/Overcooked-2-HostUtilities/releases?per_page=100";
-                UI_DisplayModName.cornerMessage = $"Host Utilities v{_MODEntry.Version} ";
+                UI_DisplayModName.cornerMessage = $"Host Utilities v{MODEntry.Version} ";
                 StartCoroutine(SendWebRequest(versionInfoUrl));
             }
             catch (Exception e)
             {
-                _MODEntry.LogError(e.Message);
-                _MODEntry.LogError(e.StackTrace);
+                LogE(e.Message);
+                LogE(e.StackTrace);
             }
         }
 
@@ -360,10 +364,10 @@ namespace HostUtilities
                 }
                 else
                 {
-                    _MODEntry.LogError($"主 URL 请求失败: {request.error}");
-                    UI_DisplayModName.cornerMessage = $"Host Utilities v{_MODEntry.Version} AFailed {request.error}";
+                    LogE($"主 URL 请求失败: {request.error}");
+                    UI_DisplayModName.cornerMessage = $"Host Utilities v{MODEntry.Version} AFailed {request.error}";
                     // 请求超时，使用备用 URL 重新请求一次
-                    _MODEntry.LogError("请求超时，尝试使用备用 URL");
+                    LogE("请求超时，尝试使用备用 URL");
                     using (UnityWebRequest backupRequest = UnityWebRequest.Get("https://github-api.azhe.chat/repos/CH3NGYZ/Overcooked-2-HostUtilities/releases?per_page=100"))
                     {
                         backupRequest.SetRequestHeader("User-Agent", "request");
@@ -388,8 +392,8 @@ namespace HostUtilities
                         }
                         else
                         {
-                            _MODEntry.LogError($"备用 URL 请求失败: {backupRequest.error}");
-                            UI_DisplayModName.cornerMessage = $"Host Utilities v{_MODEntry.Version} BFailed {backupRequest.error}";
+                            LogE($"备用 URL 请求失败: {backupRequest.error}");
+                            UI_DisplayModName.cornerMessage = $"Host Utilities v{MODEntry.Version} BFailed {backupRequest.error}";
                         }
                     }
                 }
@@ -419,7 +423,7 @@ namespace HostUtilities
                 latestVersion = entry.Key;
                 break;
             }
-            Version currentVersion = new Version(_MODEntry.Version);
+            Version currentVersion = new Version(MODEntry.Version);
 
             // 输出从当前版本到最新版本之间的所有更新
             bool isUpdateAvailable = false;
@@ -446,25 +450,25 @@ namespace HostUtilities
                         upddialog.Initialize($"您必须手动打开安装器", $"以从v{currentVersion}更新到v{latestVersion}", "Text.Button.Okay", string.Empty, string.Empty, T17DialogBox.Symbols.Warning, false, false, false);
                         upddialog.OnConfirm += () =>
                         {
-                            _MODEntry.LogInfo($"Will Upd {latestVersion}");
+                            Log($"Will Upd {latestVersion}");
                             Application.Quit();
                         };
                         upddialog.Show();
                     };
                     dialog.OnCancel += () =>
                     {
-                        UI_DisplayModName.cornerMessage = $"Host Utilities v{_MODEntry.Version} Cancel Update {latestVersion}";
-                        _MODEntry.LogInfo($"Cancel Update {latestVersion}");
+                        UI_DisplayModName.cornerMessage = $"Host Utilities v{MODEntry.Version} Cancel Update {latestVersion}";
+                        Log($"Cancel Update {latestVersion}");
                     };
                     dialog.Show();
                 }
-                _MODEntry.LogInfo("Update Log from " + currentVersion + " to " + latestVersion + ":");
-                _MODEntry.LogError(updateLog);
+                Log("Update Log from " + currentVersion + " to " + latestVersion + ":");
+                LogE(updateLog);
             }
             else
             {
-                UI_DisplayModName.cornerMessage = $"Host Utilities v{_MODEntry.Version} Latest";
-                _MODEntry.LogInfo("无可用更新.");
+                UI_DisplayModName.cornerMessage = $"Host Utilities v{MODEntry.Version} Latest";
+                Log("无可用更新.");
             }
         }
 
@@ -476,7 +480,7 @@ namespace HostUtilities
                 DateTime dateTime = UnixTimeStampToDateTime(number);
                 DateTime utcPlus8Time = dateTime.ToUniversalTime().AddHours(8);
                 string formattedDateTime = utcPlus8Time.ToString("yyyy/MM/dd hh:mm:ss tt");
-                _MODEntry.LogError($"请求更新API访问达到限制, 恢复时间: {formattedDateTime}");
+                LogE($"请求更新API访问达到限制, 恢复时间: {formattedDateTime}");
                 UI_DisplayModName.cornerMessage += $"Forbidden {formattedDateTime}";
             }
         }

@@ -9,15 +9,19 @@ namespace HostUtilities
 {
     public class UI_DisplayKickedUser
     {
+        public static void Log(string mes) => MODEntry.LogInfo(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogE(string mes) => MODEntry.LogError(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+
         private static MyOnScreenDebugDisplayKickedUser onScreenDebugDisplayKickedUser;
         private static MyKickedUserCounter kickedUserCounter = null;
         public static ConfigEntry<bool> ShowKickedUserEnabled;
 
-        public static void add_m_Text(string str) => kickedUserCounter?.add_m_Text(str);
+        public static void Add_m_Text(string str) => kickedUserCounter?.add_m_Text(str);
 
         public static void Awake()
         {
-            ShowKickedUserEnabled = _MODEntry.Instance.Config.Bind<bool>("00-UI", "02-街机大厅内显示自动踢的黑名单玩家", true);
+            ShowKickedUserEnabled = MODEntry.Instance.Config.Bind<bool>("00-UI", "02-街机大厅内显示自动踢的黑名单玩家", true);
             onScreenDebugDisplayKickedUser = new MyOnScreenDebugDisplayKickedUser();
             onScreenDebugDisplayKickedUser.Awake();
         }
@@ -27,9 +31,9 @@ namespace HostUtilities
         {
             onScreenDebugDisplayKickedUser.Update();
 
-            if (((!_MODEntry.IsInLobby) || Input.GetKeyDown(KeyCode.End)) && kickedUserCounter != null)
+            if (((!MODEntry.isInLobby) || Input.GetKeyDown(KeyCode.End)) && kickedUserCounter != null)
                 RemoveKickedUserCounter();
-            else if (((_MODEntry.IsInLobby && ShowKickedUserEnabled.Value) || Input.GetKeyDown(KeyCode.Home)) && kickedUserCounter == null)
+            else if (((MODEntry.isInLobby && ShowKickedUserEnabled.Value) || Input.GetKeyDown(KeyCode.Home)) && kickedUserCounter == null)
                 AddKickedUserCounter();
         }
 
@@ -89,8 +93,8 @@ namespace HostUtilities
             public void Awake()
             {
                 m_GUIStyle.alignment = TextAnchor.UpperLeft;
-                m_GUIStyle.fontSize = _MODEntry.defaultFontSize.Value;
-                this.m_GUIStyle.normal.textColor = _MODEntry.defaultFontColor.Value;
+                m_GUIStyle.fontSize = MODEntry.defaultFontSize.Value;
+                this.m_GUIStyle.normal.textColor = MODEntry.defaultFontColor.Value;
                 m_GUIStyle.richText = false;
             }
 
@@ -102,8 +106,8 @@ namespace HostUtilities
 
             public void OnGUI()
             {
-                m_GUIStyle.fontSize = Mathf.RoundToInt(_MODEntry.defaultFontSize.Value * _MODEntry.dpiScaleFactor);
-                this.m_GUIStyle.normal.textColor = _MODEntry.defaultFontColor.Value;
+                m_GUIStyle.fontSize = Mathf.RoundToInt(MODEntry.defaultFontSize.Value * MODEntry.dpiScaleFactor);
+                this.m_GUIStyle.normal.textColor = MODEntry.defaultFontColor.Value;
                 Rect rect = new Rect(0f, 0f, Screen.width, m_GUIStyle.fontSize);
                 for (int i = 0; i < m_Displays.Count; i++)
                     m_Displays[i].OnDraw(ref rect, m_GUIStyle);

@@ -12,17 +12,20 @@ namespace HostUtilities
 {
     public class ReplaceOneShotAudio
     {
+        public static void Log(string mes) => MODEntry.LogInfo(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogE(string mes) => MODEntry.LogError(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+
         public static Harmony HarmonyInstance { get; set; }
         public static ConfigEntry<string> audioPackSelected;
         private static string[] audioPackList;
         public static void Awake()
         {
             audioPackList = GetAudioPackList();
-            audioPackSelected = _MODEntry.Instance.Config.Bind<string>("01-功能开关", "05-选择语音包", audioPackList[0], new ConfigDescription("选择语音包", new AcceptableValueList<string>(audioPackList)));
-
+            audioPackSelected = MODEntry.Instance.Config.Bind<string>("01-功能开关", "05-选择语音包", audioPackList[0], new ConfigDescription("选择语音包", new AcceptableValueList<string>(audioPackList)));
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            _MODEntry.AllHarmony.Add(HarmonyInstance);
-            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            MODEntry.AllHarmony[MethodBase.GetCurrentMethod().DeclaringType.Name] = HarmonyInstance;
+
         }
 
 
@@ -60,140 +63,140 @@ namespace HostUtilities
             {
                 if (_tag == GameOneShotAudioTag.Curse || _tag == GameOneShotAudioTag.UIEmoteSwear)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-骂人");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-骂人");
                 }
                 else if (_tag == GameOneShotAudioTag.UIEmoteOk)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-好");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-好");
                 }
                 else if (_tag == GameOneShotAudioTag.UIEmotePrep)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-准备中");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-准备中");
                 }
                 else if (_tag == GameOneShotAudioTag.UIEmoteServing)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-上菜中");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-上菜中");
                 }
                 else if (_tag == GameOneShotAudioTag.UIEmoteWashUp)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-清理中");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-清理中");
                 }
                 else if (_tag == GameOneShotAudioTag.UIEmoteCooking)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-烹饪中");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-烹饪中");
                 }
                 else if (_tag == GameOneShotAudioTag.UIEmoteDisappointed)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-祝你下次好运");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-祝你下次好运");
                 }
                 else if (_tag == GameOneShotAudioTag.UIEmoteGreatJob)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-干得漂亮");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-干得漂亮");
                 }
                 else if (_tag == GameOneShotAudioTag.UIEmoteHi)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-你好");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-你好");
                 }
                 else if (_tag == GameOneShotAudioTag.UIEmoteCelebrate)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-我们成功啦");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-我们成功啦");
                 }
                 else if (_tag == GameOneShotAudioTag.Chop)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-切");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-切");
                 }
                 else if (_tag == GameOneShotAudioTag.Throw)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-丢");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-丢");
                 }
                 else if (_tag == GameOneShotAudioTag.Pickup)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-拿");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-拿");
                 }
                 else if (_tag == GameOneShotAudioTag.PutDown)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-放");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-放");
                 }
                 else if (_tag == GameOneShotAudioTag.Catch)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-接");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-接");
                 }
                 else if (_tag == GameOneShotAudioTag.Dash)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-冲刺");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-冲刺");
                 }
                 else if (_tag == GameOneShotAudioTag.TimesUp)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-时间到");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-时间到");
                 }
                 else if (_tag == GameOneShotAudioTag.TrashCan)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-垃圾桶");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-垃圾桶");
                 }
                 else if (_tag == GameOneShotAudioTag.RecipeTimeOut)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-菜单过期");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-菜单过期");
                 }
                 else if (_tag == GameOneShotAudioTag.UIChefSelected)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-选中厨师");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-选中厨师");
                 }
                 else if (_tag == GameOneShotAudioTag.WashedPlate)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-出盘");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-出盘");
                 }
                 else if (_tag == GameOneShotAudioTag.WashingSplash)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-洗盘");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-洗盘");
                 }
                 else if (_tag == GameOneShotAudioTag.SuccessfulDelivery)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-上菜成功");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-上菜成功");
                 }
                 else if (_tag == GameOneShotAudioTag.ImCooked)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-锅熟");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-锅熟");
                 }
                 else if (_tag == GameOneShotAudioTag.CookingWarning)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-锅叫");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-锅叫");
                 }
                 else if (_tag == GameOneShotAudioTag.FireIgnition)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-着火");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-着火");
                 }
                 else if (_tag == GameOneShotAudioTag.Impact)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-碰撞");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-碰撞");
                 }
                 else if (_tag == GameOneShotAudioTag.DLC_07_Failed)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-厨房被毁");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-厨房被毁");
                 }
                 else if (_tag == GameOneShotAudioTag.DLC_07_Hammer)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-修门");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-修门");
                 }
                 else if (_tag == GameOneShotAudioTag.DLC_08_Cannon_Fire)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-大炮发射");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-大炮发射");
                 }
                 else if (_tag == GameOneShotAudioTag.ResultsStar01)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-一星");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-一星");
                 }
                 else if (_tag == GameOneShotAudioTag.ResultsStar02)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-两星");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-两星");
                 }
                 else if (_tag == GameOneShotAudioTag.ResultsStar03)
                 {
-                    loadTagFile(ref __result, $"{audioPackSelected.Value}-三星");
+                    LoadTagFile(ref __result, $"{audioPackSelected.Value}-三星");
                 }
             }
         }
 
-        private static void loadTagFile(ref AudioDirectoryEntry __result, string _tag)
+        private static void LoadTagFile(ref AudioDirectoryEntry __result, string _tag)
         {
             string dllFolderPath = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string audioFolderPath = Path.Combine(dllFolderPath, "Audio");
@@ -217,12 +220,12 @@ namespace HostUtilities
                 }
                 else
                 {
-                    _MODEntry.LogError("读取wav失败");
+                    LogE("读取wav失败");
                 }
             }
             else
             {
-                //_MODEntry.LogError($"文件夹内没有 {_tag.ToString()}-*.wav 文件");
+                //LogE($"文件夹内没有 {_tag.ToString()}-*.wav 文件");
             }
         }
 

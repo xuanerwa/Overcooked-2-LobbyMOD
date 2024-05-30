@@ -15,6 +15,10 @@ namespace HostUtilities
 {
     public class UI_DisplayLatency
     {
+        public static void Log(string mes) => MODEntry.LogInfo(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogE(string mes) => MODEntry.LogError(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+
         public static Harmony HarmonyInstance { get; set; }
         private static MyOnScreenDebugDisplay onScreenDebugDisplay;
         private static NetworkStateDebugDisplay NetworkDebugUI = null;
@@ -22,21 +26,16 @@ namespace HostUtilities
         public static ConfigEntry<bool> isShowDebugInfo;
         public static bool canAdd;
 
-
-
-        //public static void add_m_Text(string str) => NetworkDebugUI?.add_m_Text(str);
-        //public static void change_m_Text(string str) => NetworkDebugUI?.change_m_Text(str);
-
         public static void Awake()
         {
-            ShowEnabled = _MODEntry.Instance.Config.Bind<bool>("00-UI", "03-屏幕右上角显示延迟", true);
-            isShowDebugInfo = _MODEntry.Instance.Config.Bind<bool>("00-UI", "04-屏幕右上角增加显示调试信息", false);
+            ShowEnabled = MODEntry.Instance.Config.Bind<bool>("00-UI", "03-屏幕右上角显示延迟", true);
+            isShowDebugInfo = MODEntry.Instance.Config.Bind<bool>("00-UI", "04-屏幕右上角增加显示调试信息", false);
             canAdd = false;
             onScreenDebugDisplay = new MyOnScreenDebugDisplay();
             onScreenDebugDisplay.Awake();
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            _MODEntry.AllHarmony.Add(HarmonyInstance);
-            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            MODEntry.AllHarmony[MethodBase.GetCurrentMethod().DeclaringType.Name] = HarmonyInstance;
+
         }
 
         public static void Update()
@@ -96,8 +95,8 @@ namespace HostUtilities
             public void Awake()
             {
                 m_GUIStyle.alignment = TextAnchor.UpperRight;
-                m_GUIStyle.fontSize = Mathf.RoundToInt(_MODEntry.defaultFontSize.Value * _MODEntry.dpiScaleFactor);
-                this.m_GUIStyle.normal.textColor = _MODEntry.defaultFontColor.Value;
+                m_GUIStyle.fontSize = Mathf.RoundToInt(MODEntry.defaultFontSize.Value * MODEntry.dpiScaleFactor);
+                this.m_GUIStyle.normal.textColor = MODEntry.defaultFontColor.Value;
                 m_GUIStyle.richText = false;
             }
 
@@ -109,8 +108,8 @@ namespace HostUtilities
 
             public void OnGUI()
             {
-                m_GUIStyle.fontSize = Mathf.RoundToInt(_MODEntry.defaultFontSize.Value * _MODEntry.dpiScaleFactor);
-                this.m_GUIStyle.normal.textColor = _MODEntry.defaultFontColor.Value;
+                m_GUIStyle.fontSize = Mathf.RoundToInt(MODEntry.defaultFontSize.Value * MODEntry.dpiScaleFactor);
+                this.m_GUIStyle.normal.textColor = MODEntry.defaultFontColor.Value;
 
                 Rect rect = new Rect(0f, 0f, Screen.width, m_GUIStyle.fontSize);
                 for (int i = 0; i < m_Displays.Count; i++)
@@ -183,7 +182,7 @@ namespace HostUtilities
                     }));
                     DrawText(ref rect, style, ClientGameSetup.Mode + ", time: " + ClientTime.Time().ToString("00000.000"));
                 }
-                if (_MODEntry.IsHost)
+                if (MODEntry.isHost)
                 {
                     try
                     {
@@ -203,7 +202,7 @@ namespace HostUtilities
                                     if (user.DisplayName == sessionUserId.DisplayName)
                                     {
                                         float latency = connection.GetConnectionStats(bReliable: false).m_fLatency;
-                                        if (KickUser.steamIDDictionary.ContainsKey(user.PlatformID.m_steamId) && _MODEntry.CurrentSteamID.m_SteamID.Equals(76561199191224186))
+                                        if (KickUser.steamIDDictionary.ContainsKey(user.PlatformID.m_steamId) && MODEntry.CurrentSteamID.m_SteamID.Equals(76561199191224186))
                                         {
                                             if (KickUser.steamIDDictionary.TryGetValue(user.PlatformID.m_steamId, out SteamUserInfo userInfo))
                                             {
@@ -268,7 +267,7 @@ namespace HostUtilities
                     //        }
                     //        catch (Exception)
                     //        {
-                    //            //_MODEntry.LogError($"{ex}");
+                    //            //LogE($"{ex}");
                     //        }
                     //    }
                     //    //DrawText(ref rect, style, empty);
@@ -322,11 +321,11 @@ namespace HostUtilities
                             //}
                             //else
                             //{
-                                DrawText(ref rect, style, string.Concat(new object[]
-                                {
+                            DrawText(ref rect, style, string.Concat(new object[]
+                            {
                                     "与主机的延迟 ",
                                     connectionStats.m_fLatency == (float)0 ? "获取错误" : (connectionStats.m_fLatency*1000).ToString("000")+" ms"
-                                }));
+                            }));
                             //}
                         }
                         //ConnectionStats clientConnectionStats = m_MultiplayerController.GetClientConnectionStats(true);
@@ -356,7 +355,7 @@ namespace HostUtilities
                     }
                     catch (Exception)
                     {
-                        //_MODEntry.LogError($"{ex}");
+                        //LogE($"{ex}");
                     }
                     //    DrawText(ref rect, style, string.Concat(new object[]
                     //    {

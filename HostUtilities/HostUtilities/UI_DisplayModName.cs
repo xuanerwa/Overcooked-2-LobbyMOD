@@ -13,32 +13,32 @@ namespace HostUtilities
 {
     public class UI_DisplayModName
     {
-        public static string cornerMessage = $"Host Utilities v{_MODEntry.Version} ";
-        public static Harmony HarmonyInstance { get; set; }
+        private static void Log(string mes) => MODEntry.LogInfo(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        private static void LogE(string mes) => MODEntry.LogError(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        private static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+
+        public static string cornerMessage = $"Host Utilities v{MODEntry.Version} ";
+        private static Harmony HarmonyInstance { get; set; }
         private static MyOnScreenDebugDisplay onScreenDebugDisplay;
         private static NetworkStateDebugDisplay NetworkDebugUI = null;
-        public static ConfigEntry<bool> ShowEnabled;
-        public static ConfigEntry<bool> isShowDebugInfo;
-        public static bool canAdd;
+        private static bool canAdd;
 
-        private static readonly List<Vector2> predefinedPositions = new List<Vector2>
-        {
-            new Vector2(0f, 0f), // 左下
-            new Vector2(Screen.width, 0f), // 右下
-            new Vector2(0f, Screen.height), // 左上
-            new Vector2(Screen.width, Screen.height), // 右上
-        };
-
-        private static Vector2 currentPosition = predefinedPositions[0];
+        static List<Vector2> availablePositions;
+        static Vector2 currentPosition;
 
         public static void Awake()
         {
             canAdd = false;
+            availablePositions = new List<Vector2> {
+                    new Vector2(0f, 0f), //左上
+                    new Vector2(0f, Screen.height), // 左下
+                    new Vector2(Screen.width, Screen.height), // 右下
+                    new Vector2(Screen.width, 60 * MODEntry.dpiScaleFactor) //右上偏下60
+                };
             onScreenDebugDisplay = new MyOnScreenDebugDisplay();
             onScreenDebugDisplay.Awake();
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            _MODEntry.AllHarmony.Add(HarmonyInstance);
-            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            MODEntry.AllHarmony[MethodBase.GetCurrentMethod().DeclaringType.Name] = HarmonyInstance;
         }
 
         public static void Update()
@@ -68,8 +68,29 @@ namespace HostUtilities
 
         public static void SetRandomPosition()
         {
+
+            if (MODEntry.isInLobby)
+            {
+                // 如果在大厅中，则排除左上和右上
+                availablePositions = new List<Vector2> {
+                    new Vector2(0f, 20 * MODEntry.dpiScaleFactor), //左上偏下20
+                    new Vector2(0f, Screen.height), // 左下
+                    new Vector2(Screen.width, Screen.height), // 右下
+                    new Vector2(Screen.width, 60 * MODEntry.dpiScaleFactor)  //右上偏下60
+                };
+            }
+            else
+            {
+                // 否则使用所有预定义位置
+                availablePositions = new List<Vector2> {
+                    new Vector2(0f, 0f), //左上
+                    new Vector2(0f, Screen.height), // 左下
+                    new Vector2(Screen.width, Screen.height), // 右下
+                    new Vector2(Screen.width, 60 * MODEntry.dpiScaleFactor) //右上偏下60
+                };
+            }
             System.Random rand = new System.Random();
-            currentPosition = predefinedPositions[rand.Next(predefinedPositions.Count)];
+            currentPosition = availablePositions[rand.Next(availablePositions.Count)];
         }
 
         private static void AddNetworkDebugUI()
@@ -88,7 +109,11 @@ namespace HostUtilities
         private class MyOnScreenDebugDisplay
         {
             private readonly List<DebugDisplay> m_Displays = new List<DebugDisplay>();
-            private readonly GUIStyle m_GUIStyle = new GUIStyle();
+            private static GUIStyle m_GUIStyle = new GUIStyle();
+            public static string GetTextAlignment()
+            {
+                return m_GUIStyle.alignment.ToString();
+            }
 
             public void AddDisplay(DebugDisplay display)
             {
@@ -103,8 +128,10 @@ namespace HostUtilities
 
             public void Awake()
             {
-                m_GUIStyle.fontSize = Mathf.RoundToInt(25f * _MODEntry.dpiScaleFactor);
-                m_GUIStyle.normal.textColor = new Color(145 / 255f, 195 / 255f, 228 / 255f, 0.5f);
+                m_GUIStyle.fontSize = Mathf.RoundToInt(20f * MODEntry.dpiScaleFactor);
+                //m_GUIStyle.normal.textColor = new Color(145 / 255f, 195 / 255f, 228 / 255f, 0.3f);
+                //m_GUIStyle.normal.textColor = new Color(1f, 1f, 1f, 1f);
+                m_GUIStyle.normal.textColor = new Color(0f, 0f, 0f, 0.3f);
                 m_GUIStyle.richText = false;
             }
 
@@ -116,29 +143,39 @@ namespace HostUtilities
 
             public void OnGUI()
             {
-                m_GUIStyle.fontSize = Mathf.RoundToInt(25f * _MODEntry.dpiScaleFactor);
+                m_GUIStyle.fontSize = Mathf.RoundToInt(20f * MODEntry.dpiScaleFactor);
+                Vector2 textSize = m_GUIStyle.CalcSize(new GUIContent(cornerMessage));
+                float offset = 2f;
+                int index = availablePositions.IndexOf(currentPosition);
+                Rect rect = new Rect(currentPosition.x, currentPosition.y, textSize.x, textSize.y);
+                switch (index)
+                {
+                    case 0:
+                        m_GUIStyle.alignment = TextAnchor.UpperLeft;
+                        rect.x += offset;
+                        rect.y += offset;
+                        break;
+                    case 1:
+                        m_GUIStyle.alignment = TextAnchor.LowerLeft;
+                        rect.x += offset;
+                        rect.y -= (textSize.y + offset);
+                        break;
+                    case 2:
+                        m_GUIStyle.alignment = TextAnchor.LowerRight;
+                        rect.x -= (textSize.x + offset);
+                        rect.y -= (textSize.y + offset);
+                        break;
+                    case 3:
+                        m_GUIStyle.alignment = TextAnchor.UpperRight;
+                        rect.x -= (textSize.x + offset);
+                        rect.y += offset;
+                        break;
+                }
 
-                // 设置对齐方式
-                if (currentPosition == predefinedPositions[0])
-                {
-                    m_GUIStyle.alignment = TextAnchor.LowerLeft;
-                }
-                else if (currentPosition == predefinedPositions[1])
-                {
-                    m_GUIStyle.alignment = TextAnchor.LowerRight;
-                }
-                else if (currentPosition == predefinedPositions[2])
-                {
-                    m_GUIStyle.alignment = TextAnchor.UpperLeft;
-                }
-                else if (currentPosition == predefinedPositions[3])
-                {
-                    m_GUIStyle.alignment = TextAnchor.UpperRight;
-                }
-
-                Rect rect = new Rect(currentPosition.x, Screen.height - m_GUIStyle.fontSize - currentPosition.y, 0f, m_GUIStyle.fontSize);
                 for (int i = 0; i < m_Displays.Count; i++)
+                {
                     m_Displays[i].OnDraw(ref rect, m_GUIStyle);
+                }
             }
         }
 

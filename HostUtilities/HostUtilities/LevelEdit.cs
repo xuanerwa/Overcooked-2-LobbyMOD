@@ -11,8 +11,10 @@ namespace HostUtilities
 {
     public class LevelEdit
     {
+        public static void Log(string mes) => MODEntry.LogInfo(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogE(string mes) => MODEntry.LogError(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
         public static Harmony HarmonyInstance { get; set; }
-        private static void log(string mes) => _MODEntry.LogInfo(mes);
         private static ConfigEntry<KeyCode> resetTimer;
         private static ConfigEntry<KeyCode> PlayRandom;
         public static ConfigEntry<bool> kevinEnabled;
@@ -26,35 +28,32 @@ namespace HostUtilities
         public static void Awake()
         {
             MServerLobbyFlowController.CreateConfigEntries();
-
-
-            PlayRandom = _MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "08-大厅计时器归零", KeyCode.Alpha6, "4秒后直接开始随机关卡");
-            resetTimer = _MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "09-大厅计时器45秒", KeyCode.Alpha7, "重置街机大厅时间为45秒");
-            kevinEnabled = _MODEntry.Instance.Config.Bind<bool>("04-修改关卡", "00-开启关卡自定义功能", false);
+            PlayRandom = MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "08-大厅计时器归零", KeyCode.Alpha6, "4秒后直接开始随机关卡");
+            resetTimer = MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "09-大厅计时器45秒", KeyCode.Alpha7, "重置街机大厅时间为45秒");
+            kevinEnabled = MODEntry.Instance.Config.Bind<bool>("04-修改关卡", "00-开启关卡自定义功能", false);
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            _MODEntry.AllHarmony.Add(HarmonyInstance);
-            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            MODEntry.AllHarmony[MethodBase.GetCurrentMethod().DeclaringType.Name] = HarmonyInstance;
         }
 
         public static void Update()
         {
             if (Input.GetKeyDown(PlayRandom.Value))
             {
-                if (!_MODEntry.IsHost)
+                if (!MODEntry.isHost)
                 {
-                    _MODEntry.ShowWarningDialog("你不是主机，别点啦");
+                    MODEntry.ShowWarningDialog("你不是主机，别点啦");
                     return;
                 }
                 MServerLobbyFlowController.ResetServerLobbyTimer(0.1f);
             }
             else if (Input.GetKeyDown(resetTimer.Value))
             {
-                if (!_MODEntry.IsHost)
+                if (!MODEntry.isHost)
                 {
-                    _MODEntry.ShowWarningDialog("你不是主机，别点啦");
+                    MODEntry.ShowWarningDialog("你不是主机，别点啦");
                     return;
                 }
-                log("重置街机大厅时间");
+                Log("重置街机大厅时间");
                 MServerLobbyFlowController.ResetServerLobbyTimer(45f);
             }
             EnsureMutuallyExclusiveOptions();
@@ -82,7 +81,6 @@ namespace HostUtilities
                     MServerLobbyFlowController.sceneDisableConfigEntries["02-只玩凯文和小节关"].Value = false;
                 }
             }
-
             // 更新缓存的值
             onlyKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["02-只玩凯文和小节关"].Value;
             notKevin_ = MServerLobbyFlowController.sceneDisableConfigEntries["01-不玩凯文和小节关"].Value;
@@ -108,7 +106,10 @@ namespace HostUtilities
 
     public class MServerLobbyFlowController
     {
-        private static void log(string mes) => _MODEntry.LogInfo(mes);
+        public static void Log(string mes) => MODEntry.LogInfo(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogE(string mes) => MODEntry.LogError(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+
         public static Dictionary<string, ConfigEntry<bool>> sceneDisableConfigEntries = new Dictionary<string, ConfigEntry<bool>>();
         public static Dictionary<string, bool> alreadyPlayedSet = new Dictionary<string, bool>();
 
@@ -148,17 +149,17 @@ namespace HostUtilities
         private static ConfigEntry<bool> configEntry;
         private static void CreateConfigEntry(string cls, string key)
         {
-            configEntry = _MODEntry.Instance.Config.Bind(cls, key, false);
+            configEntry = MODEntry.Instance.Config.Bind(cls, key, false);
             sceneDisableConfigEntries.Add(key, configEntry);
         }
         private static void CreateConfigEntry(string cls, string key, bool init)
         {
-            configEntry = _MODEntry.Instance.Config.Bind(cls, key, init);
+            configEntry = MODEntry.Instance.Config.Bind(cls, key, init);
             sceneDisableConfigEntries.Add(key, configEntry);
         }
         private static void CreateConfigEntry(string cls, string key, bool init, string desc)
         {
-            configEntry = _MODEntry.Instance.Config.Bind(cls, key, init, desc);
+            configEntry = MODEntry.Instance.Config.Bind(cls, key, init, desc);
             sceneDisableConfigEntries.Add(key, configEntry);
         }
 
@@ -178,13 +179,13 @@ namespace HostUtilities
         {
             if (_theme.Equals(SceneDirectoryData.LevelTheme.Random))
             {
-                log($"开始关卡编辑逻辑, 选择的世界是{_theme}");
+                Log($"开始关卡编辑逻辑, 选择的世界是{_theme}");
                 PickRandomWithEdit(__instance);
                 return;
             }
             else
             {
-                log($"开始关卡编辑逻辑, 但已选择具体主题, 使用原逻辑");
+                Log($"开始关卡编辑逻辑, 但已选择具体主题, 使用原逻辑");
                 LevelEdit.doOrigin = true;
                 __instance.PickLevel(_theme);
             }
@@ -273,11 +274,11 @@ namespace HostUtilities
                 }
                 array[i] = fastList.Count;
             }
-            log($"fastList.Count {fastList.Count}");
+            Log($"fastList.Count {fastList.Count}");
 
             if (fastList.Count == 0)
             {
-                log("没有符合条件的关卡");
+                Log("没有符合条件的关卡");
                 sceneDisableConfigEntries["01-关闭世界1"].Value = false;
                 sceneDisableConfigEntries["02-关闭世界2"].Value = false;
                 sceneDisableConfigEntries["03-关闭世界3"].Value = false;
@@ -306,7 +307,7 @@ namespace HostUtilities
                 sceneDisableConfigEntries["05-关闭恐怖地宫凯文"].Value = false;
                 sceneDisableConfigEntries["06-关闭翻滚帐篷凯文"].Value = false;
                 sceneDisableConfigEntries["07-关闭咸咸马戏团凯文"].Value = false;
-                _MODEntry.ShowWarningDialog("没有符合的关卡, 已重置关卡编辑的开关, 请重新选择!");
+                MODEntry.ShowWarningDialog("没有符合的关卡, 已重置关卡编辑的开关, 请重新选择!");
                 __instance.PickLevel(SceneDirectoryData.LevelTheme.Random);
                 return;
             }
@@ -324,9 +325,9 @@ namespace HostUtilities
 
             for (int i = 0; i < fastList.Count; i++)
             {
-                log($"index {i}  name {LevelSelector.GetLevelName(fastList._items[i])}");
+                Log($"index {i}  name {LevelSelector.GetLevelName(fastList._items[i])}");
             }
-            log($"num {num}  idx {idx} name {LevelSelector.GetLevelName(fastList._items[num])}");
+            Log($"num {num}  idx {idx} name {LevelSelector.GetLevelName(fastList._items[num])}");
 
             SceneDirectoryData.SceneDirectoryEntry sceneDirectoryEntry = fastList._items[num];
             int dlcidfromSceneDirIndex2 = __instance.m_lobbyFlow.GetDLCIDFromSceneDirIndex(gameType, idx);
@@ -339,16 +340,16 @@ namespace HostUtilities
                     dialog.Initialize("Text.Versus.NotEnoughPlayers.Title", "Text.Versus.NotEnoughPlayers.Message", "Text.Button.Confirm", null, null, T17DialogBox.Symbols.Warning, true, true, false);
                     T17DialogBox t17DialogBox = dialog;
                     t17DialogBox.OnConfirm = (T17DialogBox.DialogEvent)Delegate.Combine(t17DialogBox.OnConfirm, new T17DialogBox.DialogEvent(delegate ()
-                    {
-                        ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Offline, null, delegate (IConnectionModeSwitchStatus _status)
-                        {
-                            if (_status.GetProgress() == eConnectionModeSwitchProgress.Complete)
-                            {
-                                ServerGameSetup.Mode = GameMode.OnlineKitchen;
-                                ServerMessenger.LoadLevel("StartScreen", GameState.MainMenu, true, GameState.NotSet);
-                            }
-                        });
-                    }));
+                                {
+                                    ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Offline, null, delegate (IConnectionModeSwitchStatus _status)
+                                    {
+                                        if (_status.GetProgress() == eConnectionModeSwitchProgress.Complete)
+                                        {
+                                            ServerGameSetup.Mode = GameMode.OnlineKitchen;
+                                            ServerMessenger.LoadLevel("StartScreen", GameState.MainMenu, true, GameState.NotSet);
+                                        }
+                                    });
+                                }));
                     dialog.Show();
                 }
                 return;

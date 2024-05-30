@@ -8,8 +8,10 @@ namespace HostUtilities
 {
     public class ForceHost
     {
+        public static void Log(string mes) => MODEntry.LogInfo(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogE(string mes) => MODEntry.LogError(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
         public static Harmony HarmonyInstance { get; set; }
-        public static void log(string mes) => _MODEntry.LogInfo(mes);
         public static ConfigEntry<string> ValueList;
         private static string[] strList = {
             "游戏默认逻辑",
@@ -18,10 +20,9 @@ namespace HostUtilities
         };
         public static void Awake()
         {
-            ValueList = _MODEntry.Instance.Config.Bind<string>("01-功能开关", "00-切换默认主机/客机角色:", strList[0], new ConfigDescription("选择状态", new AcceptableValueList<string>(strList)));
+            ValueList = MODEntry.Instance.Config.Bind<string>("01-功能开关", "00-切换默认主机/客机角色:", strList[0], new ConfigDescription("选择状态", new AcceptableValueList<string>(strList)));
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            _MODEntry.AllHarmony.Add(HarmonyInstance);
-            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            MODEntry.AllHarmony[MethodBase.GetCurrentMethod().DeclaringType.Name] = HarmonyInstance;
         }
         public static void Update()
         {
@@ -31,12 +32,12 @@ namespace HostUtilities
 
             //    if (lobbyFlowController != null)
             //    {
-            //        log("call TryJoinGame()");
+            //        Log"call TryJoinGame()");
             //        lobbyFlowController.TryJoinGame();
             //    }
             //    else
             //    {
-            //        log("未找到 ClientLobbyFlowController 实例");
+            //        Log"未找到 ClientLobbyFlowController 实例");
             //    }
             //}
             //else if (Input.GetKeyDown(KeyCode.H))
@@ -45,12 +46,12 @@ namespace HostUtilities
 
             //    if (lobbyFlowController != null)
             //    {
-            //        log("call HostGame()");
+            //        Log"call HostGame()");
             //        lobbyFlowController.HostGame();
             //    }
             //    else
             //    {
-            //        log("未找到 ClientLobbyFlowController 实例");
+            //        Log"未找到 ClientLobbyFlowController 实例");
             //    }
             //}
             //else if (Input.GetKeyDown(KeyCode.K))
@@ -90,16 +91,16 @@ namespace HostUtilities
         //private static bool ClientLobbyFlowController_OnRequestConnectionStateJoinComplete_Prefix(ClientLobbyFlowController __instance, IConnectionModeSwitchStatus status)
         //{
         //    bool flag = ForceHost.ValueList.Value.Equals("强制客机");
-        //    if (!flag) { log("未开启强制客机,不拦截"); return true; }
-        //    if (ServerUserSystem.m_Users.Count > 1) { log("用户数量大于1,不启用强制客机"); return true; }
-        //    log("进入 OnRequestConnectionStateJoinComplete");
+        //    if (!flag) { Log"未开启强制客机,不拦截"); return true; }
+        //    if (ServerUserSystem.m_Users.Count > 1) { Log"用户数量大于1,不启用强制客机"); return true; }
+        //    Log"进入 OnRequestConnectionStateJoinComplete");
         //    //ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Offline, null, new GenericVoid<IConnectionModeSwitchStatus>(__instance.OnLeaveConfirmedOfflineConnectionState));
         //    //__instance.TryJoinGame();
 
         //    if (status.GetResult() == eConnectionModeSwitchResult.Success)
         //    {
         //        GameUtils.SendDiagnosticEvent("Automatchmake:Success");
-        //        if (ConnectionStatus.IsHost())
+        //        if (ConnectionStatus.isHost())
         //        {
         //            __instance.HostGame();
         //        }
@@ -111,7 +112,7 @@ namespace HostUtilities
         //            __instance.m_lobbyFlow.RefreshUserColours(__instance.m_bIsCoop);
         //            __instance.UpdateUIColours();
 
-        //            log("Automatchmake:Success");
+        //            Log"Automatchmake:Success");
         //        }
         //    }
         //    else if (status.DisplayPlatformDialog())
@@ -160,35 +161,35 @@ namespace HostUtilities
         //                {
         //                    case OnlineMultiplayerSessionJoinResult.eClosed:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eClosed");
-        //                        log("eClosed: OnlineMultiplayerSessionJoinResult.eClosed");
+        //                        Log"eClosed: OnlineMultiplayerSessionJoinResult.eClosed");
         //                        break;
         //                    case OnlineMultiplayerSessionJoinResult.eFull:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eFull");
-        //                        log("主机满: OnlineMultiplayerSessionJoinResult.eFull");
+        //                        Log"主机满: OnlineMultiplayerSessionJoinResult.eFull");
         //                        break;
         //                    case OnlineMultiplayerSessionJoinResult.eNoLongerExists:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eNoLongerExists");
-        //                        log("战局不存在: OnlineMultiplayerSessionJoinResult.eNoLongerExists");
+        //                        Log"战局不存在: OnlineMultiplayerSessionJoinResult.eNoLongerExists");
         //                        break;
         //                    case OnlineMultiplayerSessionJoinResult.eNoHostConnection:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eNoHostConnection");
-        //                        log("NoHostConnection: OnlineMultiplayerSessionJoinResult.eNoHostConnection");
+        //                        Log"NoHostConnection: OnlineMultiplayerSessionJoinResult.eNoHostConnection");
         //                        break;
         //                    case OnlineMultiplayerSessionJoinResult.eLoggedOut:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eLoggedOut");
-        //                        log("已登出: OnlineMultiplayerSessionJoinResult.eLoggedOut");
+        //                        Log"已登出: OnlineMultiplayerSessionJoinResult.eLoggedOut");
         //                        break;
         //                    case OnlineMultiplayerSessionJoinResult.eCodeVersionMismatch:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eCodeVersionMismatch");
-        //                        log("版本不匹配: OnlineMultiplayerSessionJoinResult.eCodeVersionMismatch");
+        //                        Log"版本不匹配: OnlineMultiplayerSessionJoinResult.eCodeVersionMismatch");
         //                        break;
         //                    case OnlineMultiplayerSessionJoinResult.eGenericFailure:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eGenericFailure");
-        //                        log("Generic失败: OnlineMultiplayerSessionJoinResult.eGenericFailure");
+        //                        Log"Generic失败: OnlineMultiplayerSessionJoinResult.eGenericFailure");
         //                        break;
         //                    case OnlineMultiplayerSessionJoinResult.eNotEnoughRoomForAllLocalUsers:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eNotEnoughRoomForAllLocalUsers");
-        //                        log("位置不足: OnlineMultiplayerSessionJoinResult.eNotEnoughRoomForAllLocalUsers");
+        //                        Log"位置不足: OnlineMultiplayerSessionJoinResult.eNotEnoughRoomForAllLocalUsers");
         //                        break;
         //                }
         //                joinReturnCode = joinSessionStatus.sessionJoinResult.m_returnCode.ToString();
@@ -196,10 +197,10 @@ namespace HostUtilities
         //            else if (!GameUtils.s_RoomSearch_NoneAvailable)
         //            {
         //                GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_NotSpecified");
-        //                log("不知道什么错误: Automatchmake:Failure:NonFatal_NotSpecified");
+        //                Log"不知道什么错误: Automatchmake:Failure:NonFatal_NotSpecified");
         //                joinReturnCode = "NonFatal_NotSpecified";
         //            }
-        //            log("改变状态重新调用joinGame");
+        //            Log"改变状态重新调用joinGame");
         //            //ServerGameSetup.Mode = GameMode.OnlineKitchen;
         //            //ServerGameSetup.Mode = GameMode.Party;
         //            //__instance.TryJoinGame();
@@ -247,7 +248,7 @@ namespace HostUtilities
                 bool flag = ForceHost.ValueList.Value.Equals("强制主机");
                 if (flag)
                 {
-                    log("强制主机已生效");
+                    Log("强制主机已生效");
                     //_MODEntry.ShowWarningDialog("强制主机已生效。");
                     __instance.HostGame();
                     return false;
@@ -256,8 +257,8 @@ namespace HostUtilities
             }
             catch (Exception e)
             {
-                _MODEntry.LogError($"An error occurred: \n{e.Message}");
-                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+                LogE($"An error occurred: \n{e.Message}");
+                LogE($"Stack trace: \n{e.StackTrace}");
                 return true;
             }
         }
@@ -268,11 +269,11 @@ namespace HostUtilities
         {
             try
             {
-                if (ServerUserSystem.m_Users.Count > 1) { log("用户数量大于1,不启用强制客机"); return; }
+                if (ServerUserSystem.m_Users.Count > 1) { Log("用户数量大于1,不启用强制客机"); return; }
                 bool flag = ForceHost.ValueList.Value.Equals("强制客机");
                 if (flag)
                 {
-                    log("强制客机已生效");
+                    Log("强制客机已生效");
                     ConnectionModeSwitcher.RequestConnectionState(NetConnectionState.Offline, null, new GenericVoid<IConnectionModeSwitchStatus>(__instance.OnRequestOfflineStateFollowingFailureComplete));
                     IPlayerManager playerManager = GameUtils.RequireManagerInterface<IPlayerManager>();
                     IOnlinePlatformManager onlinePlatformManager = GameUtils.RequireManagerInterface<IOnlinePlatformManager>();
@@ -303,8 +304,8 @@ namespace HostUtilities
             }
             catch (Exception e)
             {
-                _MODEntry.LogError($"An error occurred: \n{e.Message}");
-                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+                LogE($"An error occurred: \n{e.Message}");
+                LogE($"Stack trace: \n{e.StackTrace}");
             }
         }
 

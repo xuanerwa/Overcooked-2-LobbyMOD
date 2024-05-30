@@ -17,7 +17,9 @@ namespace HostUtilities
 {
     public class KickUser
     {
-        public static void log(string mes) => _MODEntry.LogInfo(mes);
+        public static void Log(string mes) => MODEntry.LogInfo(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogE(string mes) => MODEntry.LogError(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        public static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
         public static Harmony HarmonyInstance { get; set; }
         public static List<string> banSteamIdList = new List<string>();
         public static List<string> savedSteamIdList = new List<string>();
@@ -49,20 +51,19 @@ namespace HostUtilities
 
         public static void Awake()
         {
-            isAutoKickUser = _MODEntry.Instance.Config.Bind<bool>("01-功能开关", "04-自动踢黑名单里的用户", true, "自动踢出在ban列表中的用户");
+            isAutoKickUser = MODEntry.Instance.Config.Bind<bool>("01-功能开关", "04-自动踢黑名单里的用户", true, "自动踢出在ban列表中的用户");
 
-            kick2 = _MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "04-仅踢出2号位", KeyCode.Alpha2, "按键踢出2号玩家");
-            kick3 = _MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "05-仅踢出3号位", KeyCode.Alpha3, "按键踢出3号玩家");
-            kick4 = _MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "06-仅踢出4号位", KeyCode.Alpha4, "按键踢出4号玩家");
-            kickAndBan2 = _MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "01-拉黑2号位(并踢出)", KeyCode.F2, "拉黑并踢出2号玩家");
-            kickAndBan3 = _MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "02-拉黑3号位(并踢出)", KeyCode.F3, "拉黑并踢出3号玩家");
-            kickAndBan4 = _MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "03-拉黑4号位(并踢出)", KeyCode.F4, "拉黑并踢出4号玩家");
+            kick2 = MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "04-仅踢出2号位", KeyCode.Alpha2, "按键踢出2号玩家");
+            kick3 = MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "05-仅踢出3号位", KeyCode.Alpha3, "按键踢出3号玩家");
+            kick4 = MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "06-仅踢出4号位", KeyCode.Alpha4, "按键踢出4号玩家");
+            kickAndBan2 = MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "01-拉黑2号位(并踢出)", KeyCode.F2, "拉黑并踢出2号玩家");
+            kickAndBan3 = MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "02-拉黑3号位(并踢出)", KeyCode.F3, "拉黑并踢出3号玩家");
+            kickAndBan4 = MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "03-拉黑4号位(并踢出)", KeyCode.F4, "拉黑并踢出4号玩家");
 
-            saveAll = _MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "07-保存当前房间除自己外所有人的主页链接", KeyCode.Alpha5, "保存当前房间除自己外的所有用户主页链接");
+            saveAll = MODEntry.Instance.Config.Bind<KeyCode>("02-按键绑定", "07-保存当前房间除自己外所有人的主页链接", KeyCode.Alpha5, "保存当前房间除自己外的所有用户主页链接");
             LoadBannedSteamIdList();
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
-            _MODEntry.AllHarmony.Add(HarmonyInstance);
-            _MODEntry.AllHarmonyName.Add(MethodBase.GetCurrentMethod().DeclaringType.Name);
+            MODEntry.AllHarmony[MethodBase.GetCurrentMethod().DeclaringType.Name] = HarmonyInstance;
         }
 
         public static void Update()
@@ -71,38 +72,38 @@ namespace HostUtilities
             if (Input.GetKeyDown(kick2.Value))
             {
                 TryKickUser(1, kick2);
-                //log($"按下{kick2.Value}");
+                //Log$"按下{kick2.Value}");
             }
 
             else if (Input.GetKeyDown(kick3.Value))
             {
                 TryKickUser(2, kick3);
-                //log($"按下{kick3.Value}");
+                //Log$"按下{kick3.Value}");
             }
             else if (Input.GetKeyDown(kick4.Value))
             {
                 TryKickUser(3, kick4);
-                //log($"按下{kick4.Value}");
+                //Log$"按下{kick4.Value}");
             }
             else if (Input.GetKeyDown(kickAndBan2.Value))
             {
                 TryKickUserAndBan(1, kickAndBan2);
-                //log($"按下{kickAndBan2.Value}");
+                //Log$"按下{kickAndBan2.Value}");
             }
             else if (Input.GetKeyDown(kickAndBan3.Value))
             {
                 TryKickUserAndBan(2, kickAndBan3);
-                //log($"按下{kickAndBan3.Value}");
+                //Log$"按下{kickAndBan3.Value}");
             }
             else if (Input.GetKeyDown(kickAndBan4.Value))
             {
                 TryKickUserAndBan(3, kickAndBan4);
-                //log($"按下{kickAndBan4.Value}");
+                //Log$"按下{kickAndBan4.Value}");
             }
             else if (Input.GetKeyDown(saveAll.Value))
             {
                 TrySaveUsersProfileClient();
-                _MODEntry.ShowWarningDialog($"主页已保存至 {savedSteamIdListFilePath}");
+                MODEntry.ShowWarningDialog($"主页已保存至 {savedSteamIdListFilePath}");
             }
         }
 
@@ -110,16 +111,16 @@ namespace HostUtilities
 
         static void ShowAllPlayersInfo()
         {
-            _MODEntry.LogInfo("--------------------------------------");
+            Log("--------------------------------------");
             for (int i = 0; i < ServerUserSystem.m_Users.Count; i++)
             {
                 User user = ServerUserSystem.m_Users._items[i];
                 OnlineUserPlatformId platformID = user.PlatformID;
                 bool m_bIsLocal = user.IsLocal;
 
-                _MODEntry.LogInfo($"玩家{i} 昵称:{user.DisplayName} 是否本地:{m_bIsLocal} steamid:{platformID.m_steamId} 主页:https://steamcommunity.com/profiles/{platformID.m_steamId}\n\n\n--------------------------------------");
+                Log($"玩家{i} 昵称:{user.DisplayName} 是否本地:{m_bIsLocal} steamid:{platformID.m_steamId} 主页:https://steamcommunity.com/profiles/{platformID.m_steamId}\n\n\n--------------------------------------");
             }
-            _MODEntry.LogInfo("--------------------------------------");
+            Log("--------------------------------------");
         }
 
         public static bool KickBanListUser(User user)
@@ -134,8 +135,8 @@ namespace HostUtilities
                 processedList.Contains(steamCommunityUrlWithSplash
                 ))
             {
-                _MODEntry.LogInfo($"自动移除  主页: {steamCommunityUrl}  昵称: {user.DisplayName}");
-                UI_DisplayKickedUser.add_m_Text($"自动移除  {user.DisplayName}");
+                Log($"自动移除  主页: {steamCommunityUrl}  昵称: {user.DisplayName}");
+                UI_DisplayKickedUser.Add_m_Text($"自动移除  {user.DisplayName}");
                 ServerUserSystem.RemoveUser(user, true);
                 return true;
             }
@@ -145,44 +146,44 @@ namespace HostUtilities
 
         public static void TryKickUser(int index, ConfigEntry<KeyCode> kickKey)
         {
-            if (!_MODEntry.IsHost)
+            if (!MODEntry.isHost)
             {
-                _MODEntry.ShowWarningDialog("你不是主机，别点啦");
+                MODEntry.ShowWarningDialog("你不是主机，别点啦");
                 return;
             }
             if (ServerUserSystem.m_Users.Count > index)
             {
                 User user = ServerUserSystem.m_Users._items[index];
                 bool m_bIsLocal = user.IsLocal;
-                _MODEntry.LogInfo($"尝试移除{index + 1}号:{user.DisplayName}");
+                Log($"尝试移除{index + 1}号:{user.DisplayName}");
                 if (!m_bIsLocal)
                 {
                     OnlineUserPlatformId platformID = user.PlatformID;
                     //SteamNetworking.CloseP2PSessionWithUser(platformID.m_steamId);
                     ServerUserSystem.RemoveUser(user, true);
-                    _MODEntry.LogInfo($"{index + 1}号移除成功:{user.DisplayName}, Steamid:{platformID.m_steamId}");
+                    Log($"{index + 1}号移除成功:{user.DisplayName}, Steamid:{platformID.m_steamId}");
                 }
                 else
                 {
-                    _MODEntry.LogInfo($"{index + 1}号移除失败:{user.DisplayName}, 本地玩家");
+                    Log($"{index + 1}号移除失败:{user.DisplayName}, 本地玩家");
                 }
             }
         }
         public static void TryKickUserAndBan(int index, ConfigEntry<KeyCode> kickKey)
         {
-            if (!_MODEntry.IsHost)
+            if (!MODEntry.isHost)
             {
-                _MODEntry.ShowWarningDialog("你不是主机，别点啦");
+                MODEntry.ShowWarningDialog("你不是主机，别点啦");
                 return;
             }
             if (ServerUserSystem.m_Users.Count > index)
             {
                 User user = ServerUserSystem.m_Users._items[index];
                 bool m_bIsLocal = user.IsLocal;
-                _MODEntry.LogInfo($"尝试移除{index + 1}号:{user.DisplayName}");
+                Log($"尝试移除{index + 1}号:{user.DisplayName}");
                 if (!m_bIsLocal)
                 {
-                    _MODEntry.LogInfo($"{index + 1} 号移除成功: {user.DisplayName} 并拉黑");
+                    Log($"{index + 1} 号移除成功: {user.DisplayName} 并拉黑");
 
                     OnlineUserPlatformId platformID = user.PlatformID;
                     ServerUserSystem.RemoveUser(user, true);
@@ -194,7 +195,7 @@ namespace HostUtilities
                 }
                 else
                 {
-                    _MODEntry.LogInfo($"{index + 1}号移除失败:{user.DisplayName}, 本地玩家");
+                    Log($"{index + 1}号移除失败:{user.DisplayName}, 本地玩家");
                 }
             }
         }
@@ -209,7 +210,7 @@ namespace HostUtilities
                 for (var index = 1; index < ServerUserSystem.m_Users.Count; index++)
                 {
                     User user = ServerUserSystem.m_Users._items[index];
-                    _MODEntry.LogInfo($"保存:{user.DisplayName}");
+                    Log($"保存:{user.DisplayName}");
                     OnlineUserPlatformId platformID = user.PlatformID;
                     CSteamID? csteamID = (platformID != null) ? new CSteamID?(platformID.m_steamId) : null;
                     string steamIdString = csteamID.ToString();
@@ -235,7 +236,7 @@ namespace HostUtilities
                     if (user.IsLocal != true)
                     {
 
-                        _MODEntry.LogInfo($"保存:{user.DisplayName}");
+                        Log($"保存:{user.DisplayName}");
                         OnlineUserPlatformId platformID = user.PlatformID;
                         CSteamID? csteamID = (platformID != null) ? new CSteamID?(platformID.m_steamId) : null;
                         string steamIdString = csteamID.ToString();
@@ -286,13 +287,13 @@ namespace HostUtilities
         {
             try
             {
-                if (_MODEntry.IsHost)
+                if (MODEntry.isHost)
                 {
                     FastList<User> users = ServerUserSystem.m_Users;
                     User user = UserSystemUtils.FindUser(users, null, machine, engagement, TeamID.Count, User.SplitStatus.Count);
                     if (isAutoKickUser.Value)
                     {
-                        if (_MODEntry.IsInLobby)
+                        if (MODEntry.isInLobby)
                         {
                             bool isKicked = KickBanListUser(user);
                             if (isKicked)
@@ -303,7 +304,7 @@ namespace HostUtilities
                     }
                     if (!user.IsLocal)
                     {
-                        _MODEntry.LogInfo($"保存:{user.DisplayName}");
+                        Log($"保存:{user.DisplayName}");
                         OnlineUserPlatformId platformID = user.PlatformID;
                         CSteamID? csteamID = (platformID != null) ? new CSteamID?(platformID.m_steamId) : null;
                         if (EFriendRelationship.k_EFriendRelationshipFriend == SteamFriends.GetFriendRelationship(csteamID.Value))
@@ -329,8 +330,8 @@ namespace HostUtilities
             }
             catch (Exception e)
             {
-                _MODEntry.LogError($"An error occurred: \n{e.Message}");
-                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+                LogE($"An error occurred: \n{e.Message}");
+                LogE($"Stack trace: \n{e.StackTrace}");
             }
         }
 
@@ -340,7 +341,7 @@ namespace HostUtilities
         {
             try
             {
-                if (!_MODEntry.IsHost)
+                if (!MODEntry.isHost)
                 {
                     return true;
                 }
@@ -366,13 +367,13 @@ namespace HostUtilities
                     }
                     menuOptions[i].m_button.gameObject.SetActive(flag);
                 }
-                _MODEntry.LogWarning("已patch  UpdateMenuStructure");
+                MODEntry.LogWarning("已patch  UpdateMenuStructure");
                 __instance.UpdateNavigation();
             }
             catch (Exception e)
             {
-                _MODEntry.LogError($"An error occurred: \n{e.Message}");
-                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+                LogE($"An error occurred: \n{e.Message}");
+                LogE($"Stack trace: \n{e.StackTrace}");
             }
             return false;
         }
@@ -389,8 +390,8 @@ namespace HostUtilities
             }
             catch (Exception e)
             {
-                _MODEntry.LogError($"An error occurred: \n{e.Message}");
-                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+                LogE($"An error occurred: \n{e.Message}");
+                LogE($"Stack trace: \n{e.StackTrace}");
             }
             return false;
         }
@@ -403,7 +404,7 @@ namespace HostUtilities
                 MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
                 if (multiplayerController == null)
                 {
-                    _MODEntry.LogInfo("实例不存在");
+                    Log("实例不存在");
                     return;
                 }
                 // 寻找user
@@ -433,8 +434,8 @@ namespace HostUtilities
             }
             catch (Exception e)
             {
-                _MODEntry.LogError($"An error occurred: \n{e.Message}");
-                _MODEntry.LogError($"Stack trace: \n{e.StackTrace}");
+                LogE($"An error occurred: \n{e.Message}");
+                LogE($"Stack trace: \n{e.StackTrace}");
             }
         }
 
