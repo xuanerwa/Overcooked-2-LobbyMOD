@@ -20,7 +20,7 @@ namespace HostUtilities
         };
         public static void Awake()
         {
-            ValueList = MODEntry.Instance.Config.Bind<string>("01-功能开关", "00-切换默认主机/客机角色:", strList[0], new ConfigDescription("选择状态", new AcceptableValueList<string>(strList)));
+            ValueList = MODEntry.Instance.Config.Bind("01-功能开关", "00-切换默认主机/客机角色:", strList[0], new ConfigDescription("选择状态", new AcceptableValueList<string>(strList)));
             HarmonyInstance = Harmony.CreateAndPatchAll(MethodBase.GetCurrentMethod().DeclaringType);
             MODEntry.AllHarmony[MethodBase.GetCurrentMethod().DeclaringType.Name] = HarmonyInstance;
         }
@@ -161,35 +161,35 @@ namespace HostUtilities
         //                {
         //                    case OnlineMultiplayerSessionJoinResult.eClosed:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eClosed");
-        //                        Log"eClosed: OnlineMultiplayerSessionJoinResult.eClosed");
+        //                        Log("eClosed: OnlineMultiplayerSessionJoinResult.eClosed");
         //                        break;
         //                    case OnlineMultiplayerSessionJoinResult.eFull:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eFull");
-        //                        Log"主机满: OnlineMultiplayerSessionJoinResult.eFull");
+        //                        Log("主机满: OnlineMultiplayerSessionJoinResult.eFull");
         //                        break;
         //                    case OnlineMultiplayerSessionJoinResult.eNoLongerExists:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eNoLongerExists");
-        //                        Log"战局不存在: OnlineMultiplayerSessionJoinResult.eNoLongerExists");
+        //                        Log("战局不存在: OnlineMultiplayerSessionJoinResult.eNoLongerExists");
         //                        break;
         //                    case OnlineMultiplayerSessionJoinResult.eNoHostConnection:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eNoHostConnection");
-        //                        Log"NoHostConnection: OnlineMultiplayerSessionJoinResult.eNoHostConnection");
+        //                        Log("NoHostConnection: OnlineMultiplayerSessionJoinResult.eNoHostConnection");
         //                        break;
         //                    case OnlineMultiplayerSessionJoinResult.eLoggedOut:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eLoggedOut");
-        //                        Log"已登出: OnlineMultiplayerSessionJoinResult.eLoggedOut");
+        //                        Log("已登出: OnlineMultiplayerSessionJoinResult.eLoggedOut");
         //                        break;
         //                    case OnlineMultiplayerSessionJoinResult.eCodeVersionMismatch:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eCodeVersionMismatch");
-        //                        Log"版本不匹配: OnlineMultiplayerSessionJoinResult.eCodeVersionMismatch");
+        //                        Log("版本不匹配: OnlineMultiplayerSessionJoinResult.eCodeVersionMismatch");
         //                        break;
         //                    case OnlineMultiplayerSessionJoinResult.eGenericFailure:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eGenericFailure");
-        //                        Log"Generic失败: OnlineMultiplayerSessionJoinResult.eGenericFailure");
+        //                        Log("Generic失败: OnlineMultiplayerSessionJoinResult.eGenericFailure");
         //                        break;
         //                    case OnlineMultiplayerSessionJoinResult.eNotEnoughRoomForAllLocalUsers:
         //                        GameUtils.SendDiagnosticEvent("Automatchmake:Failure:NonFatal_eNotEnoughRoomForAllLocalUsers");
-        //                        Log"位置不足: OnlineMultiplayerSessionJoinResult.eNotEnoughRoomForAllLocalUsers");
+        //                        Log("位置不足: OnlineMultiplayerSessionJoinResult.eNotEnoughRoomForAllLocalUsers");
         //                        break;
         //                }
         //                joinReturnCode = joinSessionStatus.sessionJoinResult.m_returnCode.ToString();

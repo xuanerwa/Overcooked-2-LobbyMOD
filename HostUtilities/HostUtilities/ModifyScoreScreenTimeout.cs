@@ -1,12 +1,6 @@
 ﻿using BepInEx.Configuration;
-using GameModes;
 using HarmonyLib;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using UnityEngine;
 namespace HostUtilities
 {
     public class ModifyScoreScreenTimeout

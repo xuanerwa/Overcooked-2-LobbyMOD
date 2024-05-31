@@ -21,7 +21,7 @@ namespace HostUtilities
 
         public static void Update()
         {
-            if (Input.GetKeyDown(zoomOutKey.Value))
+            if (Input.GetKey(zoomOutKey.Value))
             {
                 GameObject foundObject;
                 foreach (string playerindex in new string[] { "Player 1", "Player 2", "Player 3", "Player 4" })
@@ -35,24 +35,22 @@ namespace HostUtilities
                     {
                         foreach (Transform child in parentObject.transform)
                         {
-                            Debug.Log($"Object find: {child.name}");
-                            ScaleObjectAndChildren(child, new Vector3(0.4f, 0.4f, 0.4f));
+                            ScaleObjectAndChildren(child, new Vector3(0.1f, 0.1f, 0.1f));
                         }
                     }
                     else
                     {
-                        Debug.LogError("Attachment not found under " + playerindex);
+                    
                     }
                 }
             }
 
-            if (Input.GetKeyDown(magnifyKey.Value))
+            if (Input.GetKey(magnifyKey.Value))
             {
                 GameObject foundObject;
                 foreach (string playerindex in new string[] { "Player 1", "Player 2", "Player 3", "Player 4" })
                 {
                     foundObject = FindAttachmentUnderPlayer("Chefs", playerindex, "Chef/Skeleton/Base/Attach/Attachment");
-
                     if (parentObject == null || parentObject != foundObject)
                         parentObject = foundObject;
 
@@ -60,13 +58,12 @@ namespace HostUtilities
                     {
                         foreach (Transform child in parentObject.transform)
                         {
-                            Debug.Log($"Object find: {child.name}");
-                            ScaleObjectAndChildren(child, new Vector3(-0.4f, -0.4f, -0.4f));
+                            ScaleObjectAndChildren(child, new Vector3(-0.1f, -0.1f, -0.1f));
                         }
                     }
                     else
                     {
-                        Debug.LogError("Attachment not found under " + playerindex);
+
                     }
                 }
             }
@@ -109,13 +106,12 @@ namespace HostUtilities
         {
             if (obj.childCount == 0)
             {
-                // 如果没有子对象，缩放它
+                //如果没有子对象，缩放它
                 obj.localScale += scale;
-                Debug.Log($"Scaled object: {obj.name}");
+                //Log($"Scaled object: {obj.name}");
             }
             else
             {
-                // 如果有子对象，递归遍历子对象
                 foreach (Transform child in obj)
                 {
                     ScaleObjectAndChildren(child, scale);

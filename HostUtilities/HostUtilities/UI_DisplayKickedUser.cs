@@ -17,7 +17,7 @@ namespace HostUtilities
         private static MyKickedUserCounter kickedUserCounter = null;
         public static ConfigEntry<bool> ShowKickedUserEnabled;
 
-        public static void Add_m_Text(string str) => kickedUserCounter?.add_m_Text(str);
+        public static void Add_m_Text(string str) => kickedUserCounter?.Add_m_Text(str);
 
         public static void Awake()
         {
@@ -31,9 +31,9 @@ namespace HostUtilities
         {
             onScreenDebugDisplayKickedUser.Update();
 
-            if (((!MODEntry.isInLobby) || Input.GetKeyDown(KeyCode.End)) && kickedUserCounter != null)
+            if ((!MODEntry.isInLobby || !MODEntry.isHost || Input.GetKeyDown(KeyCode.End)) && kickedUserCounter != null)
                 RemoveKickedUserCounter();
-            else if (((MODEntry.isInLobby && ShowKickedUserEnabled.Value) || Input.GetKeyDown(KeyCode.Home)) && kickedUserCounter == null)
+            else if (((MODEntry.isInLobby && MODEntry.isHost && ShowKickedUserEnabled.Value) || Input.GetKeyDown(KeyCode.Home)) && kickedUserCounter == null)
                 AddKickedUserCounter();
         }
 
@@ -43,7 +43,7 @@ namespace HostUtilities
         {
             kickedUserCounter = new MyKickedUserCounter();
             onScreenDebugDisplayKickedUser.AddDisplay(kickedUserCounter);
-            kickedUserCounter.init_m_Text();
+            kickedUserCounter.Init_m_Text();
         }
 
         private static void RemoveKickedUserCounter()
@@ -57,9 +57,9 @@ namespace HostUtilities
         {
             private bool replaced = false;
 
-            public void init_m_Text() => m_Text = "暂时没有自动移除的账号";
+            public void Init_m_Text() => m_Text = "暂时没有自动移除的账号";
 
-            public void add_m_Text(string str)
+            public void Add_m_Text(string str)
             {
                 if (replaced) m_Text += "\n" + str;
                 else { m_Text = str; replaced = true; }
