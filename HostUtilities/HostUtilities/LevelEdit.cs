@@ -1,10 +1,19 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
+using InControl;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
+using System.Text.RegularExpressions;
 using Team17.Online;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using static MB3_MeshBakerRoot.ZSortObjects;
+using static SceneDirectoryData;
+using static WindowsAccessibility;
 
 
 namespace HostUtilities
@@ -106,12 +115,20 @@ namespace HostUtilities
 
     public class MServerLobbyFlowController
     {
-        public static void Log(string mes) => MODEntry.LogInfo(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
-        public static void LogE(string mes) => MODEntry.LogError(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
-        public static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        private static void Log(string mes) => MODEntry.LogInfo(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        private static void LogE(string mes) => MODEntry.LogError(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
+        private static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
 
         public static Dictionary<string, ConfigEntry<bool>> sceneDisableConfigEntries = new Dictionary<string, ConfigEntry<bool>>();
-        public static Dictionary<string, bool> alreadyPlayedSet = new Dictionary<string, bool>();
+        //private static Dictionary<int, Dictionary<SceneDirectoryEntry, bool>> alreadyPlayedSceneDict = new Dictionary<int, Dictionary<SceneDirectoryEntry, bool>>();
+        private static Dictionary<string, SceneDirectoryEntryStatus> alreadyPlayedRandomSet = new Dictionary<string, SceneDirectoryEntryStatus>();
+        private static Dictionary<string, SceneDirectoryEntryStatus> alreadyPlayedSceneSet = new Dictionary<string, SceneDirectoryEntryStatus>();
+
+        public class SceneDirectoryEntryStatus
+        {
+            public SceneDirectoryEntry Entry { get; set; }
+            public bool Status { get; set; }
+        }
 
         public static void CreateConfigEntries()
         {
@@ -132,19 +149,19 @@ namespace HostUtilities
             CreateConfigEntry("04-禁用主题(非凯文)", "06-关闭世界6");
             CreateConfigEntry("04-禁用主题(非凯文)", "07-关闭节庆大餐");
             CreateConfigEntry("04-禁用主题(非凯文)", "08-关闭王朝餐厅");
-            CreateConfigEntry("04-禁用主题(非凯文)", "09-关闭桃子游行", true);
-            CreateConfigEntry("04-禁用主题(非凯文)", "10-关闭幸运灯笼", true);
+            CreateConfigEntry("04-禁用主题(非凯文)", "09-关闭桃子游行");
+            CreateConfigEntry("04-禁用主题(非凯文)", "10-关闭幸运灯笼");
             CreateConfigEntry("04-禁用主题(非凯文)", "11-关闭海滩");
             CreateConfigEntry("04-禁用主题(非凯文)", "12-关闭烧烤度假村");
             CreateConfigEntry("04-禁用主题(非凯文)", "13-关闭完美露营地");
             CreateConfigEntry("04-禁用主题(非凯文)", "14-关闭美味树屋");
             CreateConfigEntry("04-禁用主题(非凯文)", "15-关闭恐怖地宫");
             CreateConfigEntry("04-禁用主题(非凯文)", "16-关闭惊悚庭院");
-            CreateConfigEntry("04-禁用主题(非凯文)", "17-关闭凶残城垛", true);
+            CreateConfigEntry("04-禁用主题(非凯文)", "17-关闭凶残城垛");
             CreateConfigEntry("04-禁用主题(非凯文)", "18-关闭翻滚帐篷");
             CreateConfigEntry("04-禁用主题(非凯文)", "19-关闭咸咸马戏团");
 
-            CreateConfigEntry("01-功能开关", "03-街机关卡不重复", true);
+            CreateConfigEntry("04-修改关卡", "03-街机关卡不重复", true);
         }
         private static ConfigEntry<bool> configEntry;
         private static void CreateConfigEntry(string cls, string key)
@@ -171,29 +188,26 @@ namespace HostUtilities
 
         public void PickRandom()
         {
-            ServerLobbyFlowController.Instance.PickLevel(SceneDirectoryData.LevelTheme.Random);
+            ServerLobbyFlowController.Instance.PickLevel(LevelTheme.Random);
         }
 
 
-        public static void MPickLevel(ServerLobbyFlowController __instance, SceneDirectoryData.LevelTheme _theme)
+        public static void MPickLevel(ServerLobbyFlowController __instance, LevelTheme _theme)
         {
-            if (_theme.Equals(SceneDirectoryData.LevelTheme.Random))
-            {
-                Log($"开始关卡编辑逻辑, 选择的世界是{_theme}");
-                PickRandomWithEdit(__instance);
-                return;
-            }
-            else
-            {
-                Log($"开始关卡编辑逻辑, 但已选择具体主题, 使用原逻辑");
-                LevelEdit.doOrigin = true;
-                __instance.PickLevel(_theme);
-            }
+            Log($"开始关卡编辑逻辑, 选择的世界是{_theme}");
+            PickLevelEdit(__instance, _theme, 197);
+            return;
         }
 
-        private static void PickRandomWithEdit(ServerLobbyFlowController __instance)
+        private static void PickLevelEdit(ServerLobbyFlowController __instance, LevelTheme theme, int line)
         {
-            Predicate<SceneDirectoryData.SceneDirectoryEntry> matchEdit = (SceneDirectoryData.SceneDirectoryEntry entry) =>
+            PickLevelEdit(__instance, theme);
+            return;
+        }
+
+        private static void PickLevelEdit(ServerLobbyFlowController __instance, LevelTheme theme)
+        {
+            bool matchEdit(SceneDirectoryEntry entry)
             {
 
                 if (entry.Label.Contains("ThroneRoom") || entry.Label.Contains("TutorialLevel"))
@@ -209,6 +223,7 @@ namespace HostUtilities
                 {
                     condition90 = !entry.AvailableInLobby;
                 }
+                bool condition100 = (entry.Theme == theme || theme == SceneDirectoryData.LevelTheme.Random);
                 bool condition1 = !sceneDisableConfigEntries["01-关闭世界1"].Value || !(entry.World == SceneDirectoryData.World.One && entry.AvailableInLobby);
                 bool condition2 = !sceneDisableConfigEntries["02-关闭世界2"].Value || !(entry.World == SceneDirectoryData.World.Two && entry.AvailableInLobby);
                 bool condition3 = !sceneDisableConfigEntries["03-关闭世界3"].Value || !(entry.World == SceneDirectoryData.World.Three && entry.AvailableInLobby);
@@ -241,22 +256,83 @@ namespace HostUtilities
                       condition6 && condition7 && condition8 && condition9 && condition10 && condition11 && condition12 &&
                       condition13 && condition14 && condition15 && condition16 && condition17 && condition18 && condition19 && condition20 &&
                       condition21 && condition22 && condition23 && condition24 && condition25 && condition26 && condition27 && condition28 &&
-                      condition90;
+                      condition90 && condition100;
 
                 return shouldIncludeEntry;
-            };
+            }
 
-            FastList<SceneDirectoryData.SceneDirectoryEntry> fastList = new FastList<SceneDirectoryData.SceneDirectoryEntry>(60);
+            FastList<SceneDirectoryEntry> fastList = new FastList<SceneDirectoryEntry>(60);
             SceneDirectoryData[] sceneDirectories = __instance.m_lobbyFlow.GetSceneDirectories();
+
+
             DLCManager dlcmanager = GameUtils.RequireManager<DLCManager>();
             List<DLCFrontendData> allDlc = dlcmanager.AllDlc;
             GameSession.GameType gameType = (!__instance.m_bIsCoop) ? GameSession.GameType.Competitive : GameSession.GameType.Cooperative;
             int[] array = new int[sceneDirectories.Length];
+
+
+            if (alreadyPlayedSceneSet.Count() == 0 && alreadyPlayedRandomSet.Count() == 0)
+            {
+                //Log("初始化已玩关卡");
+                for (int i = 0; i < sceneDirectories.Length; i++)
+                {
+                    Dictionary<SceneDirectoryEntry, bool> alreadyPlayedSet = new Dictionary<SceneDirectoryEntry, bool>();
+                    DLCFrontendData dlcfrontendData = null;
+                    int dlcidfromSceneDirIndex = __instance.m_lobbyFlow.GetDLCIDFromSceneDirIndex(gameType, i);
+                    if (theme == LevelTheme.Random)
+                    {
+                        for (int j = 0; j < allDlc.Count; j++)
+                        {
+                            DLCFrontendData dlcfrontendData2 = allDlc[j];
+                            if (dlcfrontendData2.m_DLCID == dlcidfromSceneDirIndex)
+                            {
+                                dlcfrontendData = dlcfrontendData2;
+                                break;
+                            }
+                        }
+                    }
+                    if (dlcfrontendData == null || dlcmanager.IsDLCAvailable(dlcfrontendData))
+                    {
+                        foreach (var Scenes in sceneDirectories[i].Scenes)
+                        {
+                            if (Scenes.Label.Contains("ThroneRoom") || Scenes.Label.Contains("TutorialLevel"))
+                            {
+                                continue;
+                            }
+
+                            if (dlcfrontendData == null || dlcmanager.IsDLCAvailable(dlcfrontendData))
+                            {
+                                alreadyPlayedSet.Add(Scenes, false);
+                                alreadyPlayedSceneSet[Scenes.Label] = new SceneDirectoryEntryStatus { Entry = Scenes, Status = false };
+                                alreadyPlayedRandomSet[Scenes.Label] = new SceneDirectoryEntryStatus { Entry = Scenes, Status = false };
+                                //LogW($"初始化已玩关卡 {LevelSelector.GetLevelName(Scenes)} {Scenes.Label} {alreadyPlayedSceneSet[Scenes.Label].Status}");
+                            }
+                        }
+                    }
+                }
+            }
+
+            //var iddddd = 0;
+            //foreach (var item in alreadyPlayedRandomSet)
+            //{
+            //    Log($"记录已玩随机关卡数量  index {iddddd}      content {item.Key}      Theme Random      status {item.Value.Status}      name {LevelSelector.GetLevelName(item.Value.Entry)}");
+            //    iddddd += 1;
+            //}
+            //Log($"记录已玩随机关卡数量  {iddddd}");
+            //iddddd = 0;
+            //foreach (var item in alreadyPlayedRandomSet)
+            //{
+            //    Log($"记录已玩指定关卡数量  index {iddddd}      content {item.Key}      Theme {item.Value.Entry.Theme}      status {item.Value.Status} name {LevelSelector.GetLevelName(item.Value.Entry)}");
+            //    iddddd += 1;
+            //}
+            //Log($"记录已玩指定关卡数量  {iddddd}");
+
+            SceneDirectoryEntry[] matchedAllScene = new SceneDirectoryEntry[0];
             for (int i = 0; i < sceneDirectories.Length; i++)
             {
                 DLCFrontendData dlcfrontendData = null;
                 int dlcidfromSceneDirIndex = __instance.m_lobbyFlow.GetDLCIDFromSceneDirIndex(gameType, i);
-                if (true)
+                if (theme == LevelTheme.Random)
                 {
                     for (int j = 0; j < allDlc.Count; j++)
                     {
@@ -270,47 +346,84 @@ namespace HostUtilities
                 }
                 if (dlcfrontendData == null || dlcmanager.IsDLCAvailable(dlcfrontendData))
                 {
-                    fastList.AddRange(sceneDirectories[i].Scenes.FindAll(matchEdit));
+                    SceneDirectoryEntry[] array2 = sceneDirectories[i].Scenes.FindAll(matchEdit);
+                    //将matched的关卡记录到matchedAllScene变量中以供后续判断是不是没有match, 吧开关都关了
+                    matchedAllScene = matchedAllScene.Concat(array2).ToArray();
+                    foreach (SceneDirectoryEntry sceneDirectoryEntry1 in array2)
+                    {
+                        //-----------------去除待选关卡列表中的已玩关卡  开始
+                        if (sceneDisableConfigEntries["03-街机关卡不重复"].Value == true)
+                        {
+                            if (theme == LevelTheme.Random)
+                            {
+                                if (alreadyPlayedRandomSet.ContainsKey(sceneDirectoryEntry1.Label) && alreadyPlayedRandomSet[sceneDirectoryEntry1.Label].Status == true)
+                                {
+                                    Log($"Repeated  L:{sceneDirectoryEntry1.Label}  N:{LevelSelector.GetLevelName(sceneDirectoryEntry1)}  T:{theme}");
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                if (alreadyPlayedSceneSet.ContainsKey(sceneDirectoryEntry1.Label) && alreadyPlayedSceneSet[sceneDirectoryEntry1.Label].Status == true)
+                                {
+                                    Log($"Repeated  L:{sceneDirectoryEntry1.Label}  N:{LevelSelector.GetLevelName(sceneDirectoryEntry1)}  T:{theme}");
+                                    continue;
+                                }
+                            }
+                        }
+                        //-----------------去除待选关卡列表中的已玩关卡 结束
+                        fastList.Add(sceneDirectoryEntry1);
+                    }
                 }
                 array[i] = fastList.Count;
             }
-            Log($"fastList.Count {fastList.Count}");
 
-            if (fastList.Count == 0)
+            //--------------重置开关 开始
+            if (matchedAllScene.Count() == 0)
             {
-                Log("没有符合条件的关卡");
-                sceneDisableConfigEntries["01-关闭世界1"].Value = false;
-                sceneDisableConfigEntries["02-关闭世界2"].Value = false;
-                sceneDisableConfigEntries["03-关闭世界3"].Value = false;
-                sceneDisableConfigEntries["04-关闭世界4"].Value = false;
-                sceneDisableConfigEntries["05-关闭世界5"].Value = false;
-                sceneDisableConfigEntries["06-关闭世界6"].Value = false;
-                sceneDisableConfigEntries["07-关闭节庆大餐"].Value = false;
-                sceneDisableConfigEntries["07-关闭节庆大餐"].Value = false;
-                sceneDisableConfigEntries["08-关闭王朝餐厅"].Value = false;
-                sceneDisableConfigEntries["08-关闭王朝餐厅"].Value = false;
-                sceneDisableConfigEntries["09-关闭桃子游行"].Value = false;
-                sceneDisableConfigEntries["10-关闭幸运灯笼"].Value = false;
-                sceneDisableConfigEntries["11-关闭海滩"].Value = false;
-                sceneDisableConfigEntries["12-关闭烧烤度假村"].Value = false;
-                sceneDisableConfigEntries["13-关闭完美露营地"].Value = false;
-                sceneDisableConfigEntries["14-关闭美味树屋"].Value = false;
-                sceneDisableConfigEntries["15-关闭恐怖地宫"].Value = false;
-                sceneDisableConfigEntries["16-关闭惊悚庭院"].Value = false;
-                sceneDisableConfigEntries["17-关闭凶残城垛"].Value = false;
-                sceneDisableConfigEntries["18-关闭翻滚帐篷"].Value = false;
-                sceneDisableConfigEntries["19-关闭咸咸马戏团"].Value = false;
-                sceneDisableConfigEntries["01-关闭小节关"].Value = false;
-                sceneDisableConfigEntries["02-关闭主线凯文"].Value = false;
-                sceneDisableConfigEntries["03-关闭海滩凯文"].Value = false;
-                sceneDisableConfigEntries["04-关闭完美露营地凯文"].Value = false;
-                sceneDisableConfigEntries["05-关闭恐怖地宫凯文"].Value = false;
-                sceneDisableConfigEntries["06-关闭翻滚帐篷凯文"].Value = false;
-                sceneDisableConfigEntries["07-关闭咸咸马戏团凯文"].Value = false;
-                MODEntry.ShowWarningDialog("没有符合的关卡, 已重置关卡编辑的开关, 请重新选择!");
-                __instance.PickLevel(SceneDirectoryData.LevelTheme.Random);
-                return;
+                if (theme == LevelTheme.Random)
+                {
+                    LogW("关闭了太多的开关, 没有符合条件的关卡");
+                    sceneDisableConfigEntries["01-关闭世界1"].Value = false;
+                    sceneDisableConfigEntries["02-关闭世界2"].Value = false;
+                    sceneDisableConfigEntries["03-关闭世界3"].Value = false;
+                    sceneDisableConfigEntries["04-关闭世界4"].Value = false;
+                    sceneDisableConfigEntries["05-关闭世界5"].Value = false;
+                    sceneDisableConfigEntries["06-关闭世界6"].Value = false;
+                    sceneDisableConfigEntries["07-关闭节庆大餐"].Value = false;
+                    sceneDisableConfigEntries["07-关闭节庆大餐"].Value = false;
+                    sceneDisableConfigEntries["08-关闭王朝餐厅"].Value = false;
+                    sceneDisableConfigEntries["08-关闭王朝餐厅"].Value = false;
+                    sceneDisableConfigEntries["09-关闭桃子游行"].Value = false;
+                    sceneDisableConfigEntries["10-关闭幸运灯笼"].Value = false;
+                    sceneDisableConfigEntries["11-关闭海滩"].Value = false;
+                    sceneDisableConfigEntries["12-关闭烧烤度假村"].Value = false;
+                    sceneDisableConfigEntries["13-关闭完美露营地"].Value = false;
+                    sceneDisableConfigEntries["14-关闭美味树屋"].Value = false;
+                    sceneDisableConfigEntries["15-关闭恐怖地宫"].Value = false;
+                    sceneDisableConfigEntries["16-关闭惊悚庭院"].Value = false;
+                    sceneDisableConfigEntries["17-关闭凶残城垛"].Value = false;
+                    sceneDisableConfigEntries["18-关闭翻滚帐篷"].Value = false;
+                    sceneDisableConfigEntries["19-关闭咸咸马戏团"].Value = false;
+                    sceneDisableConfigEntries["01-关闭小节关"].Value = false;
+                    sceneDisableConfigEntries["02-关闭主线凯文"].Value = false;
+                    sceneDisableConfigEntries["03-关闭海滩凯文"].Value = false;
+                    sceneDisableConfigEntries["04-关闭完美露营地凯文"].Value = false;
+                    sceneDisableConfigEntries["05-关闭恐怖地宫凯文"].Value = false;
+                    sceneDisableConfigEntries["06-关闭翻滚帐篷凯文"].Value = false;
+                    sceneDisableConfigEntries["07-关闭咸咸马戏团凯文"].Value = false;
+                    MODEntry.ShowWarningDialog("没有符合的关卡, 已重置关卡编辑的开关, 请重新自定义!");
+                    PickLevelEdit(__instance, LevelTheme.Random, 467);
+                    return;
+                }
+                else
+                {
+                    LogW("没有符合的关卡, 随机所有关卡");
+                    PickLevelEdit(__instance, LevelTheme.Random, 420);
+                    return;
+                }
             }
+            //--------------重置开关 结束
 
             int num = UnityEngine.Random.Range(0, fastList.Count);
             int idx = -1;
@@ -323,15 +436,114 @@ namespace HostUtilities
                 }
             }
 
-            for (int i = 0; i < fastList.Count; i++)
-            {
-                Log($"index {i}  name {LevelSelector.GetLevelName(fastList._items[i])}");
-            }
-            Log($"num {num}  idx {idx} name {LevelSelector.GetLevelName(fastList._items[num])}");
+            //for (int i = 0; i < fastList.Count; i++)
+            //{
+            //    Log($"FastList  L:{fastList._items[i].Label}  N:{LevelSelector.GetLevelName(fastList._items[i])}  T:{theme}");
+            //}
 
-            SceneDirectoryData.SceneDirectoryEntry sceneDirectoryEntry = fastList._items[num];
+            SceneDirectoryEntry PickLevel = fastList._items[num];
+            LogE($"PickLeve  L:{PickLevel.Label}  N:{LevelSelector.GetLevelName(PickLevel)}  T:{theme}");
+
+
+            //---------------关卡不重复功能   记录已玩关卡   重置已玩列表
+            if (sceneDisableConfigEntries["03-街机关卡不重复"].Value == true)
+            {
+                LogW("关卡不重复功能已打开, 记录已玩关卡");
+                if (theme == LevelTheme.Random)
+                {
+                    if (alreadyPlayedRandomSet.ContainsKey(PickLevel.Label))
+                    {
+                        alreadyPlayedRandomSet[PickLevel.Label] = new SceneDirectoryEntryStatus { Entry = PickLevel, Status = true };
+                        alreadyPlayedSceneSet[PickLevel.Label] = new SceneDirectoryEntryStatus { Entry = PickLevel, Status = true };
+                        //Log($"RecrdRan  L:{PickLevel.Label}  N:{LevelSelector.GetLevelName(PickLevel)}  S:{alreadyPlayedRandomSet[PickLevel.Label].Status}  T:{theme}");
+                    }
+
+                    //--------------------------重置已玩随机主题的关卡开始
+                    // 是否应该重置随机已玩列表
+                    bool shouldEmptyRandomList = false;
+                    shouldEmptyRandomList = alreadyPlayedRandomSet
+                        .Where(kv => matchEdit(kv.Value.Entry))
+                        .All(kv => kv.Value.Status);
+
+                    //--------------------------输出alreadyPlayedRandomSet
+                    //{
+                    //    foreach (var kv in alreadyPlayedRandomSet
+                    //        .Where(kv => matchEdit(kv.Value.Entry)))
+                    //    {
+                    //        LogW($"RandList  L:{kv.Value.Entry.Label}  N:{LevelSelector.GetLevelName(kv.Value.Entry)}  S:{kv.Value.Status}  T:{theme}");
+                    //    }
+                    //}
+
+
+                    //--------------------------输出alreadyPlayedRandomSet
+                    if (shouldEmptyRandomList)
+                    {
+                        LogE($"reset {theme} alreadyPlayedSet");
+                        Dictionary<string, SceneDirectoryEntryStatus> tempEntries = new Dictionary<string, SceneDirectoryEntryStatus>();
+                        foreach (var KVP in alreadyPlayedRandomSet)
+                        {
+                            var tempEntry = KVP.Value.Entry;
+                            tempEntries[KVP.Key] = new SceneDirectoryEntryStatus { Entry = tempEntry, Status = false };
+                        }
+                        foreach (var KVP in tempEntries)
+                        {
+                            alreadyPlayedRandomSet[KVP.Key] = KVP.Value;
+                        }
+                    }
+                    //--------------------------重置已玩随机主题的关卡结束
+
+                }
+                else
+                {
+                    if (alreadyPlayedSceneSet.ContainsKey(PickLevel.Label))
+                    {
+                        alreadyPlayedRandomSet[PickLevel.Label] = new SceneDirectoryEntryStatus { Entry = PickLevel, Status = true };
+                        alreadyPlayedSceneSet[PickLevel.Label] = new SceneDirectoryEntryStatus { Entry = PickLevel, Status = true };
+                        //Log($"RecrdScn  L:{PickLevel.Label}  N:{LevelSelector.GetLevelName(PickLevel)}  S:{alreadyPlayedRandomSet[PickLevel.Label].Status}  T:{theme}");
+                    }
+
+                    //--------------------------重置已玩某个主题的关卡开始
+                    //是否应该重置主题已玩列表
+                    bool shouldEmptySceneList = false;
+                    shouldEmptySceneList = alreadyPlayedSceneSet
+                        .Where(kv => matchEdit(kv.Value.Entry) && theme == kv.Value.Entry.Theme)
+                        .All(kv => kv.Value.Status);
+                    //--------------------------输出alreadyPlayedSceneSet
+                    //{
+                    //    foreach (var kv in alreadyPlayedSceneSet
+                    //    .Where(kv => matchEdit(kv.Value.Entry) && theme == kv.Value.Entry.Theme))
+                    //    {
+                    //        LogW($"ScenList  L:{kv.Value.Entry.Label}  N:{LevelSelector.GetLevelName(kv.Value.Entry)}  S:{kv.Value.Status}  T:{theme}");
+                    //    }
+                    //}
+                    //--------------------------输出alreadyPlayedSceneSet
+
+
+                    if (shouldEmptySceneList)
+                    {
+                        LogE($"reset {theme} alreadyPlayedSet");
+                        Dictionary<string, SceneDirectoryEntryStatus> tempEntries = new Dictionary<string, SceneDirectoryEntryStatus>();
+                        foreach (var KVP in alreadyPlayedSceneSet)
+                        {
+                            if (theme == KVP.Value.Entry.Theme)
+                            {
+                                var tempEntry = KVP.Value.Entry;
+                                tempEntries[KVP.Key] = new SceneDirectoryEntryStatus { Entry = tempEntry, Status = false }; ;
+                            }
+                        }
+                        foreach (var KVP in tempEntries)
+                        {
+                            alreadyPlayedSceneSet[KVP.Key] = KVP.Value;
+                        }
+                    }
+                    //--------------------------重置已玩某个主题的关卡结束
+                }
+            }
+            //----------------关卡不重复功能 结束
+
+            SceneDirectoryEntry sceneDirectoryEntry = PickLevel;
             int dlcidfromSceneDirIndex2 = __instance.m_lobbyFlow.GetDLCIDFromSceneDirIndex(gameType, idx);
-            SceneDirectoryData.PerPlayerCountDirectoryEntry sceneVarient = sceneDirectoryEntry.GetSceneVarient(ServerUserSystem.m_Users.Count);
+            PerPlayerCountDirectoryEntry sceneVarient = sceneDirectoryEntry.GetSceneVarient(ServerUserSystem.m_Users.Count);
             if (sceneVarient == null)
             {
                 if (!__instance.m_bIsCoop)
@@ -355,6 +567,7 @@ namespace HostUtilities
                 return;
             }
             __instance.m_delayedLevelLoad = __instance.StartCoroutine(__instance.DelayedLevelLoad(sceneVarient.SceneName, dlcidfromSceneDirIndex2));
+            return;
         }
     }
 }

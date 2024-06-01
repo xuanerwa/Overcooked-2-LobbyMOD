@@ -48,7 +48,7 @@ namespace HostUtilities
                     MODEntry.ShowWarningDialog("不在街机大厅，别点啦");
                     return;
                 }
-                Predicate<SceneDirectoryData.SceneDirectoryEntry> matchScene = (SceneDirectoryData.SceneDirectoryEntry entry) =>
+                bool matchScene(SceneDirectoryData.SceneDirectoryEntry entry)
                 {
                     if (entry.Label.Contains("ThroneRoom") || entry.Label.Contains("TutorialLevel"))
                     {
@@ -56,7 +56,7 @@ namespace HostUtilities
                     }
                     if (entry.Label.Equals(GetSceneDirectoryEntryFromChinese(ValueList.Value).Label)) { return true; }
                     return false;
-                };
+                }
                 //Log(ValueList.Value);
                 //Log(GetSceneDirectoryEntryFromChinese(ValueList.Value).Label);
 
@@ -170,11 +170,11 @@ namespace HostUtilities
         {
             try
             {
-                if (LevelEdit.doOrigin)
-                {
-                    LevelEdit.doOrigin = false;
-                    return true;
-                }
+                //if (LevelEdit.doOrigin)
+                //{
+                //    LevelEdit.doOrigin = false;
+                //    return true;
+                //}
                 if (MODEntry.isSelectedAndPlay)
                 {
                     Log("开始指定关卡, 不执行关卡编辑逻辑");
@@ -183,7 +183,7 @@ namespace HostUtilities
                 }
                 if (LevelEdit.kevinEnabled.Value)
                 {
-                    Log("开始关卡编辑逻辑, 不执行原函数");
+                    Log($"开始关卡编辑逻辑, 不执行原函数 theme {_theme}");
                     MServerLobbyFlowController.MPickLevel(__instance, _theme);
                     return false;
                 }
@@ -224,9 +224,9 @@ namespace HostUtilities
                 {
                     SceneDirectoryEntry sceneDirectoryEntry = levelList[i];
                     DirectoryDict.Add(sceneDirectoryEntry.Label, sceneDirectoryEntry);
-                    Log($"I: {i + 1} L: {sceneDirectoryEntry.Label} N: {GetLevelName(sceneDirectoryEntry, false)}");
+                    //Log($"I: {i + 1} L: {sceneDirectoryEntry.Label} N: {GetLevelName(sceneDirectoryEntry, false)}");
                 }
-                Log("finished");
+                Log("add all level finished");
 
                 List<string> strList = new List<string>();
                 foreach (var pair in DirectoryDict)
