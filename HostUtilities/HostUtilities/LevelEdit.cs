@@ -1,20 +1,12 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
-using InControl;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Text.RegularExpressions;
 using Team17.Online;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using static MB3_MeshBakerRoot.ZSortObjects;
 using static SceneDirectoryData;
-using static WindowsAccessibility;
-
 
 namespace HostUtilities
 {
@@ -161,7 +153,7 @@ namespace HostUtilities
             CreateConfigEntry("04-禁用主题(非凯文)", "18-关闭翻滚帐篷");
             CreateConfigEntry("04-禁用主题(非凯文)", "19-关闭咸咸马戏团");
 
-            CreateConfigEntry("04-修改关卡", "03-街机关卡不重复", true);
+            CreateConfigEntry("04-修改关卡", "03-街机关卡不重复", true, "必须开启关卡自定义" );
         }
         private static ConfigEntry<bool> configEntry;
         private static void CreateConfigEntry(string cls, string key)

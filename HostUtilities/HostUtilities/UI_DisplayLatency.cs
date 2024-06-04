@@ -120,20 +120,16 @@ namespace HostUtilities
 
         public class NetworkStateDebugDisplay : DebugDisplay
         {
-            // Token: 0x06002A63 RID: 10851 RVA: 0x000C6400 File Offset: 0x000C4800
+            private FastList<User> clientUserSystem_catched = new FastList<User>();
+            private string clientFriendsMessage = String.Empty;
             public override void OnSetUp()
             {
-                //m_MultiplayerController = GameUtils.RequireManager<MultiplayerController>();
-                //IOnlinePlatformManager onlinePlatformManager = GameUtils.RequireManagerInterface<IOnlinePlatformManager>();
-                //m_ConnectionModeCoordinator = onlinePlatformManager.OnlineMultiplayerConnectionModeCoordinator();
             }
 
-            // Token: 0x06002A64 RID: 10852 RVA: 0x000C642A File Offset: 0x000C482A
             public override void OnUpdate()
             {
             }
 
-            // Token: 0x06002A65 RID: 10853 RVA: 0x000C642C File Offset: 0x000C482C
             public override void OnDraw(ref Rect rect, GUIStyle style)
             {
                 if (isShowDebugInfo.Value)
@@ -202,7 +198,7 @@ namespace HostUtilities
                                     if (user.DisplayName == sessionUserId.DisplayName)
                                     {
                                         float latency = connection.GetConnectionStats(bReliable: false).m_fLatency;
-                                        if (KickUser.steamIDDictionary.ContainsKey(user.PlatformID.m_steamId) && MODEntry.CurrentSteamID.m_SteamID.Equals(76561199191224186))
+                                        if (KickUser.steamIDDictionary.ContainsKey(user.PlatformID.m_steamId))
                                         {
                                             if (KickUser.steamIDDictionary.TryGetValue(user.PlatformID.m_steamId, out SteamUserInfo userInfo))
                                             {
@@ -223,76 +219,6 @@ namespace HostUtilities
                         }
                     }
                     catch (Exception) { }
-                    //MultiplayerController multiplayerController = GameUtils.RequestManager<MultiplayerController>();
-                    //Server server = multiplayerController.m_LocalServer;
-                    //Dictionary<IOnlineMultiplayerSessionUserId, NetworkConnection> remoteClientConnectionsDict = server.m_RemoteClientConnections;
-
-                    //FastList<ConnectionStats> serverConnectionStats = m_MultiplayerController.GetServerConnectionStats(true);
-                    //FastList<ConnectionStats> serverConnectionStats2 = m_MultiplayerController.GetServerConnectionStats(false);
-
-                    //if (serverConnectionStats.Count > 0)
-                    //{
-                    //    string empty = string.Empty;
-                    //    for (int i = 0; i < serverConnectionStats.Count; i++)
-                    //    {
-                    //        try
-                    //        {
-                    //            float latency1 = serverConnectionStats._items[i].m_fLatency * 1000f;
-                    //            float latency2 = serverConnectionStats2._items[i].m_fLatency * 1000f;
-
-                    //            string latencyStr1 = latency1.ToString("000");
-                    //            string latencyStr2 = latency2.ToString("000");
-
-                    //            string latency = (latency1 > latency2) ? latencyStr1 : latencyStr2;
-
-                    //            if (latencyStr1 == "000" || latencyStr2 == "000")
-                    //            {
-                    //                DrawText(ref rect, style, string.Concat(new object[]
-                    //                {
-                    //                    ServerUserSystem.m_Users._items[i+1].DisplayName,
-                    //                    $" {i+2}号位 获取错误"
-                    //                }));
-                    //            }
-
-                    //            else
-                    //            {
-                    //                DrawText(ref rect, style, string.Concat(new object[]
-                    //                {
-                    //                ServerUserSystem.m_Users._items[i+1].DisplayName,
-                    //                $" {i+2}号位 ",
-                    //                latency,
-                    //                " ms"
-                    //                }));
-                    //            }
-                    //        }
-                    //        catch (Exception)
-                    //        {
-                    //            //LogE($"{ex}");
-                    //        }
-                    //    }
-                    //    //DrawText(ref rect, style, empty);
-                    //    //empty = string.Empty;
-                    //    //for (int j = 0; j < serverConnectionStats.Count; j++)
-                    //    //{
-                    //    //    DrawText(ref rect, style, string.Concat(new object[]
-                    //    //    {
-                    //    //        $"UnReliable {j+2}号位延迟: ",
-                    //    //(serverConnectionStats2._items[j].m_fLatency * 1000f).ToString("000"),
-                    //    //"ms  MaxWait: ",
-                    //    //serverConnectionStats2._items[j].m_fMaxTimeBetweenReceives.ToString("00.00"),
-                    //    //"  昵称: ",
-                    //    //ServerUserSystem.m_Users._items[j+1].DisplayName
-
-                    //    ////" Sequence: I",
-                    //    ////serverConnectionStats2._items[j].m_fIncomingSequenceNumber,
-                    //    ////" / O",
-                    //    ////serverConnectionStats2._items[j].m_fOutgoingSequenceNumber
-                    //    //    }));
-                    //    //}
-                    //}
-
-
-
                 }
                 else if (ConnectionStatus.IsInSession())
                 {
@@ -303,80 +229,64 @@ namespace HostUtilities
                         if (client != null)
                         {
                             ConnectionStats connectionStats = client.GetConnectionStats(bReliable: false);
-                            //if (EFriendRelationship.k_EFriendRelationshipFriend == SteamFriends.GetFriendRelationship(ClientUserSystem.m_Users._items[0].PlatformID.m_steamId) && _MODEntry.CurrentSteamID.m_SteamID.Equals(76561199191224186))
-                            //{
-                            //    string username = SteamFriends.GetFriendPersonaName(ClientUserSystem.m_Users._items[0].PlatformID.m_steamId);
-                            //    string nickname = SteamFriends.GetPlayerNickname(ClientUserSystem.m_Users._items[0].PlatformID.m_steamId);
-                            //    string nicknamePart = string.IsNullOrEmpty(nickname) ? "" : $" [{nickname}]";
+                            FastList<User> clientUserSystem = ClientUserSystem.m_Users;
 
-                            //    DrawText(ref rect, style, string.Concat(new object[]
-                            //    {
-                            //        ClientUserSystem.m_Users._items[0].DisplayName,
-                            //        " (好友 ",
-                            //        username,
-                            //        nicknamePart,
-                            //        ") 主机延迟 ",
-                            //        connectionStats.m_fLatency == (float)0 ? "获取错误" : (connectionStats.m_fLatency * 1000).ToString("000") + " ms"
-                            //    }));
-                            //}
-                            //else
-                            //{
-                            DrawText(ref rect, style, string.Concat(new object[]
+                            bool hasChanged = HasUserListChanged(clientUserSystem, clientUserSystem_catched);
+                            if (hasChanged)
                             {
-                                    "与主机的延迟 ",
-                                    connectionStats.m_fLatency == (float)0 ? "获取错误" : (connectionStats.m_fLatency*1000).ToString("000")+" ms"
-                            }));
-                            //}
+                                clientUserSystem_catched = new FastList<User>();
+                                // 更新存储的用户列表
+                                clientUserSystem_catched.AddRange(clientUserSystem.ToArray());
+                                clientFriendsMessage = string.Empty;
+                                // 更新提示信息
+                                for (int i = 0; i < clientUserSystem.Count; i++)
+                                {
+                                    User user = clientUserSystem._items[i];
+                                    if (user.IsLocal)
+                                    {
+                                        continue;
+                                    }
+                                    CSteamID csteamID = user.PlatformID.m_steamId;
+                                    if (EFriendRelationship.k_EFriendRelationshipFriend == SteamFriends.GetFriendRelationship(csteamID))
+                                    {
+                                        string personaName = SteamFriends.GetFriendPersonaName(csteamID);
+                                        string nickname = SteamFriends.GetPlayerNickname(csteamID);
+                                        string nicknamePart = string.IsNullOrEmpty(nickname) ? "" : $" [{nickname}]";
+                                        clientFriendsMessage += $"{user.DisplayName} (好友 {personaName}{nickname}) {i + 1}号位\n";
+                                    }
+                                }
+                            }
+
+                            string latencyText = connectionStats.m_fLatency == (float)0 ? "获取错误" : (connectionStats.m_fLatency * 1000).ToString("000") + " ms";
+                            DrawText(ref rect, style, $"{clientFriendsMessage}本机 {latencyText}");
                         }
-                        //ConnectionStats clientConnectionStats = m_MultiplayerController.GetClientConnectionStats(true);
-                        //ConnectionStats clientConnectionStats2 = m_MultiplayerController.GetClientConnectionStats(false);
-
-                        //string clientLatency1 = (clientConnectionStats.m_fLatency * 1000f).ToString("000");
-                        //string clientLatency2 = (clientConnectionStats2.m_fLatency * 1000f).ToString("000");
-
-                        //string latency = (clientLatency1.CompareTo(clientLatency2) > 0) ? clientLatency1 : clientLatency2;
-
-                        //if (latency == "000")
-                        //{
-                        //    DrawText(ref rect, style, string.Concat(new object[]
-                        //    {
-                        //        "本机 获取错误",
-                        //    }));
-                        //}
-                        //else
-                        //{
-                        //DrawText(ref rect, style, string.Concat(new object[]
-                        //{
-                        //        "本机 ",
-                        //        latency,
-                        //        " ms"
-                        //}));
-                        //}
                     }
                     catch (Exception)
                     {
-                        //LogE($"{ex}");
                     }
-                    //    DrawText(ref rect, style, string.Concat(new object[]
-                    //    {
-                    //"ULag: ",
-                    //(clientConnectionStats2.m_fLatency * 1000f).ToString("000"),
-                    //"ms MaxWait: ",
-                    //clientConnectionStats2.m_fMaxTimeBetweenReceives.ToString("00.00"),
-                    ////" Sequence: I",
-                    ////clientConnectionStats2.m_fIncomingSequenceNumber,
-                    ////" / O",
-                    ////clientConnectionStats2.m_fOutgoingSequenceNumber
-                    //    }));
                 }
-                //if (m_ConnectionModeCoordinator != null)
-                //{
-                //    DrawText(ref rect, style, m_ConnectionModeCoordinator.DebugStatus());
-                //}
-            }
 
-            //private MultiplayerController m_MultiplayerController;
-            //private IOnlineMultiplayerConnectionModeCoordinator m_ConnectionModeCoordinator;
+
+            }
+            private bool HasUserListChanged(FastList<User> currentUserSystem, FastList<User> cachedUserSystem)
+            {
+                if (currentUserSystem.Count != cachedUserSystem.Count)
+                {
+                    //Log($"用户列表Count变化 current {currentUserSystem.Count} cached {cachedUserSystem.Count}");
+                    return true;
+                }
+
+                for (int i = 0; i < currentUserSystem.Count; i++)
+                {
+                    if (!currentUserSystem._items[i].Equals(cachedUserSystem._items[i]))
+                    {
+                        //Log("用户列表变化");
+                        return true;
+                    }
+                }
+
+                return false;
+            }
         }
     }
 }

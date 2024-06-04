@@ -14,11 +14,11 @@ using Version = System.Version;
 
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.易程亦橙 Q群860480677 点击下方“‧‧‧”展开", "1.0.84")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.易程亦橙 Q群860480677 点击下方“‧‧‧”展开", "1.0.85")]
     [BepInProcess("Overcooked2.exe")]
     public class MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.84";
+        public static string Version = "1.0.85";
         public static Harmony HarmonyInstance { get; set; }
         public static Dictionary<string, Harmony> AllHarmony = new Dictionary<string, Harmony>();
         public static string modName;
@@ -280,6 +280,8 @@ namespace HostUtilities
         {
             GameObject versionCheckObject = new GameObject("VersionCheck");
             versionCheckObject.AddComponent<VersionCheckClass>();
+            VersionCheckClass versionCheckclass = versionCheckObject.GetComponent<VersionCheckClass>();
+            versionCheckclass.StartSendWebRequest(true);
         }
 
         private static DateTime lastCheckTime = DateTime.Now;
@@ -289,12 +291,14 @@ namespace HostUtilities
         public static void StartScreenFlow_Awake_Postfix()
         {
             DateTime currentTime = DateTime.Now;
-            if (currentTime.Subtract(lastCheckTime).TotalSeconds > 600 && skipFirstCheck)
+            if (currentTime.Subtract(lastCheckTime).TotalSeconds > 1800 && skipFirstCheck)
             {
                 lastCheckTime = currentTime;
                 LogInfo($"Start Version Check. Now Time {currentTime}");
                 GameObject versionCheckObject = new GameObject("VersionCheck");
                 versionCheckObject.AddComponent<VersionCheckClass>();
+                VersionCheckClass versionCheckclass = versionCheckObject.GetComponent<VersionCheckClass>();
+                versionCheckclass.StartSendWebRequest(false);
             }
             else
             {
@@ -318,27 +322,40 @@ namespace HostUtilities
         public static void LogW(string mes) => MODEntry.LogWarning(MethodBase.GetCurrentMethod().DeclaringType.Name, mes);
 
         public static VersionCheckClass Instance;
-        private string githubtoken = string.Empty;
-
+        private static bool successCount = false;
+        private static bool successApi = false;
         public void Awake()
         {
             Instance = this;
         }
 
-        public void Start()
+        public void StartSendWebRequest(bool runcount)
         {
             try
             {
+                if (runcount)
+                {
+                    try
+                    {
+                        StartCoroutine(CountStartUp());
+                    }
+                    catch (Exception)
+                    {
+                        successCount = true;
+                    }
+                }
                 string versionInfoUrl = "https://api.github.com/repos/CH3NGYZ/Overcooked-2-HostUtilities/releases?per_page=100";
                 UI_DisplayModName.cornerMessage = $"Host Utilities v{MODEntry.Version} ";
                 StartCoroutine(SendWebRequest(versionInfoUrl));
             }
             catch (Exception e)
             {
+
                 LogE(e.Message);
                 LogE(e.StackTrace);
             }
         }
+
 
         private IEnumerator SendWebRequest(string url)
         {
@@ -347,13 +364,8 @@ namespace HostUtilities
                 request.SetRequestHeader("User-Agent", "request");
                 request.SetRequestHeader("accept", "application/vnd.github+json");
 
-                if (githubtoken != string.Empty)
-                {
-                    request.SetRequestHeader("Authorization", $"token {githubtoken}");
-                }
-
                 // 设置请求超时时间为10秒
-                request.timeout = 10;
+                request.timeout = 30;
                 yield return request.SendWebRequest();
 
                 if (request.responseCode == 200)
@@ -375,12 +387,7 @@ namespace HostUtilities
                         backupRequest.SetRequestHeader("User-Agent", "request");
                         backupRequest.SetRequestHeader("accept", "application/vnd.github+json");
 
-                        if (githubtoken != string.Empty)
-                        {
-                            backupRequest.SetRequestHeader("Authorization", $"token {githubtoken}");
-                        }
-
-                        backupRequest.timeout = 10;
+                        backupRequest.timeout = 30;
 
                         yield return backupRequest.SendWebRequest();
 
@@ -399,9 +406,36 @@ namespace HostUtilities
                         }
                     }
                 }
+                successApi = true;
+                if (successCount)
+                {
+                    //Log("Destroy VersionCheck by api");
+                    GameObject versionCheckObject = GameObject.Find("VersionCheck");
+                    Destroy(versionCheckObject);
+                }
+
             }
-            GameObject versionCheckObject = GameObject.Find("VersionCheck");
-            Destroy(versionCheckObject);
+        }
+
+        private IEnumerator CountStartUp()
+        {
+            using (UnityWebRequest request = UnityWebRequest.Get("https://count-ingame-version-check.azhe.chat"))
+            {
+                request.SetRequestHeader("User-Agent", $"Hostname {SteamUser.GetSteamID().m_SteamID} For InGameGetVersion {MODEntry.Version}");
+
+                // 设置请求超时时间为10秒
+                request.timeout = 30;
+                yield return request.SendWebRequest();
+
+                //Log($"{request.responseCode}");
+                successCount = true;
+                if (successApi)
+                {
+                    //Log("Destroy VersionCheck by count");
+                    GameObject versionCheckObject = GameObject.Find("VersionCheck");
+                    Destroy(versionCheckObject);
+                }
+            }
         }
 
         private void HandleWebResponse(UnityWebRequest request)

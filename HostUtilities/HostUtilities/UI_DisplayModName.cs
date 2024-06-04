@@ -33,7 +33,7 @@ namespace HostUtilities
                     new Vector2(0f, 0f), //左上
                     new Vector2(0f, Screen.height), // 左下
                     new Vector2(Screen.width, Screen.height), // 右下
-                    new Vector2(Screen.width, 60 * MODEntry.dpiScaleFactor) //右上偏下60
+                    new Vector2(Screen.width, 80 * MODEntry.dpiScaleFactor) //右上偏下60
                 };
             onScreenDebugDisplay = new MyOnScreenDebugDisplay();
             onScreenDebugDisplay.Awake();
@@ -71,12 +71,12 @@ namespace HostUtilities
 
             if (MODEntry.isInLobby)
             {
-                // 如果在大厅中，则排除左上和右上
+                // 如果在街机大厅, 偏移一下
                 availablePositions = new List<Vector2> {
                     new Vector2(0f, 20 * MODEntry.dpiScaleFactor), //左上偏下20
                     new Vector2(0f, Screen.height), // 左下
                     new Vector2(Screen.width, Screen.height), // 右下
-                    new Vector2(Screen.width, 60 * MODEntry.dpiScaleFactor)  //右上偏下60
+                    new Vector2(Screen.width, 80 * MODEntry.dpiScaleFactor)  //右上偏下60
                 };
             }
             else
@@ -86,7 +86,7 @@ namespace HostUtilities
                     new Vector2(0f, 0f), //左上
                     new Vector2(0f, Screen.height), // 左下
                     new Vector2(Screen.width, Screen.height), // 右下
-                    new Vector2(Screen.width, 60 * MODEntry.dpiScaleFactor) //右上偏下60
+                    new Vector2(Screen.width, 80 * MODEntry.dpiScaleFactor) //右上偏下60
                 };
             }
             System.Random rand = new System.Random();

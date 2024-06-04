@@ -25,7 +25,7 @@ public class ToggleArtLight : MonoBehaviour
     {
         if (Input.GetKeyDown(toggleKey.Value))
         {
-            Log("Toggle Lights");
+            //Log("Toggle Lights");
             ToggleArtLights();
         }
     }
@@ -49,7 +49,7 @@ public class ToggleArtLight : MonoBehaviour
     [HarmonyPatch(typeof(LoadingScreenFlow), "Awake")]
     private static void LoadingScreenFlow_Awake()
     {
-        LogW("重置LightObject");
+        //LogW("重置LightObject");
         artObjects = null;
     }
 }
