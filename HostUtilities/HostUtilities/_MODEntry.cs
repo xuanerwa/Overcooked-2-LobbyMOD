@@ -11,14 +11,14 @@ using UnityEngine;
 using UnityEngine.Networking;
 using SimpleJSON;
 using Version = System.Version;
- 
+
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.易程亦橙 Q群860480677 点击下方“‧‧‧”展开", "1.0.83")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.易程亦橙 Q群860480677 点击下方“‧‧‧”展开", "1.0.84")]
     [BepInProcess("Overcooked2.exe")]
     public class MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.83";
+        public static string Version = "1.0.84";
         public static Harmony HarmonyInstance { get; set; }
         public static Dictionary<string, Harmony> AllHarmony = new Dictionary<string, Harmony>();
         public static string modName;
@@ -51,7 +51,7 @@ namespace HostUtilities
                 //ModifyScoreScreenTimeout.Awake();
                 //ReplaceOriginalCarnival34Recipes.Awake();
                 ReplaceOneShotAudio.Awake();
-
+                ToggleArtLight.Awake();
 
                 //需要Update
                 AddDirtyDishes.Awake();
@@ -96,6 +96,7 @@ namespace HostUtilities
                 RestartLevel.Update();
                 ScaleObject.Update();
                 SkipLevel.Update();
+                ToggleArtLight.Update();
                 UI_DisplayKickedUser.Update();
                 UI_DisplayLatency.Update();
                 UI_DisplayModsOnResultsScreen.Update();
