@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# 定义版本号文件路径
+VERSION_FILE="HostUtilities/HostUtilities/_MODEntry.cs"
+
+# 提取当前版本号
+current_version=$(grep 'public static string Version =' "$VERSION_FILE" | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
+plugin_version=$(grep 'BepInPlugin' "$VERSION_FILE" | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
+
+echo "current_version $current_version"
+echo "plugin_version $plugin_version"
+
+# 提取主版本号和次版本号
+major_minor=$(echo $current_version | cut -d '.' -f 1,2)
+echo "major_minor $major_minor"
+
+# 提取修订版本号并递增
+patch=$(echo $current_version | cut -d '.' -f 3)
+new_patch=$((patch + 1))
+echo "new_patch $new_patch"
+
+# 生成新版本号
+new_version="$major_minor.$new_patch"
+echo "new_version $new_version"
+
+# 使用 sed 命令更新版本号
+# 适用于 macOS
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed -i '' "s/$current_version/$new_version/g" "$VERSION_FILE"
+    # 适用于 Linux
+else
+    sed -i "s/$current_version/$new_version/g" "$VERSION_FILE"
+fi
+
+# 添加版本号文件到 git 暂存区
+git add "$VERSION_FILE"

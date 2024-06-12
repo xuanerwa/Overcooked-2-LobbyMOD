@@ -14,11 +14,11 @@ using Version = System.Version;
 
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.易程亦橙 Q群860480677 点击下方“‧‧‧”展开", "1.0.85")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.易程亦橙 Q群860480677 点击下方“‧‧‧”展开", "1.0.86")]
     [BepInProcess("Overcooked2.exe")]
     public class MODEntry : BaseUnityPlugin
     {
-        public static string Version = "1.0.85";
+        public static string Version = "1.0.86";
         public static Harmony HarmonyInstance { get; set; }
         public static Dictionary<string, Harmony> AllHarmony = new Dictionary<string, Harmony>();
         public static string modName;
@@ -54,7 +54,7 @@ namespace HostUtilities
                 ToggleArtLight.Awake();
 
                 //需要Update
-                AddDirtyDishes.Awake();
+                //AddDirtyDishes.Awake();
                 ForceHost.Awake();
                 KickUser.Awake();
                 LevelEdit.Awake();
@@ -87,7 +87,7 @@ namespace HostUtilities
         {
             try
             {
-                AddDirtyDishes.Update();
+                //AddDirtyDishes.Update();
                 ForceHost.Update();
                 KickUser.Update();
                 LevelEdit.Update();
