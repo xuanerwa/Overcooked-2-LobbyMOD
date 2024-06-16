@@ -205,12 +205,12 @@ namespace HostUtilities
                                                 string username = userInfo.SteamName;
                                                 string nickname = userInfo.Nickname;
                                                 string nicknamePart = string.IsNullOrEmpty(nickname) ? "" : $" [{nickname}]";
-                                                DrawText(ref rect, style, $"{user.DisplayName} (好友 {username}{nicknamePart}) {index}号位 {(latency == 0 ? "获取错误" : (latency * 1000).ToString("000") + " ms")}");
+                                                DrawText(ref rect, style, $"{user.DisplayName} (好友 {username}{nicknamePart}) {index}号位 {(latency == 0 ? "获取错误" : (latency * 1000 * 2).ToString("000") + " ms")}");
                                             }
                                         }
                                         else
                                         {
-                                            DrawText(ref rect, style, $"{user.DisplayName} {index}号位 {(latency == 0 ? "获取错误" : (latency * 1000).ToString("000") + " ms")}");
+                                            DrawText(ref rect, style, $"{user.DisplayName} {index}号位 {(latency == 0 ? "获取错误" : (latency * 1000 * 2).ToString("000") + " ms")}");
                                         }
                                         index++;
                                     }
@@ -257,7 +257,7 @@ namespace HostUtilities
                                 }
                             }
 
-                            string latencyText = connectionStats.m_fLatency == (float)0 ? "获取错误" : (connectionStats.m_fLatency * 1000).ToString("000") + " ms";
+                            string latencyText = connectionStats.m_fLatency == (float)0 ? "获取错误" : (connectionStats.m_fLatency * 1000 * 2).ToString("000") + " ms";
                             DrawText(ref rect, style, $"{clientFriendsMessage}本机 {latencyText}");
                         }
                     }
@@ -265,8 +265,6 @@ namespace HostUtilities
                     {
                     }
                 }
-
-
             }
             private bool HasUserListChanged(FastList<User> currentUserSystem, FastList<User> cachedUserSystem)
             {
@@ -284,7 +282,6 @@ namespace HostUtilities
                         return true;
                     }
                 }
-
                 return false;
             }
         }
