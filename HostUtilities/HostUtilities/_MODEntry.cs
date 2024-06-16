@@ -14,7 +14,7 @@ using Version = System.Version;
 
 namespace HostUtilities
 {
-    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.易程亦橙 Q群860480677 点击下方“‧‧‧”展开", "1.0.87")]
+    [BepInPlugin("com.ch3ngyz.plugin.HostUtilities", "[HostUtilities] By.易程不变 Q群860480677 点击下方“‧‧‧”展开", "1.0.87")]
     [BepInProcess("Overcooked2.exe")]
     public class MODEntry : BaseUnityPlugin
     {
